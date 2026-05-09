@@ -11,7 +11,28 @@ async function startServer() {
   const PORT = parseInt(process.env.PORT ?? "3000", 10);
 
   app.use(express.json());
-  app.use(cors());
+
+  const allowedOrigins = [
+    "https://metapathfinder-frontend-production.up.railway.app",
+    "http://localhost:5173",
+    "http://localhost:4173",
+  ];
+
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        // Allow requests with no origin (e.g. curl, Postman, server-to-server)
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`CORS policy: origin '${origin}' not allowed`));
+        }
+      },
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: true,
+    })
+  );
 
   // API: Registro de eventos cognitivos
   app.post("/api/tracking/events", (req, res) => {
