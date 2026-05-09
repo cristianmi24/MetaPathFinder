@@ -6,7 +6,8 @@
   "scripts": {
     "start": "tsx server.ts",
     "dev": "tsx server.ts",
-    "build": "tsc",
+    "build:frontend": "cd ../frontend && npm install && npm run build",
+    "build": "npm run build:frontend && tsc",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
