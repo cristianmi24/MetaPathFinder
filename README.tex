@@ -1,0 +1,105 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\title{Meta-Pathfinder: Documentación Técnica de Arquitectura Cognitiva}
+\author{Sistema de Gestión de Carga Cognitiva}
+\date{Mayo 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+\textbf{Meta-Pathfinder} es una plataforma de aprendizaje adaptativo que utiliza inteligencia artificial para monitorizar y regular la carga cognitiva del estudiante en tiempo real. Este documento explica los pilares del sistema: el Diálogo Socrático, el Foco Cognitivo y la Gestión de Experimentos.
+
+\section{Conceptos Fundamentales}
+
+\subsection{Diálogo Socrático}
+El diálogo socrático es un método de aprendizaje por descubrimiento. En el contexto de nuestra aplicación, se implementa mediante la fórmula de \textit{Prompt Framing}:
+\begin{equation}
+    P_{socratic} = \text{Guía} + \text{Pregunta Crítica} - \text{Respuesta Directa}
+\end{equation}
+
+\textbf{Ejemplo:} 
+Si un estudiante falla en una evaluación de física, el sistema no entrega la fórmula corregida. En su lugar, lanza un evento de retroalimentación:
+\begin{quote}
+    \textit{``Has aplicado la Ley de Ohm, pero ¿has considerado si el circuito está en serie o en paralelo para calcular la resistencia equivalente?''}
+\end{quote}
+
+\subsection{Foco Actual y Estados Cognitivos}
+El foco se mide mediante el Índice de Calibración ($C$) y la Carga Cognitiva ($L$). El sistema define el estado de \textbf{Flow} (Flujo Óptimo) cuando:
+\begin{equation}
+    Skill \approx Challenge \implies L_{germane} \uparrow
+\end{equation}
+
+Los estados detectados son:
+\begin{itemize}
+    \item \textbf{Flujo:} Balance perfecto entre dificultad y habilidad.
+    \item \textbf{Frustración:} Carga intrínseca demasiado alta.
+    \item \textbf{Desajuste Metacognitivo:} Ocurre cuando $Score > 80\%$ pero el Índice de Calibración es bajo ($C < 0.65$). El estudiante acierta por azar o patrones mecánicos, pero no por comprensión profunda del proceso.
+\end{itemize}
+
+\section{Modelo de Evaluación en Tres Fases}
+
+El sistema implementa un flujo de evaluación diseñado para detectar y medir el \textbf{Desfase Metacognitivo} mediante tres fases secuenciales:
+
+\begin{enumerate}
+    \item \textbf{Fase 1: Juicio Pretest (Autopercepción):} El estudiante califica su propio nivel de competencia en categorías específicas (ej. Lógica, Ciclos) en una escala de 1 a 10. Esto establece la línea base de confianza.
+    \item \textbf{Fase 2: Desafío Cognitivo (Ejecución):} Evaluación técnica real donde se monitoriza el comportamiento dinámico mediante el \texttt{useCognitiveTracking}.
+    \item \textbf{Fase 3: Análisis de Desfase (Calibración):} Comparación cuantitativa entre el juicio previo y la realidad ejecutiva.
+\end{enumerate}
+
+\subsection{Taxonomía de Eventos Cognitivos Capturados}
+Durante la Fase 2, el sistema captura micro-comportamientos que se interpretan mediante las siguientes heurísticas:
+
+\begin{itemize}
+    \item \textbf{Impulsividad:} Detectada mediante latencias de respuesta ($\Delta t < 5s$). Lanza un \textit{Freno Metacognitivo}.
+    \item \textbf{Distracción:} Capturada mediante el evento \texttt{visibilitychange} (cambio de pestaña o ventana).
+    \item \textbf{Frustración o Sobrecarga:} Tiempo por pregunta superior a 30 segundos, indicando bloqueo o alta carga intrínseca.
+    \item \textbf{Persistencia:} Conteo de reintentos manuales tras una advertencia del sistema o fallo detectado.
+    \item \textbf{Desorientación:} Patrones de \textit{Scroll} excesivo o movimientos erráticos del ratón (movimiento circular continuo sin interacción).
+    \item \textbf{Reflexión o Fatiga:} Pausas de inactividad total superiores a 30 segundos.
+\end{itemize}
+
+\section{Arquitectura de Transferencia Cross-Domain}
+
+\subsection{Inyector de Heurísticas Transversales (Transfer Bridge)}
+Este componente actúa como un mecanismo de \textbf{Primado Cognitivo}. Utiliza el campo \texttt{latent\_strategy} para mapear éxitos previos en dominios distintos (ej. Pensamiento Computacional) hacia nuevos desafíos (ej. Pensamiento Crítico).
+
+\subsection{Freno Metacognitivo Adaptativo (Metacognitive Brake)}
+El sistema monitoriza la latencia de procesamiento ($\Delta t$). El umbral es dinámico según la complejidad de la tarea ($\Delta t_{min} = 5s$ para razonamiento, $1s$ para navegación). Si se detecta una respuesta impulsiva, el sistema lanza un \textbf{Encuadre Socrático de Proceso}:
+\begin{quote}
+    \textit{``Detección de Primado Cognitivo: Has respondido muy rápido. ¿Estás aplicando la heurística de Verificación Sistemática que usamos antes?''}
+\end{quote}
+
+\section{Panel de Administrador y Diseño de Investigación}
+El sistema permite realizar estudios experimentales comparando:
+\begin{enumerate}
+    \item \textbf{Grupo Control (Baseline Socrático):} IA Socrática estándar sin persistencia de estrategias transversales.
+    \item \textbf{Grupo Experimental (TAM):} IA con Arquitectura de Transferencia de Aprendizaje Metacognitivo habilitada.
+\end{enumerate}
+
+Las métricas se validan mediante el valor-p en las evaluaciones meta-cognitivas realizadas por los estudiantes, guardándose localmente en el \texttt{localStorage} para asegurar la persistencia de la sesión sin pérdida de datos.
+
+\section{Estructura de Datos de Salida (JSON)}
+Para la validación del paper, el sistema exporta el siguiente esquema:
+\begin{verbatim}
+{
+  "type": "EVALUATION_COMPLETED",
+  "metadata": {
+    "latent_strategy": "SYSTEMATIC_VERIFICATION",
+    "cognitive_state": "Flow",
+    "processing_latency": "4.5s",
+    "calibration_error": 0.12
+  },
+  "theme": "Pensamiento Computacional",
+  "score": 85
+}
+\end{verbatim}
+
+\end{document}

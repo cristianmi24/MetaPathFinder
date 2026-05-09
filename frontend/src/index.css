@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Lexend", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-surface: #f4faff;
+  --color-surface-dim: #cbdde8;
+  --color-surface-bright: #f4faff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #e8f6ff;
+  --color-surface-container: #def0fc;
+  --color-surface-container-high: #d9ebf7;
+  --color-surface-container-highest: #d3e5f1;
+  --color-on-surface: #0c1e26;
+  --color-on-surface-variant: #494552;
+  --color-inverse-surface: #22333c;
+  --color-inverse-on-surface: #e2f3ff;
+  --color-outline: #7a7583;
+  --color-outline-variant: #cac4d4;
+  --color-surface-tint: #674bb5;
+  --color-primary: #674bb5;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #a78bfa;
+  --color-on-primary-container: #3c1989;
+  --color-inverse-primary: #cebdff;
+  --color-secondary: #006b5e;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #96f3e1;
+  --color-on-secondary-container: #007164;
+  --color-tertiary: #79573f;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #bd957a;
+  --color-on-tertiary-container: #4a2e19;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+  --color-primary-fixed: #e8ddff;
+  --color-primary-fixed-dim: #cebdff;
+  --color-on-primary-fixed: #21005e;
+  --color-on-primary-fixed-variant: #4f319c;
+  --color-secondary-fixed: #96f3e1;
+  --color-secondary-fixed-dim: #7ad7c6;
+  --color-on-secondary-fixed: #00201b;
+  --color-on-secondary-fixed-variant: #005046;
+  --color-tertiary-fixed: #ffdcc5;
+  --color-tertiary-fixed-dim: #eabea0;
+  --color-on-tertiary-fixed: #2d1604;
+  --color-on-tertiary-fixed-variant: #5f402a;
+  --color-background: #f4faff;
+  --color-on-background: #0c1e26;
+  --color-surface-variant: #d3e5f1;
+
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-background antialiased;
+  }
+}
+
+.glass {
+  @apply bg-surface/70 backdrop-blur-xl border border-outline-variant/20 shadow-sm;
+}
+
+.bento-card {
+  @apply bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(103,75,181,0.05)] border border-outline-variant/30 transition-all duration-300;
+}
+
+.bento-card:hover {
+  @apply shadow-[0_8px_32px_rgba(103,75,181,0.1)] -translate-y-0.5;
+}

@@ -1,0 +1,77 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\geometry{a4paper, margin=1in}
+
+\title{Propuesta de Estructura de Base de Datos: Meta-Pathfinder}
+\author{Arquitectura de Datos}
+\date{Mayo 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+Esta propuesta define la arquitectura relacional (o no relacional optimizada) para el sistema \textbf{Meta-Pathfinder}. La estructura está diseñada para soportar la persistencia de usuarios, el seguimiento de eventos cognitivos en tiempo real y la analítica metacognitiva necesaria para el motor de Inteligencia Artificial.
+
+\section{Esquema de Colecciones/Tablas}
+
+\subsection{Entidad: Users (Usuarios)}
+Almacena la información de identidad y perfil de los estudiantes y administradores.
+\begin{itemize}
+    \item \texttt{id}: UUID / String (Primary Key)
+    \item \texttt{name}: String (Nombre)
+    \item \texttt{last\_name}: String (Apellido)
+    \item \texttt{email}: String (Identificador único de acceso)
+    \item \texttt{password\_hash}: String (Almacenamiento seguro)
+    \item \texttt{role}: Enum [``student'', ``admin'']
+    \item \texttt{avatar\_url}: String (Derivado de iniciales o personalizado)
+    \item \texttt{created\_at}: Timestamp
+\end{itemize}
+
+\subsection{Entidad: Evaluations (Evaluaciones)}
+Registra los resultados de las pruebas técnicas y metacognitivas.
+\begin{itemize}
+    \item \texttt{id}: UUID
+    \item \texttt{user\_id}: UUID (Foreign Key $\to$ Users.id)
+    \item \texttt{type}: Enum [``pretest'', ``challenge'', ``desfase'']
+    \item \texttt{theme}: String (ej. ``Lógica'', ``Ciclos'', ``Funciones'')
+    \item \texttt{score}: Float (0-100)
+    \item \texttt{answers}: JSON (Detalle de las respuestas dadas)
+    \item \texttt{created\_at}: Timestamp
+\end{itemize}
+
+\subsection{Entidad: CognitiveEvents (Eventos de Seguimiento)}
+Captura el micro-comportamiento dinámico durante las evaluaciones.
+\begin{itemize}
+    \item \texttt{id}: UUID
+    \item \texttt{user\_id}: UUID (Foreign Key)
+    \item \texttt{type}: String (ej. ``PHASE\_START'', ``IMPULSE\_DETECTED'', ``SCROLL\_PATTERN'')
+    \item \texttt{metadata}: JSON (ej. \{ ``latency'': 4.5, ``tab\_switches'': 2 \})
+    \item \texttt{timestamp}: Timestamp
+\end{itemize}
+
+\subsection{Entidad: MetacognitiveProfile (Perfil de Estado)}
+Mantiene el estado actual de las métricas del estudiante para personalización rápida.
+\begin{itemize}
+    \item \texttt{user\_id}: UUID (PK/FK)
+    \item \texttt{calibration}: Float (Índice de precisión de autopercepción)
+    \item \texttt{cognitive\_load\_avg}: Float (Histórico de carga cognitiva)
+    \item \texttt{transfer\_readiness}: Float (Disponibilidad de transferencia)
+    \item \texttt{latent\_strategies}: Array$<$String$>$ (Estrategias detectadas por la IA)
+    \item \texttt{last\_updated}: Timestamp
+\end{itemize}
+
+\section{Consideraciones de Integración (Firebase/NoSQL)}
+Si se utiliza una base de datos NoSQL como Firestore, se recomienda la siguiente jerarquía de documentos:
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true]
+/users/{userId}
+  /evaluations/{evalId}
+  /cognitive_log/{eventId}
+  /metacognition/data (documento unico por usuario)
+\end{lstlisting}
+
+\end{document}
