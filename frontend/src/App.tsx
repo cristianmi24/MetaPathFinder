@@ -21,7 +21,7 @@ import { BackgroundNetwork } from './components/BackgroundNetwork';
 function Layout({ children }: { children: React.ReactNode }) {
   const role = useCognitiveStore((s) => s.role);
   const user = useCognitiveStore((s) => s.user);
-  useCognitiveTracking();
+  useCognitiveTracking(true);
 
   if (!role) return (
     <>

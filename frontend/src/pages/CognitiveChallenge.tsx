@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Code2, ChevronRight, Brain, Target, BarChart3, ArrowLeft, Send, AlertCircle, Quote } from 'lucide-react';
+import { Code2, ChevronRight, Brain, Target, BarChart3, ArrowLeft, Send, AlertCircle, Quote, Zap } from 'lucide-react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
