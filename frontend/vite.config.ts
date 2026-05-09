@@ -18,5 +18,11 @@ export default defineConfig(({mode}) => {
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
     },
+    preview: {
+      allowedHosts: [
+        'metapathfinder-frontend-production.up.railway.app',
+        'localhost',
+      ],
+    },
   };
 });
