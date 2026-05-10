@@ -39,14 +39,21 @@ Se presenta la pregunta técnica con 4 opciones de respuesta. Se usa `useCogniti
 - La variación se elige aleatoriamente de `variationPool`
 - Vuelve a fase `perception` para re-evaluar confianza
 
-**Segundo fallo (variación)** → `blocked`:
+**Segundo fallo (variación)** → depende de la autopercepción:
+
+### Caso A: Baja autopercepción en ambos intentos (percepción ≤ 3)
+Si el estudiante **se autopercibió con baja confianza en el reto original y en la variación**, y falló ambos → **FRENO directo**. No se bloquea el tema ni se busca ruta alternativa. El mensaje indica que el estudiante reconoce su falta de dominio y los resultados lo confirman, por lo que debe estudiar antes de continuar.
+
+### Caso B: Alguna percepción fue alta (≥ 4)
+Si en al menos uno de los dos intentos el estudiante tuvo confianza media/alta → `blocked`:
 - El tema se **bloquea** en el nivel actual y todos los superiores
 - Se muestra micro-lección educativa
 - El sistema busca una **ruta alternativa**: el siguiente tema no bloqueado en el mismo nivel
 - Si existe: se ofrece botón "Probar esta Ruta"
 - Si no existe: se informa que no hay más temas disponibles
 
-**FRENO**: Si al bloquear un tema se alcanzan **2 temas bloqueados en el mismo nivel**, la evaluación se detiene inmediatamente con alerta de freno de seguridad. No es necesario que se hayan agotado todos los temas.
+### FRENO por doble bloqueo
+Si al bloquear un tema se alcanzan **2 temas bloqueados en el mismo nivel**, la evaluación se detiene inmediatamente con alerta de freno de seguridad. No es necesario que se hayan agotado todos los temas.
 
 ### 5. Success (aplica a primer intento o variación)
 - Se registra el intento como superado

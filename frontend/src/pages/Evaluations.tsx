@@ -184,10 +184,15 @@ export function Evaluations() {
   const [passedCategories, setPassedCategories] = useState<Record<number, string[]>>({});
   const [justBlockedInfo, setJustBlockedInfo] = useState<{ category: string; nodeId: string } | null>(null);
   const [alternativeRoute, setAlternativeRoute] = useState<{ question: Question; levelIdx: number; questionIdx: number } | null>(null);
+  const [frenoReason, setFrenoReason] = useState<'double_block' | 'low_perception_double_fail' | null>(null);
 
-  const { addEvent, updateCognitiveMetrics, latentStrategies } = useCognitiveStore();
+  const { addEvent, updateCognitiveMetrics, latentStrategies, user } = useCognitiveStore();
   const navigate = useNavigate();
   const questionStartTime = useRef(Date.now());
+  const evaluationStartTime = useRef<number | null>(null);
+  const questionClicks = useRef(0);
+  const totalClicks = useRef(0);
+  const clicksPerQuestion = useRef<Record<string, number>>({});
 
   useCognitiveTracking(phase === 'challenge');
 
@@ -200,10 +205,14 @@ export function Evaluations() {
   useEffect(() => {
     if (phase === 'challenge') {
       questionStartTime.current = Date.now();
+      questionClicks.current = 0;
     }
   }, [phase, currentLevelIdx, actualQuestionIdx, variationIdx]);
 
   const handleStart = () => {
+    evaluationStartTime.current = Date.now();
+    totalClicks.current = 0;
+    clicksPerQuestion.current = {};
     setPhase('perception');
     addEvent('PHASE_START', { phase: 'Juicio_Pretest', theme: 'Autopercepción_Programación' });
   };
@@ -250,6 +259,23 @@ export function Evaluations() {
 
       if (isVariation || currentFailCount >= 1) {
         const category = currentMainQuestion.category;
+
+        const initialPerception = perceptions.find(p => p.questionId === currentMainQuestion.id && p.variationIdx === 0);
+        const variationPerception = perceptions.find(p => p.questionId === currentMainQuestion.id && p.variationIdx === variationIdx);
+        const bothLow = initialPerception && variationPerception && initialPerception.value <= 3 && variationPerception.value <= 3;
+
+        if (isVariation && bothLow) {
+          setFrenoReason('low_perception_double_fail');
+          addEvent('COGNITIVE_BIAS', {
+            interpretation: 'Freno por baja autopercepción + fallo consistente',
+            trigger: 'Low perception + double failure',
+            theme: category,
+            node_id: currentMainQuestion.id,
+          });
+          setPhase('freno');
+          return;
+        }
+
         const newBlocked = { ...blockedCategories };
         for (let li = currentLevelIdx; li < phase1Levels.length; li++) {
           const existing = newBlocked[li] || [];
@@ -262,6 +288,7 @@ export function Evaluations() {
 
         const blockedCount = (newBlocked[currentLevelIdx] || []).length;
         if (blockedCount >= 2) {
+          setFrenoReason('double_block');
           addEvent('COGNITIVE_BIAS', {
             interpretation: 'Freno por 2 temas bloqueados en el nivel',
             trigger: 'Two topics blocked in same level',
@@ -382,7 +409,28 @@ export function Evaluations() {
     const avgPerception = finalAttempts.reduce((a, b) => a + b.perception, 0) / finalAttempts.length / 10;
     const currentCalibration = scorePercent / 100;
 
+    const totalTime = evaluationStartTime.current ? Date.now() - evaluationStartTime.current : 0;
+
     updateCognitiveMetrics(0.75, currentCalibration, scorePercent);
+
+    const evaluationData = {
+      fecha: new Date().toISOString(),
+      score: scorePercent,
+      calibration: currentCalibration,
+      perception: avgPerception,
+      gap: Number((avgPerception - currentCalibration).toFixed(2)),
+      strategy: scorePercent > 70 ? 'STRUCTURAL_MAPPING' : 'SYSTEMATIC_VERIFICATION',
+      totalTime,
+      totalClicks: totalClicks.current,
+      clicksPerQuestion: { ...clicksPerQuestion.current },
+      attempts: finalAttempts.map(a => ({
+        questionId: a.questionId,
+        correct: a.isCorrect,
+        perception: a.perception,
+        variationAttempts: a.variationAttempts,
+      })),
+      blockedCategories,
+    };
 
     addEvent('EVALUATION_COMPLETED', {
       phase: 'Final_Full_Flow',
@@ -394,7 +442,24 @@ export function Evaluations() {
       latent_strategy: scorePercent > 70 ? 'STRUCTURAL_MAPPING' : 'SYSTEMATIC_VERIFICATION',
       total_retries: retryCount,
       blocked_categories: blockedCategories,
+      total_time_ms: totalTime,
+      total_clicks: totalClicks.current,
+      clicks_per_question: clicksPerQuestion.current,
     });
+
+    // Save to localStorage
+    try {
+      const stored = JSON.parse(localStorage.getItem('metapathfinder_evaluations') || '[]');
+      const studentEmail = user?.email || 'unknown';
+      const existingIdx = stored.findIndex((e: any) => e.email === studentEmail);
+      const entry = { email: studentEmail, name: user?.name || '', lastName: user?.lastName || '', evaluation: evaluationData };
+      if (existingIdx >= 0) {
+        stored[existingIdx] = entry;
+      } else {
+        stored.push(entry);
+      }
+      localStorage.setItem('metapathfinder_evaluations', JSON.stringify(stored));
+    } catch {}
 
     addEvent('PHASE_COMPLETED', { phase: 'Desfase', theme: 'Calibración_Meta' });
     setPhase('results');
@@ -469,7 +534,7 @@ export function Evaluations() {
               <h3 className="text-2xl font-bold mb-10 text-on-surface leading-tight">{currentDisplayQuestion.text}</h3>
               <div className="grid grid-cols-1 gap-3">
                 {currentDisplayQuestion.options.map((opt, i) => (
-                  <button key={i} onClick={() => handleAnswerSelect(i)} className="p-6 text-left rounded-2xl border-2 border-outline-variant/20 hover:border-primary hover:bg-primary/5 transition-all group flex items-center gap-4">
+                  <button key={i} onClick={() => { questionClicks.current++; totalClicks.current++; const qId = currentDisplayQuestion.id; clicksPerQuestion.current[qId] = (clicksPerQuestion.current[qId] || 0) + 1; handleAnswerSelect(i); }} className="p-6 text-left rounded-2xl border-2 border-outline-variant/20 hover:border-primary hover:bg-primary/5 transition-all group flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-bold text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">{String.fromCharCode(65 + i)}</div>
                     <span className="text-lg font-bold">{opt}</span>
                   </button>
@@ -563,24 +628,43 @@ export function Evaluations() {
               <AlertCircle className="w-14 h-14" />
             </div>
             <h3 className="text-4xl font-black text-error mb-4">¡FRENO DE SEGURIDAD!</h3>
-            <p className="text-lg text-on-surface-variant mb-8 max-w-xl mx-auto">
-              Has fallado múltiples temas en este nivel. El sistema ha detenido tu avance para evitar frustración y sobrecarga cognitiva.
-            </p>
-            <div className="bg-white p-8 rounded-3xl border border-error/20 mb-8 max-w-md mx-auto text-left">
-              <p className="text-sm font-bold text-error uppercase mb-3">Temas bloqueados en {phase1Levels[currentLevelIdx].name}:</p>
-              <ul className="space-y-2">
-                {(blockedCategories[currentLevelIdx] || []).map(cat => (
-                  <li key={cat} className="flex items-center gap-2 text-sm font-medium text-on-surface">
-                    <Lock className="w-4 h-4 text-error flex-shrink-0" />
-                    {cat}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <p className="text-sm text-on-surface-variant mb-8 max-w-md mx-auto">
-              Te recomendamos repasar los fundamentos de estos temas antes de volver a intentarlo.
-              Mientras tanto, los temas que aprobaste ({passedCategories[currentLevelIdx]?.join(', ') || 'ninguno'}) han quedado desbloqueados para el siguiente nivel.
-            </p>
+
+            {frenoReason === 'low_perception_double_fail' ? (
+              <>
+                <p className="text-lg text-on-surface-variant mb-8 max-w-xl mx-auto">
+                  Reconoces que no dominas este tema y tus resultados lo confirman. No tiene sentido continuar sin antes repasar los fundamentos.
+                </p>
+                <div className="bg-white p-8 rounded-3xl border border-error/20 mb-8 max-w-md mx-auto text-left">
+                  <p className="text-sm font-bold text-error uppercase mb-3">Tema detectado:</p>
+                  <p className="text-lg font-bold text-on-surface">{justBlockedInfo?.category || 'Desconocido'}</p>
+                </div>
+                <p className="text-sm text-on-surface-variant mb-8 max-w-md mx-auto">
+                  Tu autopercepción fue baja y acertaste al no sentirte seguro. Dedica tiempo a estudiar este tema antes de volver a intentarlo.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg text-on-surface-variant mb-8 max-w-xl mx-auto">
+                  Has fallado múltiples temas en este nivel. El sistema ha detenido tu avance para evitar frustración y sobrecarga cognitiva.
+                </p>
+                <div className="bg-white p-8 rounded-3xl border border-error/20 mb-8 max-w-md mx-auto text-left">
+                  <p className="text-sm font-bold text-error uppercase mb-3">Temas bloqueados en {phase1Levels[currentLevelIdx].name}:</p>
+                  <ul className="space-y-2">
+                    {(blockedCategories[currentLevelIdx] || []).map(cat => (
+                      <li key={cat} className="flex items-center gap-2 text-sm font-medium text-on-surface">
+                        <Lock className="w-4 h-4 text-error flex-shrink-0" />
+                        {cat}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <p className="text-sm text-on-surface-variant mb-8 max-w-md mx-auto">
+                  Te recomendamos repasar los fundamentos de estos temas antes de volver a intentarlo.
+                  Mientras tanto, los temas que aprobaste ({passedCategories[currentLevelIdx]?.join(', ') || 'ninguno'}) han quedado desbloqueados para el siguiente nivel.
+                </p>
+              </>
+            )}
+
             <button onClick={() => navigate('/')} className="px-12 py-5 bg-error text-on-error rounded-2xl font-bold shadow-xl shadow-error/30 hover:scale-105 transition-all">
               Ir al Panel Principal
             </button>

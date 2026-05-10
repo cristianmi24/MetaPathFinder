@@ -1,123 +1,30 @@
-import { AlertTriangle, UserCheck, Settings2, CheckCircle2, Brain, History, Timer, TrendingUp } from 'lucide-react';
+import { AlertTriangle, UserCheck, Settings2, CheckCircle2, Brain, History, Timer, TrendingUp, Clock, MousePointer2, Target } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useCognitiveStore, stateTranslations } from '../stores/useCognitiveStore';
+import { useState } from 'react';
 
 export function Dashboard() {
   const { cognitiveLoad, calibration, state } = useCognitiveStore();
+  const [selectedEval, setSelectedEval] = useState<string | null>(null);
 
-  const studentsAtRisk = [
-    { 
-      id: 1, 
-      name: 'Mateo R.', 
-      reason: state === 'Metacognitive_Mismatch' ? 'Desajuste Metacognitivo' : (state === 'Frustration' ? 'Frustración Detectada' : 'Frustración Alta'), 
-      detail: state === 'Metacognitive_Mismatch' ? 'Puntaje alto con baja calibración consciente. Riesgo de error latente.' : (state === 'Frustration' ? 'Comportamiento actual indica bloqueo cognitivo.' : 'Atascado en Módulo 4 (Física Cuántica) por 45 mins. Patrón de clics errático.'), 
-      avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=150&auto=format&fit=crop'
-    },
-    { 
-      id: 2, 
-      name: 'Lucía C.', 
-      reason: 'Desorientación', 
-      detail: 'Navegación circular detectada entre recursos de introducción y evaluación.', 
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150&auto=format&fit=crop'
-    }
-  ];
-
-  const stateData = [
-    { name: 'Flow Óptimo', value: state === 'Flow' ? 25 : 20, color: 'var(--color-secondary-container)' },
-    { name: 'Zona Neutra', value: 8, color: 'var(--color-surface-container-highest)' },
-    { name: 'Fatiga/Estrés', value: state === 'Frustration' || state === 'Confusion' ? 7 : 3, color: 'var(--color-tertiary-fixed-dim)' },
-  ];
+  const evaluations = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('metapathfinder_evaluations') || '[]') as any[];
+    } catch { return []; }
+  })();
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-4xl font-bold text-on-surface tracking-tight">Buenos días, Dra. Silva</h2>
+        <h2 className="text-4xl font-bold text-on-surface tracking-tight">Panel de Administración</h2>
         <p className="text-lg text-on-surface-variant mt-2 font-medium">
-          Aquí está el pulso cognitivo de tus aulas hoy. {state !== 'Flow' ? '4' : '3'} estudiantes requieren atención.
+          {evaluations.length} evaluación{ evaluations.length !== 1 ? 'es' : '' } registrada{ evaluations.length !== 1 ? 's' : '' }
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Alerts Section */}
-        <div className="lg:col-span-8 bento-card p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-semibold flex items-center gap-2">
-              <AlertTriangle className="text-error w-6 h-6" />
-              Alertas Cognitivas
-            </h3>
-            <button className="text-sm font-bold text-primary hover:underline">Ver todos</button>
-          </div>
-          <div className="space-y-4">
-            {studentsAtRisk.map((student) => (
-              <motion.div 
-                layout
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                key={student.id} 
-                className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex gap-4 hover:bg-surface-container-high transition-colors"
-              >
-                <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-surface shadow-sm">
-                  <img src={student.avatar} alt={student.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-start">
-                    <h4 className="font-bold text-on-surface">{student.name}</h4>
-                    <span className={student.reason.includes('Frustración') ? "bg-error-container text-on-error-container text-xs px-3 py-1 rounded-full font-bold" : "bg-tertiary-fixed text-on-tertiary-fixed-variant text-xs px-3 py-1 rounded-full font-bold"}>
-                      {student.reason}
-                    </span>
-                  </div>
-                  <p className="text-sm text-on-surface-variant mt-1 leading-relaxed">{student.detail}</p>
-                  <button className="mt-3 text-primary text-sm font-bold flex items-center gap-1 group">
-                    Intervenir <TrendingUp className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Group State Chart */}
-        <div className="lg:col-span-4 bento-card p-6 flex flex-col">
-          <h3 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-            <UserCheck className="text-secondary w-6 h-6" />
-            Estado del Grupo
-          </h3>
-          <div className="h-48 w-full relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={stateData}
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {stateData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-3xl font-bold">{Math.round(calibration * 100)}%</span>
-              <span className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider text-center px-4 leading-tight">{stateTranslations[state]}</span>
-            </div>
-          </div>
-          <div className="mt-6 space-y-3">
-            {stateData.map((item) => (
-              <div key={item.name} className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                  <span className="text-sm text-on-surface-variant font-medium">{item.name}</span>
-                </div>
-                <span className="text-sm font-bold">{item.value} alumnos</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Calibration Section */}
         <div className="lg:col-span-12 bento-card p-6 border-t-4 border-primary">
           <h3 className="text-2xl font-semibold mb-8 flex items-center gap-2">
@@ -152,6 +59,120 @@ export function Dashboard() {
             />
           </div>
         </div>
+
+        {/* Evaluations Section */}
+        {evaluations.length > 0 && (
+          <div className="lg:col-span-12 bento-card p-6 border-t-4 border-secondary">
+            <h3 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+              <Target className="text-secondary w-6 h-6" />
+              Evaluaciones Completadas
+            </h3>
+            <div className="space-y-4">
+              {evaluations.map((entry: any, i: number) => {
+                const ev = entry.evaluation;
+                const isSelected = selectedEval === entry.email;
+                return (
+                  <div key={i}>
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10 hover:bg-surface-container-high transition-colors cursor-pointer"
+                      onClick={() => setSelectedEval(isSelected ? null : entry.email)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center font-black">
+                            {entry.name?.[0]}{entry.lastName?.[0]}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-on-surface">{entry.name} {entry.lastName}</h4>
+                            <p className="text-xs text-on-surface-variant">{new Date(ev.fecha).toLocaleDateString()} — {Math.round(ev.score)}% acierto</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-6 text-center">
+                          <div>
+                            <p className="text-[10px] font-bold uppercase text-on-surface-variant">Tiempo</p>
+                            <p className="text-lg font-black text-primary">{ev.totalTime ? `${Math.round(ev.totalTime / 1000 / 60)}m` : '--'}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase text-on-surface-variant">Clicks</p>
+                            <p className="text-lg font-black text-secondary">{ev.totalClicks ?? '--'}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase text-on-surface-variant">Brecha</p>
+                            <p className={cn("text-lg font-black", ev.gap > 0 ? 'text-error' : 'text-secondary')}>{ev.gap != null ? `${Math.abs(Math.round(ev.gap * 100))}%` : '--'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {isSelected && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-6 m-4 rounded-2xl bg-surface-container-higher border border-outline-variant/20 space-y-6">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="p-4 rounded-xl bg-white border border-outline-variant/10 text-center">
+                              <Clock className="w-5 h-5 text-primary mx-auto mb-2" />
+                              <p className="text-[10px] font-bold uppercase text-on-surface-variant">Tiempo Total</p>
+                              <p className="text-2xl font-black">{ev.totalTime ? `${Math.round(ev.totalTime / 1000 / 60)}m ${Math.round((ev.totalTime / 1000) % 60)}s` : '--'}</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-white border border-outline-variant/10 text-center">
+                              <MousePointer2 className="w-5 h-5 text-secondary mx-auto mb-2" />
+                              <p className="text-[10px] font-bold uppercase text-on-surface-variant">Total Clicks</p>
+                              <p className="text-2xl font-black">{ev.totalClicks ?? '--'}</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-white border border-outline-variant/10 text-center">
+                              <Brain className="w-5 h-5 text-primary mx-auto mb-2" />
+                              <p className="text-[10px] font-bold uppercase text-on-surface-variant">Estrategia</p>
+                              <p className="text-lg font-black">{ev.strategy === 'STRUCTURAL_MAPPING' ? 'Mapeo Estructural' : 'Verificación Sistemática'}</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-white border border-outline-variant/10 text-center">
+                              <Target className="w-5 h-5 text-secondary mx-auto mb-2" />
+                              <p className="text-[10px] font-bold uppercase text-on-surface-variant">Categorías Bloqueadas</p>
+                              <p className="text-lg font-black">{Object.values(ev.blockedCategories || {}).flat().length || 0}</p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <p className="text-xs font-bold uppercase text-on-surface-variant mb-3 tracking-wider">Clicks por Pregunta</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                              {Object.entries(ev.clicksPerQuestion || {}).map(([qId, clicks]) => (
+                                <div key={qId} className="p-3 rounded-xl bg-white border border-outline-variant/10 text-center">
+                                  <p className="text-[10px] font-bold text-primary uppercase">{qId}</p>
+                                  <p className="text-xl font-black">{String(clicks)}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div>
+                            <p className="text-xs font-bold uppercase text-on-surface-variant mb-3 tracking-wider">Intentos por Pregunta</p>
+                            <div className="space-y-2">
+                              {ev.attempts?.map((att: any, ai: number) => (
+                                <div key={ai} className="flex items-center justify-between p-3 rounded-xl bg-white border border-outline-variant/10">
+                                  <div className="flex items-center gap-3">
+                                    <div className={cn("w-3 h-3 rounded-full", att.correct ? 'bg-secondary' : 'bg-error')} />
+                                    <span className="text-sm font-bold">{att.questionId}</span>
+                                    <span className="text-xs text-on-surface-variant">Percepción: {att.perception}/10</span>
+                                  </div>
+                                  <span className="text-xs font-bold text-on-surface-variant">{att.correct ? 'Acierto' : 'Fallo'}{att.variationAttempts > 0 ? ` (Var. ${att.variationAttempts})` : ''}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
