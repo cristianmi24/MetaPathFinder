@@ -531,6 +531,7 @@ export function Evaluations() {
             </div>
 
             <div className="bento-card p-10 bg-white border-2 border-primary/5 shadow-xl">
+              <p className="text-xl text-on-surface-variant mb-6 font-medium leading-relaxed">{currentDisplayQuestion.context}</p>
               <h3 className="text-2xl font-bold mb-10 text-on-surface leading-tight">{currentDisplayQuestion.text}</h3>
               <div className="grid grid-cols-1 gap-3">
                 {currentDisplayQuestion.options.map((opt, i) => (
