@@ -32,6 +32,10 @@
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #bd957a;
   --color-on-tertiary-container: #4a2e19;
+  --color-warning: #b87a00;
+  --color-on-warning: #ffffff;
+  --color-warning-container: #ffde9a;
+  --color-on-warning-container: #3a2600;
   --color-error: #ba1a1a;
   --color-on-error: #ffffff;
   --color-error-container: #ffdad6;

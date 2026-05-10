@@ -21,6 +21,13 @@ export function StudentProfile() {
   const phase2Complete = events.some(e => e.type === 'PHASE_COMPLETED' && e.metadata?.phase === 'Desafío_Cognitivo');
   const phase3Complete = events.some(e => e.type === 'PHASE_COMPLETED' && e.metadata?.phase === 'Desfase');
 
+  const latestEvaluation = [...events].reverse().find((event) => event.type === 'EVALUATION_COMPLETED');
+  const evaluationScore = latestEvaluation?.metadata?.score ?? null;
+  const evaluationCalibration = latestEvaluation?.metadata?.calibration ?? null;
+  const evaluationPerception = latestEvaluation?.metadata?.initial_perception ?? null;
+  const evaluationGap = latestEvaluation?.metadata?.calibration_gap ?? null;
+  const evaluationRetries = latestEvaluation?.metadata?.total_retries ?? null;
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -320,10 +327,55 @@ export function StudentProfile() {
           <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Carga Cognitiva</p>
           <p className="text-5xl font-black text-on-surface">{Math.round(cognitiveLoad * 100)}%</p>
         </div>
-        <div className="bento-card p-8 bg-primary text-on-primary flex flex-col justify-center items-center text-center shadow-xl shadow-primary/20">
-          <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Transferencia</p>
-          <p className="text-5xl font-black">{Math.round(useCognitiveStore.getState().transferReadiness * 100)}%</p>
+        <div className="bento-card p-8 bg-surface-container-low border border-outline-variant/30 flex flex-col justify-center items-center text-center">
+          <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-2">Transferencia</p>
+          <p className="text-5xl font-black text-on-surface">{Math.round(useCognitiveStore.getState().transferReadiness * 100)}%</p>
         </div>
+      </div>
+
+      <div className="bento-card p-10 bg-white border border-outline-variant/30 shadow-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-on-surface-variant mb-2">Última Evaluación</p>
+            <h3 className="text-2xl font-black">Resultados del último ciclo</h3>
+          </div>
+          {evaluationScore !== null ? (
+            <div className="text-right">
+              <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant">Puntaje técnico</p>
+              <p className="text-5xl font-black text-secondary">{Math.round(evaluationScore)}%</p>
+            </div>
+          ) : (
+            <div className="text-right text-on-surface-variant">
+              <p className="text-sm font-bold uppercase">Aún no hay evaluación</p>
+              <p className="text-sm mt-1">Completa el proceso para ver tu análisis aquí.</p>
+            </div>
+          )}
+        </div>
+
+        {evaluationScore !== null ? (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="p-5 rounded-3xl bg-surface-container-low border border-outline-variant/20 text-center">
+              <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">Calibración</p>
+              <p className="text-3xl font-black text-primary">{Math.round((evaluationCalibration ?? 0) * 100)}%</p>
+            </div>
+            <div className="p-5 rounded-3xl bg-surface-container-low border border-outline-variant/20 text-center">
+              <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">Percepción</p>
+              <p className="text-3xl font-black text-secondary">{Math.round((evaluationPerception ?? 0) * 100)}%</p>
+            </div>
+            <div className="p-5 rounded-3xl bg-surface-container-low border border-outline-variant/20 text-center">
+              <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">Brecha</p>
+              <p className={cn('text-3xl font-black', evaluationGap && evaluationGap > 0 ? 'text-error' : 'text-secondary')}>
+                {evaluationGap != null ? `${Math.abs(Math.round(evaluationGap * 100))}%` : '--'}
+              </p>
+            </div>
+            <div className="p-5 rounded-3xl bg-surface-container-low border border-outline-variant/20 text-center">
+              <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">Intentos</p>
+              <p className="text-3xl font-black text-on-surface">{evaluationRetries ?? 0}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm leading-7 text-on-surface-variant">La evaluación mostrará tu puntaje, calibración y brecha entre percepción y realidad tan pronto completes el proceso de evaluación.</div>
+        )}
       </div>
     </div>
   );

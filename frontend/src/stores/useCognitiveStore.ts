@@ -38,8 +38,26 @@ interface CognitiveEvent {
     processing_latency?: string;
     calibration_error?: number;
     is_reflexive_brake?: boolean;
+    clicks?: number;
+    pageNavigation?: boolean;
+    questionNumber?: number;
+    timeSpent?: number;
+    correct?: boolean;
     [key: string]: any;
   };
+}
+
+export interface StudentResult {
+  id: string;
+  name: string;
+  email: string;
+  testDate: number;
+  status: 'completed' | 'in-progress' | 'pending';
+  totalTime: number;
+  totalClicks: number;
+  pageNavigations: number;
+  score: number;
+  events: CognitiveEvent[];
 }
 
 interface CognitiveStore {
@@ -54,6 +72,10 @@ interface CognitiveStore {
   lastEventTime: number;
   user: User | null;
   
+  // Multi-student tracking
+  students: StudentResult[];
+  currentTestSession: { studentId: string; startTime: number; } | null;
+  
   // Actions
   setUser: (user: User | null) => void;
   setRole: (role: UserRole) => void;
@@ -62,6 +84,14 @@ interface CognitiveStore {
   setCognitiveState: (state: CognitiveState) => void;
   flushEvents: () => Promise<void>;
   reset: () => void;
+  
+  // Student management
+  registerStudent: (student: Omit<StudentResult, 'id' | 'events'>) => void;
+  startTestSession: (studentId: string) => void;
+  endTestSession: (studentId: string, score: number) => void;
+  addStudentEvent: (studentId: string, event: CognitiveEvent) => void;
+  getStudentResults: () => StudentResult[];
+  getStudentById: (studentId: string) => StudentResult | undefined;
 }
 
 export const useCognitiveStore = create<CognitiveStore>()(
@@ -77,6 +107,8 @@ export const useCognitiveStore = create<CognitiveStore>()(
       transferReadiness: 0.5,
       lastEventTime: Date.now(),
       user: null,
+      students: [],
+      currentTestSession: null,
 
       setUser: (user) => set({ user }),
       setRole: (role) => set({ role }),
@@ -110,6 +142,11 @@ export const useCognitiveStore = create<CognitiveStore>()(
           metadata: enhancedMetadata
         };
 
+        // Track clicks if applicable
+        if (type === 'UI_CLICK') {
+          enhancedMetadata.clicks = (enhancedMetadata.clicks || 0) + 1;
+        }
+
         // If it's a successful evaluation, update latent strategies
         if (type === 'EVALUATION_COMPLETED' && metadata?.score > 80) {
           const newStrategyId = metadata.theme === 'Meta-Cognición' ? 'SYSTEMATIC_VERIFICATION' : 'STRUCTURAL_MAPPING';
@@ -125,7 +162,13 @@ export const useCognitiveStore = create<CognitiveStore>()(
         set((state) => ({ 
           events: [...state.events.slice(-99), newEvent],
           lastEventTime: now
-        })); 
+        }));
+
+        // Also add to current test session if active
+        const session = get().currentTestSession;
+        if (session) {
+          get().addStudentEvent(session.studentId, newEvent);
+        }
       },
 
       updateCognitiveMetrics: (load, calibration, score) => {
@@ -167,6 +210,78 @@ export const useCognitiveStore = create<CognitiveStore>()(
         }
       },
 
+      registerStudent: (student) => {
+        const newStudent: StudentResult = {
+          ...student,
+          id: uuidv4(),
+          events: [],
+          status: 'pending'
+        };
+        set((state) => ({
+          students: [...state.students, newStudent]
+        }));
+      },
+
+      startTestSession: (studentId: string) => {
+        set({
+          currentTestSession: {
+            studentId,
+            startTime: Date.now()
+          }
+        });
+      },
+
+      endTestSession: (studentId: string, score: number) => {
+        set((state) => {
+          const updatedStudents = state.students.map((s) => {
+            if (s.id === studentId) {
+              const startTime = state.currentTestSession?.startTime || Date.now();
+              const totalTime = Math.round((Date.now() - startTime) / 1000);
+              const pageNavs = s.events.filter(e => e.metadata?.pageNavigation).length;
+              const clicks = s.events.reduce((acc, e) => acc + (e.metadata?.clicks || 0), 0);
+
+              return {
+                ...s,
+                status: 'completed' as const,
+                totalTime,
+                totalClicks: clicks,
+                pageNavigations: pageNavs,
+                score,
+                testDate: Date.now()
+              };
+            }
+            return s;
+          });
+
+          return {
+            students: updatedStudents,
+            currentTestSession: null
+          };
+        });
+      },
+
+      addStudentEvent: (studentId: string, event: CognitiveEvent) => {
+        set((state) => ({
+          students: state.students.map((s) => {
+            if (s.id === studentId) {
+              return {
+                ...s,
+                events: [...s.events.slice(-99), event]
+              };
+            }
+            return s;
+          })
+        }));
+      },
+
+      getStudentResults: () => {
+        return get().students;
+      },
+
+      getStudentById: (studentId: string) => {
+        return get().students.find(s => s.id === studentId);
+      },
+
       reset: () => {
         set({
           role: null,
@@ -177,7 +292,9 @@ export const useCognitiveStore = create<CognitiveStore>()(
           events: [],
           latentStrategies: [],
           transferReadiness: 0.5,
-          lastEventTime: Date.now()
+          lastEventTime: Date.now(),
+          students: [],
+          currentTestSession: null
         });
       }
     }),

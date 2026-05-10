@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, GraduationCap, BarChart3, TestTube2, Settings, FileText, Compass, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, GraduationCap, BarChart3, TestTube2, Settings, FileText, Compass, LogOut, User, Users } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
@@ -10,6 +10,7 @@ export function Sidebar() {
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboards', path: '/', roles: ['admin'] },
+    { icon: Users, label: 'Usuarios Registrados', path: '/registered-users', roles: ['admin'] },
     { icon: User, label: 'Mi Perfil', path: '/', roles: ['student'] },
     { icon: GraduationCap, label: 'Evaluaciones', path: '/evaluations', roles: ['student'] },
     { icon: BarChart3, label: 'Analíticas', path: '/analytics', roles: ['student'] },

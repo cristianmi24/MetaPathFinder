@@ -10,6 +10,7 @@ import { SettingsPage } from './pages/Settings';
 import { Evaluations } from './pages/Evaluations';
 import { PreTest } from './pages/PreTest';
 import { CognitiveChallenge } from './pages/CognitiveChallenge';
+import { RegisteredUsers } from './pages/RegisteredUsers';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCognitiveTracking } from './hooks/useCognitiveTracking';
 import { CognitiveBrain } from './components/CognitiveBrain';
@@ -84,6 +85,7 @@ export default function App() {
       <Layout>
         <Routes>
           <Route path="/" element={role === 'student' ? <StudentProfile /> : <Dashboard />} />
+          <Route path="/registered-users" element={<RegisteredUsers />} />
           <Route path="/experiments" element={<Experiments />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/evaluations" element={<Evaluations />} />
