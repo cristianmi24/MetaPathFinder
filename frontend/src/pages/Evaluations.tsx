@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Brain, CheckCircle2, ChevronRight, Target, AlertCircle, RefreshCcw, Send, BarChart3, Code2, Lock, BookOpen, Route } from 'lucide-react';
+import { Brain, CheckCircle2, ChevronRight, Target, AlertCircle, RefreshCcw, Send, BarChart3, Code2, Lock, BookOpen, Route, Sparkles, Zap, ShieldCheck, PlayCircle } from 'lucide-react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -169,7 +169,7 @@ function getAvailableAlternative(
 }
 
 export function Evaluations() {
-  const [phase, setPhase] = useState<'intro' | 'perception' | 'challenge' | 'humility_tip' | 'blocked' | 'freno' | 'socratic' | 'results'>('intro');
+  const [phase, setPhase] = useState<'tutorial' | 'perception' | 'challenge' | 'humility_tip' | 'blocked' | 'freno' | 'socratic' | 'results'>('tutorial');
   const [currentLevelIdx, setCurrentLevelIdx] = useState(0);
   const [shuffledOrder, setShuffledOrder] = useState<number[]>(() => shuffleArray(phase1Levels[0].questions.map((_, i) => i)));
   const [currentQuestionPos, setCurrentQuestionPos] = useState(0);
@@ -209,7 +209,7 @@ export function Evaluations() {
     }
   }, [phase, currentLevelIdx, actualQuestionIdx, variationIdx]);
 
-  const handleStart = () => {
+  const startEvaluationAfterTutorial = () => {
     evaluationStartTime.current = Date.now();
     totalClicks.current = 0;
     clicksPerQuestion.current = {};
@@ -468,23 +468,68 @@ export function Evaluations() {
   return (
     <div className="max-w-4xl mx-auto py-12 px-6">
       <AnimatePresence mode="wait">
-        {phase === 'intro' && (
-          <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bento-card p-12 text-center">
-            <div className="w-20 h-20 bg-primary/10 text-primary rounded-3xl flex items-center justify-center mx-auto mb-8">
-              <Brain className="w-10 h-10" />
+        {phase === 'tutorial' && (
+          <motion.div
+            key="tutorial"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="space-y-8"
+          >
+            <div className="bento-card p-12 bg-white border-2 border-primary/10 shadow-2xl rounded-[2.5rem]">
+              <div className="flex flex-col md:flex-row gap-12 items-center">
+                <div className="flex-1 space-y-6">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-secondary/10 text-secondary rounded-full text-[10px] font-black uppercase tracking-widest">
+                    <Sparkles className="w-4 h-4" /> Guía de Supervivencia Cognitiva
+                  </div>
+                  <h3 className="text-4xl font-black text-on-surface tracking-tight leading-tight">
+                    ¿Cómo funciona esta <span className="text-primary italic">Evaluación</span>?
+                  </h3>
+                  <p className="text-on-surface-variant font-medium text-lg leading-relaxed">
+                    No es un examen tradicional. Es un entorno de <strong>calibración intensa</strong> diseñado para mapear tus fortalezas y puntos ciegos.
+                  </p>
+
+                  <div className="space-y-4">
+                    <TutorialStep
+                      number="1"
+                      title="Fase A: Autopercepción"
+                      desc="Te presentamos el tema y nos dices qué tan seguro te sientes (1-10) antes de ver el reto."
+                      icon={Target}
+                    />
+                    <TutorialStep
+                      number="2"
+                      title="Fase B: Ejecución Técnica"
+                      desc="Resuelves el desafío técnico en un contexto real (Médico, Gaming, E-commerce, etc)."
+                      icon={Zap}
+                    />
+                    <TutorialStep
+                      number="3"
+                      title="Protocolo de Andamiaje"
+                      desc="Si fallas, te damos una segunda oportunidad con un contexto diferente. Si fallas de nuevo, bloqueamos el nodo para que no te frustres."
+                      icon={ShieldCheck}
+                    />
+                  </div>
+                </div>
+
+                <div className="w-full md:w-[350px] aspect-[9/16] bg-surface-container-highest rounded-[3rem] border-8 border-on-surface shadow-2xl relative overflow-hidden">
+                  <video
+                    src="/Instructivoevalaucion.webm"
+                    controls
+                    preload="metadata"
+                    className="w-full h-full object-cover absolute inset-0"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-12 flex justify-center pt-8 border-t border-outline-variant/10">
+                <button
+                  onClick={startEvaluationAfterTutorial}
+                  className="px-16 py-6 bg-primary text-on-primary rounded-[2rem] font-black text-2xl shadow-2xl shadow-primary/40 hover:scale-105 transition-all active:scale-95 flex items-center gap-4"
+                >
+                  Entendido, ¡Empecemos! <ChevronRight className="w-8 h-8" />
+                </button>
+              </div>
             </div>
-            <h2 className="text-4xl font-bold mb-4 tracking-tight">Evaluación de 3 Fases</h2>
-            <p className="text-lg text-on-surface-variant mb-10 max-w-xl mx-auto font-medium">
-              Este proceso medirá tu autopercepción inicial, validará tus habilidades técnicas y analizará el desfase metacognitivo resultante.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-              <InfoCard icon={Target} title="Fase 1" desc="Juicio de Percepción" />
-              <InfoCard icon={Code2} title="Fase 2" desc="Desafío Cognitivo" />
-              <InfoCard icon={BarChart3} title="Fase 3" desc="Análisis de Desfase" />
-            </div>
-            <button onClick={handleStart} className="px-12 py-5 bg-primary text-on-primary rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-transform flex items-center gap-3 mx-auto">
-              Comenzar Proceso <ChevronRight className="w-6 h-6" />
-            </button>
           </motion.div>
         )}
 
@@ -738,12 +783,18 @@ export function Evaluations() {
   );
 }
 
-function InfoCard({ icon: Icon, title, desc }: any) {
+function TutorialStep({ number, title, desc, icon: Icon }: { number: string; title: string; desc: string; icon: any }) {
   return (
-    <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10 text-left">
-      <Icon className="w-6 h-6 text-primary mb-3" />
-      <h4 className="font-bold text-sm mb-1">{title}</h4>
-      <p className="text-[11px] text-on-surface-variant font-medium leading-tight">{desc}</p>
+    <div className="flex gap-4 p-4 hover:bg-surface-container transition-colors rounded-2xl border border-transparent hover:border-outline-variant/10">
+      <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-sm shrink-0">
+        {number}
+      </div>
+      <div>
+        <h4 className="font-bold text-on-surface flex items-center gap-2">
+          {title} <Icon className="w-4 h-4 text-primary/60" />
+        </h4>
+        <p className="text-xs text-on-surface-variant font-medium leading-relaxed">{desc}</p>
+      </div>
     </div>
   );
 }
