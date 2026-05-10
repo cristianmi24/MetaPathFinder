@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, GraduationCap, BarChart3, TestTube2, Settings, FileText, Compass, LogOut, User, Users } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
@@ -7,11 +7,12 @@ import { useCognitiveStore } from '../stores/useCognitiveStore';
 export function Sidebar() {
   const role = useCognitiveStore((s) => s.role);
   const reset = useCognitiveStore((s) => s.reset);
+  const navigate = useNavigate();
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboards', path: '/', roles: ['admin'] },
+    { icon: LayoutDashboard, label: 'Dashboards', path: '/admin', roles: ['admin'] },
     { icon: Users, label: 'Usuarios Registrados', path: '/registered-users', roles: ['admin'] },
-    { icon: User, label: 'Mi Perfil', path: '/', roles: ['student'] },
+    { icon: User, label: 'Mi Perfil', path: '/profile', roles: ['student'] },
     { icon: GraduationCap, label: 'Evaluaciones', path: '/evaluations', roles: ['student'] },
     { icon: BarChart3, label: 'Analíticas', path: '/analytics', roles: ['student'] },
     { icon: TestTube2, label: 'Experimentos', path: '/experiments', roles: ['admin'] },
@@ -75,6 +76,13 @@ export function Sidebar() {
             <span className="text-sm">{item.label}</span>
           </NavLink>
         ))}
+        <button
+          onClick={() => { reset(); navigate('/'); }}
+          className="flex items-center gap-3 px-4 py-3 rounded-full transition-all text-on-surface-variant hover:bg-surface-container-highest w-full text-left"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="text-sm">Cerrar Sesión</span>
+        </button>
       </div>
     </nav>
   );

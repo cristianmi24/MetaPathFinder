@@ -10,7 +10,7 @@ export function Home() {
 
   const handleSelectRole = (role: UserRole) => {
     setRole(role);
-    navigate('/');
+    navigate(role === 'student' ? '/student' : '/admin');
   };
 
   const roles = [

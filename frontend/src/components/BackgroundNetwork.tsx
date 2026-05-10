@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 const PALETTE = [
   "rgba(103,75,181,.95)", // Purple

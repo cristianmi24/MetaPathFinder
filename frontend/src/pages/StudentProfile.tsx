@@ -35,6 +35,7 @@ export function StudentProfile() {
     setTimeout(() => {
       setUser({ name: 'Mateo', lastName: 'Andrade', email });
       setIsLoading(false);
+      navigate('/student');
     }, 1000);
   };
 
@@ -45,6 +46,7 @@ export function StudentProfile() {
     setTimeout(() => {
       setUser({ name, lastName, email });
       setIsLoading(false);
+      navigate('/student');
     }, 1500);
   };
 
@@ -269,7 +271,7 @@ export function StudentProfile() {
   return (
     <div className="space-y-10 max-w-5xl mx-auto py-10">
       <div className="flex flex-col md:flex-row gap-8 items-center md:items-start bento-card p-10 bg-white shadow-xl border border-primary/5">
-        <div className="w-40 h-40 rounded-[2.5rem] overflow-hidden border-4 border-surface shadow-2xl shrink-0 rotate-3 hover:rotate-0 transition-transform duration-500 bg-primary/10 flex items-center justify-center">
+        <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-surface shadow-2xl shrink-0 bg-primary/10 flex items-center justify-center">
           <img 
             src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name + ' ' + user.lastName)}&background=random&color=fff&bold=true&size=200`} 
             alt={`${user.name[0]}${user.lastName[0]}`} 
@@ -278,16 +280,7 @@ export function StudentProfile() {
         </div>
         <div className="text-center md:text-left flex-1 relative">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-5xl font-black tracking-tight text-on-surface">{user.name} {user.lastName}</h2>
-              <p className="text-xl text-on-surface-variant mt-2 font-semibold">
-                Estado: <span className="text-primary italic">{stateTranslations[state]}</span>
-              </p>
-            </div>
-            <div className="flex flex-wrap justify-center md:justify-end gap-3">
-              <Badge icon={Brain} text="Aprendiz Visual" color="bg-primary/10 text-primary border border-primary/20" />
-              <Badge icon={Award} text="Meta-Master" color="bg-secondary/10 text-secondary border border-secondary/20" />
-            </div>
+            <h2 className="text-5xl font-black tracking-tight text-on-surface">{user.name} {user.lastName}</h2>
           </div>
           
           <div className="mt-10 bg-surface-container-low/50 p-6 rounded-[2rem] border border-outline-variant/20">
@@ -333,50 +326,6 @@ export function StudentProfile() {
         </div>
       </div>
 
-      <div className="bento-card p-10 bg-white border border-outline-variant/30 shadow-xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-on-surface-variant mb-2">Última Evaluación</p>
-            <h3 className="text-2xl font-black">Resultados del último ciclo</h3>
-          </div>
-          {evaluationScore !== null ? (
-            <div className="text-right">
-              <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant">Puntaje técnico</p>
-              <p className="text-5xl font-black text-secondary">{Math.round(evaluationScore)}%</p>
-            </div>
-          ) : (
-            <div className="text-right text-on-surface-variant">
-              <p className="text-sm font-bold uppercase">Aún no hay evaluación</p>
-              <p className="text-sm mt-1">Completa el proceso para ver tu análisis aquí.</p>
-            </div>
-          )}
-        </div>
-
-        {evaluationScore !== null ? (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="p-5 rounded-3xl bg-surface-container-low border border-outline-variant/20 text-center">
-              <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">Calibración</p>
-              <p className="text-3xl font-black text-primary">{Math.round((evaluationCalibration ?? 0) * 100)}%</p>
-            </div>
-            <div className="p-5 rounded-3xl bg-surface-container-low border border-outline-variant/20 text-center">
-              <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">Percepción</p>
-              <p className="text-3xl font-black text-secondary">{Math.round((evaluationPerception ?? 0) * 100)}%</p>
-            </div>
-            <div className="p-5 rounded-3xl bg-surface-container-low border border-outline-variant/20 text-center">
-              <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">Brecha</p>
-              <p className={cn('text-3xl font-black', evaluationGap && evaluationGap > 0 ? 'text-error' : 'text-secondary')}>
-                {evaluationGap != null ? `${Math.abs(Math.round(evaluationGap * 100))}%` : '--'}
-              </p>
-            </div>
-            <div className="p-5 rounded-3xl bg-surface-container-low border border-outline-variant/20 text-center">
-              <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-3">Intentos</p>
-              <p className="text-3xl font-black text-on-surface">{evaluationRetries ?? 0}</p>
-            </div>
-          </div>
-        ) : (
-          <div className="text-sm leading-7 text-on-surface-variant">La evaluación mostrará tu puntaje, calibración y brecha entre percepción y realidad tan pronto completes el proceso de evaluación.</div>
-        )}
-      </div>
     </div>
   );
 }

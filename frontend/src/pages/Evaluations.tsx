@@ -660,8 +660,9 @@ export function Evaluations() {
             {!alternativeRoute && (
               <div className="text-center">
                 <p className="text-on-surface-variant mb-4">No hay más temas disponibles en este nivel.</p>
-                <button onClick={() => navigate('/')} className="px-10 py-4 bg-error text-on-error rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-error/30">
-                  Ir al Panel Principal
+                <button onClick={() => navigate('/student')} className="px-10 py-4 bg-error text-on-error rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-error/30">
+
+  Ir al Panel Principal
                 </button>
               </div>
             )}
@@ -711,7 +712,7 @@ export function Evaluations() {
               </>
             )}
 
-            <button onClick={() => navigate('/')} className="px-12 py-5 bg-error text-on-error rounded-2xl font-bold shadow-xl shadow-error/30 hover:scale-105 transition-all">
+            <button onClick={() => navigate('/student')} className="px-12 py-5 bg-error text-on-error rounded-2xl font-bold shadow-xl shadow-error/30 hover:scale-105 transition-all">
               Ir al Panel Principal
             </button>
           </motion.div>
@@ -774,7 +775,7 @@ export function Evaluations() {
                   );
                 })}
               </div>
-              <button onClick={() => navigate('/')} className="px-12 py-5 bg-secondary text-on-secondary rounded-2xl font-bold shadow-2xl shadow-secondary/30 hover:scale-105 transition-all">Guardar Rastro y Finalizar</button>
+              <button onClick={() => navigate('/student')} className="px-12 py-5 bg-secondary text-on-secondary rounded-2xl font-bold shadow-2xl shadow-secondary/30 hover:scale-105 transition-all">Guardar Rastro y Finalizar</button>
             </div>
           </motion.div>
         )}

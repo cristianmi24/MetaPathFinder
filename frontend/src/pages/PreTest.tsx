@@ -204,7 +204,7 @@ export function PreTest() {
             </div>
 
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/student')}
               className="px-10 py-5 bg-secondary text-on-secondary rounded-2xl font-bold shadow-xl shadow-secondary/30 hover:scale-105 transition-all flex items-center gap-3 mx-auto"
             >
               Regresar al Perfil <ArrowLeft className="w-5 h-5 ml-2 rotate-180" />

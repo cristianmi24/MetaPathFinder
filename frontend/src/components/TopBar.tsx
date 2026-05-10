@@ -48,7 +48,6 @@ export function TopBar() {
   const handleLogout = () => {
     reset();
     navigate('/');
-    setIsMobileMenuOpen(false);
   };
 
   const handleNavigate = (path: string) => {
@@ -63,10 +62,7 @@ export function TopBar() {
           <button className="lg:hidden p-2 text-primary" onClick={() => setIsMobileMenuOpen(true)}>
             <Menu className="w-6 h-6" />
           </button>
-          <div className="lg:hidden flex items-center gap-2">
-            <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
-            <span className="font-bold text-primary tracking-tighter text-sm">Meta-Pathfinder</span>
-          </div>
+          <img src="/logoedutlan.png" alt="EduTlan" className="h-9 w-auto object-contain" />
           <div className="hidden md:flex items-center bg-surface-container-high rounded-full px-4 py-2 w-64 group focus-within:ring-2 focus-within:ring-primary transition-all">
             <Search className="w-4 h-4 text-on-surface-variant group-focus-within:text-primary" />
             <input 
