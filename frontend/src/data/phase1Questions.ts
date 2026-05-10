@@ -1,5 +1,7 @@
 import { levelColors, type CustomQuestion } from '../types/evaluation';
 
+export type Level = 'basic' | 'intermediate' | 'expert';
+
 export interface Question {
   id: string;
   category: string;
@@ -8,6 +10,15 @@ export interface Question {
   text: string;
   options: string[];
   correctAnswer: string;
+}
+
+export interface LevelData {
+  level: Level;
+  name: string;
+  description: string;
+  color: string;
+  requiredCalibration: number;
+  questions: Question[];
 }
 
 interface RawQuestion {
@@ -21,8 +32,11 @@ interface RawQuestion {
 }
 
 interface RawLevel {
+  level: Level;
   name: string;
+  description: string;
   color: string;
+  requiredCalibration: number;
   questions: RawQuestion[];
 }
 
@@ -30,10 +44,13 @@ function toQuestion(raw: RawQuestion): Question {
   return raw as Question;
 }
 
-function toLevel(raw: RawLevel): { name: string; color: string; questions: Question[] } {
+function toLevel(raw: RawLevel): LevelData {
   return {
+    level: raw.level,
     name: raw.name,
+    description: raw.description,
     color: raw.color,
+    requiredCalibration: raw.requiredCalibration,
     questions: raw.questions.map(toQuestion),
   };
 }
@@ -483,18 +500,27 @@ const rawE1V2: RawQuestion[] = [
 
 const rawLevels: RawLevel[] = [
   {
+    level: 'basic',
     name: 'Básico',
+    description: 'Conceptos fundamentales de HTML, CSS, JavaScript, Git y Lógica',
     color: levelColors.basico,
+    requiredCalibration: 0.2,
     questions: rawB1,
   },
   {
+    level: 'intermediate',
     name: 'Intermedio',
+    description: 'Estructuras y propiedades intermedias de cada tecnología',
     color: levelColors.intermedio,
+    requiredCalibration: 0.4,
     questions: rawM1,
   },
   {
+    level: 'expert',
     name: 'Experto',
+    description: 'Conceptos avanzados y buenas prácticas profesionales',
     color: levelColors.experto,
+    requiredCalibration: 0.6,
     questions: rawE1,
   },
 ];
