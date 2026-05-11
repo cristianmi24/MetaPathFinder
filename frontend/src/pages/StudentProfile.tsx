@@ -1,12 +1,14 @@
-import { Brain, Award, CheckCircle2, ArrowRight, Mail, Lock, User as UserIcon, LogIn, UserPlus, Key } from 'lucide-react';
+import { Brain, Award, CheckCircle2, ArrowRight, Mail, Lock, User as UserIcon, LogIn, UserPlus, Key, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCognitiveStore, stateTranslations, type User } from '../stores/useCognitiveStore';
 import { cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useTheme } from '../ThemeContext';
 
 export function StudentProfile() {
   const { cognitiveLoad, calibration, state, events, user, setUser } = useCognitiveStore();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'recovery'>('login');
   const [isLoading, setIsLoading] = useState(false);
@@ -63,8 +65,30 @@ export function StudentProfile() {
 
   if (!user) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 bento-card p-10 bg-white/90 backdrop-blur-2xl border border-white/20 shadow-2xl relative overflow-hidden">
+      <div className={cn(
+        "h-screen w-full flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300",
+        theme === 'light' ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-white'
+      )}>
+        <div className={cn(
+          "w-full max-w-md space-y-8 bento-card p-10 backdrop-blur-2xl border shadow-2xl relative overflow-hidden",
+          theme === 'light'
+            ? 'bg-white/90 border-white/20 text-slate-900'
+            : 'bg-slate-950/95 border-slate-700/70 text-white'
+        )}>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            title={`Cambiar a tema ${theme === 'light' ? 'Oscuro' : 'Claro'}`}
+            className={cn(
+              'absolute top-5 right-5 z-20 p-3 rounded-full border shadow-lg transition-all hover:scale-110',
+              theme === 'light'
+                ? 'bg-white/20 border-white/30 text-slate-900 hover:bg-white/30'
+                : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+            )}
+          >
+            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+          </button>
+
           {/* Subtle glow effect */}
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-[80px]" />
           <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-secondary/5 rounded-full blur-[80px]" />
@@ -73,10 +97,16 @@ export function StudentProfile() {
             <div className="mx-auto h-24 w-24 mb-6">
               <img src="/logo.png" alt="Meta-Pathfinder Logo" className="w-full h-full object-contain" />
             </div>
-            <h2 className="text-3xl font-black tracking-tight text-slate-900 uppercase">
+            <h2 className={cn(
+              'text-3xl font-black tracking-tight uppercase',
+              theme === 'light' ? 'text-slate-900' : 'text-white'
+            )}>
               {authMode === 'login' ? 'Iniciar Sesión' : authMode === 'register' ? 'Crear Cuenta' : 'Recuperar'}
             </h2>
-            <p className="mt-2 text-sm text-slate-500 font-medium">
+            <p className={cn(
+              'mt-2 text-sm font-medium',
+              theme === 'light' ? 'text-slate-500' : 'text-slate-300'
+            )}>
               {authMode === 'login' ? 'Tu rastro cognitivo te espera' : authMode === 'register' ? 'Comienza tu viaje meta-cognitivo' : 'Te ayudamos a volver a tu flujo'}
             </p>
           </div>

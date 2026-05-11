@@ -1,8 +1,10 @@
-import { Search, Bell, Menu, LogOut, User, Settings, LayoutDashboard, GraduationCap, BarChart3, TestTube2 } from 'lucide-react';
+import { Search, Bell, Menu, LogOut, User, Settings, LayoutDashboard, GraduationCap, BarChart3, TestTube2, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useRef, useEffect } from 'react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../ThemeContext';
+import { cn } from '../lib/utils';
 
 export function TopBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -11,6 +13,7 @@ export function TopBar() {
   const navigate = useNavigate();
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const { theme, toggleTheme } = useTheme();
 
   const userName = user ? `${user.name} ${user.lastName}` : (role === 'student' ? 'Mateo Reatiga' : 'Dra. Silva');
   const userInitials = user ? `${user.name[0]}${user.lastName[0]}`.toUpperCase() : (role === 'student' ? 'MR' : 'DS');
@@ -74,6 +77,19 @@ export function TopBar() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={toggleTheme}
+            title={`Cambiar a tema ${theme === 'light' ? 'Oscuro' : 'Claro'}`}
+            className={cn(
+              'p-2 rounded-full border shadow-sm transition-colors hidden sm:inline-flex',
+              theme === 'light'
+                ? 'bg-white/20 border-white/30 text-slate-900 hover:bg-white/30'
+                : 'bg-slate-800/80 border-white/20 text-white hover:bg-white/20'
+            )}
+          >
+            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+          </button>
+
           <button className="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full relative transition-colors hidden sm:inline-flex">
             <Bell className="w-5 h-5" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>

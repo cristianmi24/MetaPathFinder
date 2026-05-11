@@ -89,10 +89,10 @@ function StudentLayout({ children }: { children: React.ReactNode }) {
 
 function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#0F172A]">
+    <div className="min-h-screen h-screen w-screen overflow-hidden bg-[#0F172A]">
       <BackgroundNetwork />
       <CognitiveBrain />
-      <main className="p-6 lg:p-12 min-h-screen flex items-center justify-center">
+      <main className="absolute inset-0 p-0 m-0 flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
             initial={{ opacity: 0, y: 10 }}

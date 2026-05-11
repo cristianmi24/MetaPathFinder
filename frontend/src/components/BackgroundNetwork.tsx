@@ -1,11 +1,20 @@
 import { useEffect, useRef, useCallback } from "react";
+import { useTheme } from "../ThemeContext";
 
-const PALETTE = [
+const PALETTE_LIGHT = [
   "rgba(103,75,181,.95)", // Purple
   "rgba(0,107,94,.95)",   // Teal
   "rgba(180,160,255,.8)",  // Light Purple
   "rgba(0,180,160,.75)",  // Light Teal
   "rgba(248,250,252,.6)",  // Off White
+];
+
+const PALETTE_DARK = [
+  "rgba(206,189,255,.95)", // Light Purple
+  "rgba(122,215,198,.95)", // Light Teal
+  "rgba(232,221,255,.8)",  // Very Light Purple
+  "rgba(150,243,225,.75)", // Very Light Teal
+  "rgba(226,243,255,.6)",  // Very Light Blue
 ];
 
 const DEFAULT_CONFIG = { numNodes: 500, addEdge: 9, speed: 0.9, force: 4.2, type: 0.5 };
@@ -20,7 +29,7 @@ class Node {
   size: number;
   color: string;
 
-  constructor(w: number, h: number, cfg: any) {
+  constructor(w: number, h: number, cfg: any, palette: string[]) {
     this.w = w;
     this.h = h;
     this.x = Math.random() * w;
@@ -29,7 +38,7 @@ class Node {
     this.vx = (Math.random() - .5) * spd;
     this.vy = (Math.random() - .5) * spd;
     this.size = Math.random() * 2 + 1;
-    this.color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+    this.color = palette[Math.floor(Math.random() * palette.length)];
   }
 
   update(cfg: any) {
@@ -58,11 +67,13 @@ export function BackgroundNetwork() {
   const nodesRef = useRef<Node[]>([]);
   const rafRef = useRef<number>(0);
   const configRef = useRef(DEFAULT_CONFIG);
+  const { theme } = useTheme();
 
   const initNodes = useCallback((w: number, h: number, cfg: any) => {
+    const palette = theme === 'light' ? PALETTE_LIGHT : PALETTE_DARK;
     const count = Math.min(1000, Math.max(1, cfg.numNodes));
-    nodesRef.current = Array.from({ length: count }, () => new Node(w, h, cfg));
-  }, []);
+    nodesRef.current = Array.from({ length: count }, () => new Node(w, h, cfg, palette));
+  }, [theme]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -127,7 +138,9 @@ export function BackgroundNetwork() {
       ref={canvasRef}
       className="fixed inset-0 w-full h-full -z-10 pointer-events-none"
       style={{
-        background: "radial-gradient(ellipse at 25% 35%, #1a0f2e 0%, #071510 50%, #0F172A 100%)",
+        background: theme === 'light' 
+          ? "radial-gradient(ellipse at 25% 35%, #e8f6ff 0%, #d9ebf7 50%, #f4faff 100%)"
+          : "radial-gradient(ellipse at 25% 35%, #1a0f2e 0%, #071510 50%, #0F172A 100%)",
       }}
     />
   );
