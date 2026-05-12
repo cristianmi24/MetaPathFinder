@@ -8,8 +8,10 @@ import { Experiments } from './pages/Experiments';
 import { Analytics } from './pages/Analytics';
 import { SettingsPage } from './pages/Settings';
 import { Evaluations } from './pages/Evaluations';
+import { EvaluationStart } from './pages/EvaluationStart';
 import { PreTest } from './pages/PreTest';
 import { CognitiveChallenge } from './pages/CognitiveChallenge';
+import { ChallengeCalibration } from './pages/ChallengeCalibration';
 import { RegisteredUsers } from './pages/RegisteredUsers';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCognitiveTracking } from './hooks/useCognitiveTracking';
@@ -21,12 +23,13 @@ import { BackgroundNetwork } from './components/BackgroundNetwork';
 import { StudentDashboard } from './pages/StudentDashboard';
 
 function AdminLayout({ children }: { children: React.ReactNode }) {
+  const isCollapsed = useCognitiveStore((s) => s.isSidebarCollapsed);
   return (
     <div className="min-h-screen bg-background">
       <CognitiveBrain />
       <Sidebar />
       <TopBar />
-      <main className="lg:ml-64 pt-20 lg:pt-24 p-6 lg:p-12 min-h-screen">
+      <main className={`pt-20 lg:pt-24 p-6 lg:p-12 min-h-screen transition-all duration-300 ${isCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <AnimatePresence mode="wait">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -44,6 +47,7 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
 
 function StudentLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const isCollapsed = useCognitiveStore((s) => s.isSidebarCollapsed);
   const isEval = location.pathname === '/evaluations';
 
   if (isEval) {
@@ -71,7 +75,7 @@ function StudentLayout({ children }: { children: React.ReactNode }) {
       <CognitiveBrain />
       <Sidebar />
       <TopBar />
-      <main className="lg:ml-64 pt-20 lg:pt-24 p-6 lg:p-12 min-h-screen">
+      <main className={`pt-20 lg:pt-24 p-6 lg:p-12 min-h-screen transition-all duration-300 ${isCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <AnimatePresence mode="wait">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -147,8 +151,10 @@ export default function App() {
           <Route path="/experiments" element={<Experiments />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/evaluations" element={<Evaluations />} />
+          <Route path="/evaluation-prep" element={<EvaluationStart />} />
           <Route path="/pretest" element={<PreTest />} />
           <Route path="/challenge" element={<CognitiveChallenge />} />
+          <Route path="/calibration" element={<ChallengeCalibration />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<RootRedirect />} />
         </Routes>

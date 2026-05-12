@@ -1,4 +1,4 @@
-import { Search, Bell, Menu, LogOut, User, Settings, LayoutDashboard, GraduationCap, BarChart3, TestTube2, Sun, Moon } from 'lucide-react';
+import { Search, Bell, Menu, LogOut, User, Settings, LayoutDashboard, GraduationCap, BarChart3, TestTube2, Sun, Moon, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useRef, useEffect } from 'react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
@@ -9,7 +9,7 @@ import { cn } from '../lib/utils';
 export function TopBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const { reset, role, userId, user } = useCognitiveStore();
+  const { reset, role, userId, user, isSidebarCollapsed, setSidebarCollapsed } = useCognitiveStore();
   const navigate = useNavigate();
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -60,11 +60,23 @@ export function TopBar() {
 
   return (
     <>
-      <header className="glass fixed top-0 right-0 left-0 lg:left-64 z-50 px-6 py-4 flex items-center justify-between border-b border-outline-variant/10">
+      <header className={cn(
+        "glass fixed top-0 right-0 z-50 px-6 py-4 flex items-center justify-between border-b border-outline-variant/10 transition-all duration-300",
+        isSidebarCollapsed ? "left-0 lg:left-20" : "left-0 lg:left-64"
+      )}>
         <div className="flex items-center gap-4">
           <button className="lg:hidden p-2 text-primary" onClick={() => setIsMobileMenuOpen(true)}>
             <Menu className="w-6 h-6" />
           </button>
+          
+          <button 
+            className="hidden lg:flex p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+            onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
+            title={isSidebarCollapsed ? "Expandir menú" : "Colapsar menú"}
+          >
+            {isSidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+          </button>
+
           <img src="/logoedutlan.png" alt="EduTlan" className="h-9 w-auto object-contain" />
           <div className="hidden md:flex items-center bg-surface-container-high rounded-full px-4 py-2 w-64 group focus-within:ring-2 focus-within:ring-primary transition-all">
             <Search className="w-4 h-4 text-on-surface-variant group-focus-within:text-primary" />

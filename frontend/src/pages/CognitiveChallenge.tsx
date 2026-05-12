@@ -1,343 +1,278 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Code2, ChevronRight, Brain, Target, BarChart3, ArrowLeft, Send, AlertCircle, Quote, Zap, RotateCcw, TrendingUp, Award } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
-import { useNavigate } from 'react-router-dom';
-import { cn } from '../lib/utils';
-import { useStudentTestTracking } from '../hooks/useStudentTestTracking';
-import { phase1Levels, questionVariations, Level, LevelData, Question } from '../data/phase1Questions';
-
-type Phase = 'judgment' | 'resolution' | 'calibration';
-
-const levelData: LevelData[] = phase1Levels;
+import { useTheme } from '../ThemeContext';
+import { Challenge } from '../data/challengeBank';
+import './CognitiveChallenge.css';
 
 export function CognitiveChallenge() {
-  const [currentLevel, setCurrentLevel] = useState<Level>('basic');
-  const [currentPhase, setCurrentPhase] = useState<Phase>('judgment');
-  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
-  const [levelAttempts, setLevelAttempts] = useState<Record<Level, number>>({ basic: 0, intermediate: 0, expert: 0 });
-  const [judgments, setJudgments] = useState<Record<Level, number[]>>({ basic: [], intermediate: [], expert: [] });
-  const [answers, setAnswers] = useState<Record<Level, { isCorrect: boolean; timeSpent: number; clicks: number }[]>>({ basic: [], intermediate: [], expert: [] });
-  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
-  const [questionClicks, setQuestionClicks] = useState<number>(0);
-  const [showCalibration, setShowCalibration] = useState(false);
-
-  const { addEvent, updateCognitiveMetrics, events } = useCognitiveStore();
-  const { trackClick, trackQuestionAnswer, trackPageNavigation, trackLevelJudgment, trackLevelCalibration, trackLevelRepeat } = useStudentTestTracking();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { theme } = useTheme();
+  const { addEvent, currentLevel } = useCognitiveStore();
 
-  const currentLevelData = levelData.find(l => l.level === currentLevel)!;
-  const currentQuestions = currentLevelData.questions;
-  const currentQuestion = currentQuestions[currentQuestionIdx];
+  const challenge: Challenge = location.state?.challenge || {
+    id: "0",
+    nombre: "Reto no seleccionado",
+    ejercicio_fase_b: "Selecciona un reto en la Fase A.",
+    evaluacion_desempeño: "N/A",
+    interfaz: 'logic',
+    pista: "Sin pistas.",
+    jol_preguntas: []
+  };
 
-  // Find pre-test perceptions for comparison
-  const preTestEvent = events.find(e => e.metadata?.phase === 'Juicio_Pretest');
-  const perceptions = preTestEvent?.metadata?.perceptions || [];
+  const initialJolAnswers = location.state?.jolAnswers || {};
+  const jolTimes = location.state?.jolTimes || {};
+  const estimatedTime = location.state?.estimatedTime || 0;
+
+  const [code, setCode] = useState("");
+  const [seconds, setSeconds] = useState(0);
+  const [editCount, setEditCount] = useState(0);
+  const [pauseSecs, setPauseSecs] = useState(0);
+  const [totalRuns, setTotalRuns] = useState(0);
+  const [errCount, setErrCount] = useState(0);  const [clickCount, setClickCount] = useState(0);
+  const [mouseDistance, setMouseDistance] = useState(0);
+  const [mouseHistory, setMouseHistory] = useState<{x: number, y: number}[]>([]);
+  const [activeTab, setActiveTab] = useState('editor');
+  
+  const [showHint, setShowHint] = useState(false);
+  const [consoleMessages, setConsoleMessages] = useState([
+    { type: 'sys', text: '> Entorno preparado.' }
+  ]);
+  
+  const lastEditTime = useRef(Date.now());
+  const lastMousePos = useRef({ x: 0, y: 0 });
+  const currentMousePos = useRef({ x: 0, y: 0 });
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    setQuestionStartTime(Date.now());
-    setQuestionClicks(0);
-  }, [currentQuestionIdx, currentPhase]);
-
-  const handleJudgmentSubmit = (confidence: number) => {
-    const newJudgments = { ...judgments };
-    newJudgments[currentLevel] = [...(newJudgments[currentLevel] || []), confidence];
-    setJudgments(newJudgments);
-
-    trackLevelJudgment(currentLevel, confidence, levelAttempts[currentLevel] + 1);
-
-    setCurrentPhase('resolution');
-    trackPageNavigation('judgment', 'resolution');
-  };
-
-  const handleAnswerSelect = (optionIdx: number) => {
-    const timeSpent = Date.now() - questionStartTime;
-    const selectedOption = currentQuestion.options[optionIdx];
-    const isCorrect = selectedOption === currentQuestion.correctAnswer;
-
-    trackClick('answer-option');
-    trackQuestionAnswer(currentQuestion.id, isCorrect, timeSpent, questionClicks + 1);
-
-    const newAnswers = { ...answers };
-    newAnswers[currentLevel] = [...(newAnswers[currentLevel] || []), {
-      isCorrect,
-      timeSpent,
-      clicks: questionClicks + 1
-    }];
-    setAnswers(newAnswers);
-
-    if (currentQuestionIdx < currentQuestions.length - 1) {
-      setCurrentQuestionIdx(currentQuestionIdx + 1);
-    } else {
-      setCurrentPhase('calibration');
-      setShowCalibration(true);
-    }
-  };
-
-  const calculateLevelCalibration = (level: Level): { score: number; calibration: number; gap: number } => {
-    const levelAnswers = answers[level] || [];
-    const levelJudgments = judgments[level] || [];
-
-    if (levelAnswers.length === 0 || levelJudgments.length === 0) return { score: 0, calibration: 0, gap: 0 };
-
-    const correctCount = levelAnswers.filter(a => a.isCorrect).length;
-    const score = (correctCount / levelAnswers.length) * 100;
-    const avgJudgment = levelJudgments.reduce((a, b) => a + b, 0) / levelJudgments.length / 10;
-    const calibration = score / 100;
-    const gap = Math.abs(avgJudgment - calibration);
-
-    return { score, calibration, gap };
-  };
-
-  const handleCalibrationComplete = () => {
-    const { score, calibration, gap } = calculateLevelCalibration(currentLevel);
-    const requiredCalibration = currentLevelData.requiredCalibration;
-
-    trackLevelCalibration(currentLevel, score, calibration, gap, calibration >= requiredCalibration, levelAttempts[currentLevel] + 1);
-
-    updateCognitiveMetrics(0.7, calibration, score);
-
-    // Decisión crítica: ¿Pasar al siguiente nivel o repetir?
-    if (calibration >= requiredCalibration) {
-      // Calibración adecuada - pasar al siguiente nivel
-      const nextLevel = getNextLevel(currentLevel);
-      if (nextLevel) {
-        setCurrentLevel(nextLevel);
-        setCurrentPhase('judgment');
-        setCurrentQuestionIdx(0);
-        setShowCalibration(false);
-        trackPageNavigation(`level-${currentLevel}`, `level-${nextLevel}`);
-      } else {
-        // Completó todos los niveles
-        navigate('/dashboard');
+    const getInitialCode = (id: string): string => {
+      switch (id) {
+        case '1.1': return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .card {\n      border: 1px solid #ccc;\n      padding: 20px;\n      text-align: left;\n    }\n  </style>\n</head>\n<body>\n  <div class="card">\n    <h1>Mi Tarjeta</h1>\n    <p>Estudiante de Tecnología</p>\n    <img src="" alt="Foto">\n  </div>\n</body>\n</html>`;
+        case '1.2': return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    ul {\n      list-style: none;\n      padding: 0;\n      display: block;\n    }\n    li { margin: 0 15px; }\n  </style>\n</head>\n<body>\n  <ul>\n    <li><a href="#">Inicio</a></li>\n    <li><a href="#">Cursos</a></li>\n    <li><a href="#">Perfil</a></li>\n  </ul>\n</body>\n</html>`;
+        case '1.3': return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .container { display: flex; gap: 20px; }\n    .col { flex: 1; background: #eee; padding: 10px; }\n  </style>\n</head>\n<body>\n  <div class="container">\n    <div class="col">Noticia 1</div>\n    <div class="col">Noticia 2</div>\n    <div class="col">Noticia 3</div>\n  </div>\n</body>\n</html>`;
+        case '2.1': return `let contador = 0;\nconst btn = document.querySelector("#miBoton");\nbtn?.addEventListener("click", () => {\n  contador++;\n  document.getElementById("display").innerText = contador;\n});`;
+        case '2.2': return `function verificarEdad(edad) {\n  const res = document.getElementById("resultado");\n  if (condition) {\n    \n  } else {\n    \n  }\n}`;
+        case '3.1': return `function generarColor() {\n  const r = Math.floor(Math.random() * 10);\n  const g = Math.floor(Math.random() * 10);\n  const b = Math.floor(Math.random() * 10);\n  return \`rgb(\${r},\${g},\${b})\`;\n}`;
+        case '3.2': return `function agregarTarea() {\n  const input = document.getElementById("task");\n  const lista = document.getElementById("lista");\n}`;
+        case '3.3': return `async function buscarUsuario(nombre) {\n  try {\n    \n  } catch (err) {\n    console.error("Error en la petición");\n  }\n}`;
+        default: return `// Desarrolla tu solución aquí...`;
       }
+    };
+    setCode(getInitialCode(challenge.id));
+
+    const timer = setInterval(() => {
+      setSeconds(prev => prev + 1);
+      setPauseSecs(Math.floor((Date.now() - lastEditTime.current) / 1000));
+      
+      if (currentMousePos.current.x !== lastMousePos.current.x) {
+        setMouseHistory(prev => [...prev.slice(-200), { ...currentMousePos.current }]);
+        lastMousePos.current = { ...currentMousePos.current };
+      }
+    }, 500);
+
+    const trackMouse = (e: MouseEvent) => {
+      const d = Math.sqrt(Math.pow(e.clientX - currentMousePos.current.x, 2) + Math.pow(e.clientY - currentMousePos.current.y, 2));
+      setMouseDistance(p => p + d);
+      currentMousePos.current = { x: e.clientX, y: e.clientY };
+    };
+    const trackClick = () => setClickCount(p => p + 1);
+
+    window.addEventListener('mousemove', trackMouse);
+    window.addEventListener('click', trackClick);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('mousemove', trackMouse);
+      window.removeEventListener('click', trackClick);
+    };
+  }, [challenge.id]);
+
+  useEffect(() => {
+    if (challenge.interfaz === 'web' && iframeRef.current) {
+      const doc = iframeRef.current.contentDocument;
+      if (doc) {
+        doc.open();
+        doc.write(code);
+        doc.close();
+      }
+    }
+  }, [code, challenge.interfaz]);
+
+  const handleRun = () => {
+    const newRuns = totalRuns + 1;
+    setTotalRuns(newRuns);
+    
+    // Sistema de Validación por Reto
+    let isSuccess = false;
+    const cleanCode = code.replace(/\s/g, '');
+
+    switch (challenge.id) {
+      case '1.1': // Tarjeta: busca center y src
+        isSuccess = code.includes('text-align: center') && (code.includes('src="http') || code.includes("src='http"));
+        break;
+      case '1.2': // Menú: busca display:flex
+        isSuccess = code.includes('display: flex') || code.includes('display:flex');
+        break;
+      case '1.3': // Media Query
+        isSuccess = code.includes('@media') && code.includes('768px') && code.includes('flex-direction');
+        break;
+      case '2.1': // Contador: busca #btn-click o selector correcto
+        isSuccess = code.includes('#btn-click') || code.includes('btn-click');
+        break;
+      case '2.2': // Validador edad: busca if, else, >= 18
+        isSuccess = code.includes('if') && code.includes('else') && (code.includes('>= 18') || code.includes('18 <='));
+        break;
+      case '3.1': // Colores: busca * 256
+        isSuccess = code.includes('* 256') || code.includes('*256') || code.includes('* 255') || code.includes('*255');
+        break;
+      case '3.2': // To-Do: busca createElement, appendChild
+        isSuccess = code.includes('createElement') && code.includes('appendChild');
+        break;
+      case '3.3': // Fetch: busca fetch, await, try, catch
+        isSuccess = code.includes('fetch') && code.includes('await') && (code.includes('try') || code.includes('then'));
+        break;
+      default:
+        isSuccess = code.length > 30; // Validación genérica para otros
+    }
+
+    if (isSuccess) {
+      setConsoleMessages(prev => [...prev, { type: 'ok', text: `> Reto completado con éxito. Puedes terminar la fase.` }]);
+      setErrCount(0);
     } else {
-      // Sobreconfianza detectada - repetir nivel con variación
-      const newAttempts = { ...levelAttempts };
-      newAttempts[currentLevel] = (newAttempts[currentLevel] || 0) + 1;
-      setLevelAttempts(newAttempts);
-
-      // Reset para repetir nivel
-      setCurrentPhase('judgment');
-      setCurrentQuestionIdx(0);
-      setShowCalibration(false);
-
-      trackLevelRepeat(currentLevel, 'insufficient_calibration', gap, newAttempts[currentLevel]);
+      setConsoleMessages(prev => [...prev, { type: 'err', text: `> Error: Validación fallida (Intento ${newRuns}). Revisa tu lógica.` }]);
+      setErrCount(prev => prev + 1);
+      if (newRuns >= 2) setShowHint(true);
     }
   };
 
-  const getNextLevel = (level: Level): Level | null => {
-    const levels: Level[] = ['basic', 'intermediate', 'expert'];
-    const currentIndex = levels.indexOf(level);
-    return currentIndex < levels.length - 1 ? levels[currentIndex + 1] : null;
-  };
+  const handleSubmit = () => {
+    const isSuccess = consoleMessages.some(m => m.type === 'ok');
+    
+    const payload = {
+      challengeId: challenge.id,
+      level: currentLevel,
+      jolAnswers: initialJolAnswers,
+      jolTimes,
+      estimatedTime,
+      технические_метрики: {
+        score: isSuccess ? 100 : 0,
+        runs: totalRuns,
+        hints: showHint ? 1 : 0,
+        edits: editCount,
+        final_code: code,
+      },
+      biometricas: {
+        clicks: clickCount,
+        mouse_distance: Math.round(mouseDistance),
+        mouse_history: mouseHistory,
+        total_time: seconds,
+      }
+    };
 
-  const getQuestionVariation = (questionId: string): Question => {
-    const variations = questionVariations[questionId];
-    if (variations && levelAttempts[currentLevel] > 0) {
-      const variationIndex = levelAttempts[currentLevel] % variations.length;
-      return variations[variationIndex];
-    }
-    return currentQuestion;
-  };
-
-  const renderJudgmentPhase = () => (
-    <motion.div
-      key="judgment"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bento-card p-12 text-center"
-    >
-      <div className="w-24 h-24 bg-primary/10 text-primary rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner border border-primary/20">
-        <Brain className="w-12 h-12" />
-      </div>
-      <h2 className="text-4xl font-bold mb-4 tracking-tight">{currentLevelData.name}</h2>
-      <p className="text-lg text-on-surface-variant mb-10 max-w-xl mx-auto font-medium">
-        {currentLevelData.description}
-      </p>
-
-      <div className="bg-surface-container p-8 rounded-3xl mb-8">
-        <h3 className="text-xl font-bold mb-6">Fase A: Juicio de Aprendizaje</h3>
-        <p className="text-on-surface-variant mb-6">
-          Antes de resolver los retos, indica qué tan seguro te sientes con tu conocimiento en este nivel.
-        </p>
-
-        <div className="grid grid-cols-5 gap-3 mb-6">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-            <button
-              key={num}
-              onClick={() => handleJudgmentSubmit(num)}
-              className="aspect-square rounded-2xl bg-surface hover:bg-primary hover:text-on-primary transition-all font-bold text-lg border-2 border-outline-variant/20 hover:border-primary"
-            >
-              {num}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex justify-between text-xs text-on-surface-variant">
-          <span>No tengo idea</span>
-          <span>Estoy 100% seguro</span>
-        </div>
-      </div>
-
-      {levelAttempts[currentLevel] > 0 && (
-        <div className="bg-error-container p-6 rounded-2xl border border-error">
-          <div className="flex items-center gap-3 mb-4">
-            <RotateCcw className="w-5 h-5 text-error" />
-            <span className="font-bold text-error">Repitiendo Nivel</span>
-          </div>
-          <p className="text-sm text-on-error-container">
-            En tu intento anterior, hubo un desfase entre tu confianza y tu desempeño.
-            Esta es tu oportunidad de demostrar una mejor calibración metacognitiva.
-          </p>
-        </div>
-      )}
-    </motion.div>
-  );
-
-  const renderResolutionPhase = () => {
-    const questionToShow = getQuestionVariation(currentQuestion.id);
-
-    return (
-      <motion.div
-        key="resolution"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="space-y-6"
-      >
-        <div className="flex justify-between items-center p-4 bg-surface-container-low rounded-2xl border border-outline-variant/30">
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-secondary animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-widest text-secondary">
-              {currentLevelData.name} - Pregunta {currentQuestionIdx + 1}/{currentQuestions.length}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold opacity-50 uppercase">Tu Juicio:</span>
-            <span className="text-xs font-black text-secondary">
-              {judgments[currentLevel]?.[judgments[currentLevel].length - 1] || '?'} / 10
-            </span>
-          </div>
-        </div>
-
-        <div className="bento-card p-10 bg-white border-2 border-secondary/5 shadow-xl">
-          <div className="mb-6 text-sm text-on-surface-variant">
-            <p className="font-semibold text-on-surface">Tema: {questionToShow.category}</p>
-            <p>{questionToShow.context}</p>
-          </div>
-          <p className="text-base font-semibold text-on-surface mb-8">{questionToShow.metacognitivePrompt}</p>
-          <h3 className="text-2xl font-bold mb-10 text-on-surface leading-tight">
-            {questionToShow.text}
-          </h3>
-          <div className="grid grid-cols-1 gap-3">
-            {questionToShow.options.map((option, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  setQuestionClicks(prev => prev + 1);
-                  handleAnswerSelect(i);
-                }}
-                className="p-6 text-left rounded-2xl border-2 border-outline-variant/20 hover:border-secondary hover:bg-secondary/5 transition-all group flex items-center gap-4"
-              >
-                <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-bold text-secondary group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
-                  {String.fromCharCode(65 + i)}
-                </div>
-                <span className="text-lg font-bold">{option}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </motion.div>
-    );
-  };
-
-  const renderCalibrationPhase = () => {
-    const { score, calibration, gap } = calculateLevelCalibration(currentLevel);
-    const requiredCalibration = currentLevelData.requiredCalibration;
-    const passed = calibration >= requiredCalibration;
-
-    return (
-      <motion.div
-        key="calibration"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className={cn(
-          "bento-card p-12 text-center",
-          passed ? "border-2 border-secondary bg-secondary/5" : "border-2 border-error bg-error/5"
-        )}
-      >
-        <div className={cn(
-          "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl",
-          passed ? "bg-secondary text-on-secondary" : "bg-error text-on-error"
-        )}>
-          {passed ? <Award className="w-12 h-12" /> : <AlertCircle className="w-12 h-12" />}
-        </div>
-
-        <h2 className="text-4xl font-bold mb-4 tracking-tight">
-          {passed ? '¡Excelente Calibración!' : 'Desfase Detectado'}
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-surface-container p-6 rounded-2xl">
-            <p className="text-sm text-on-surface-variant font-bold mb-2">TU JUICIO PROMEDIO</p>
-            <p className="text-3xl font-bold text-primary">
-              {(judgments[currentLevel]?.reduce((a, b) => a + b, 0) / judgments[currentLevel]?.length || 0).toFixed(1)}/10
-            </p>
-          </div>
-          <div className="bg-surface-container p-6 rounded-2xl">
-            <p className="text-sm text-on-surface-variant font-bold mb-2">TU DESEMPEÑO REAL</p>
-            <p className="text-3xl font-bold text-secondary">{score.toFixed(1)}%</p>
-          </div>
-          <div className="bg-surface-container p-6 rounded-2xl">
-            <p className="text-sm text-on-surface-variant font-bold mb-2">CALIBRACIÓN</p>
-            <p className={cn(
-              "text-3xl font-bold",
-              passed ? "text-secondary" : "text-error"
-            )}>
-              {(calibration * 100).toFixed(1)}%
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container p-8 rounded-3xl mb-8">
-          <h3 className="text-xl font-bold mb-4">Fase C: Reflexión Metacognitiva</h3>
-          <p className="text-on-surface-variant mb-6">
-            {passed
-              ? `¡Perfecto! Tu juicio (${(judgments[currentLevel]?.reduce((a, b) => a + b, 0) / judgments[currentLevel]?.length || 0).toFixed(1)}/10) se alinea muy bien con tu desempeño real (${score.toFixed(1)}%). Esto demuestra una excelente conciencia metacognitiva.`
-              : `Hay un desfase entre tu confianza (${(judgments[currentLevel]?.reduce((a, b) => a + b, 0) / judgments[currentLevel]?.length || 0).toFixed(1)}/10) y tu desempeño real (${score.toFixed(1)}%). Para pasar al siguiente nivel, necesitas demostrar una mejor calibración resolviendo retos similares.`
-            }
-          </p>
-
-          {!passed && (
-            <div className="bg-error-container p-4 rounded-2xl border border-error">
-              <p className="text-sm text-on-error-container">
-                <strong>Recomendación:</strong> Repetirás este nivel con variaciones de los retos para fortalecer tu capacidad de autoevaluación.
-              </p>
-            </div>
-          )}
-        </div>
-
-        <button
-          onClick={handleCalibrationComplete}
-          className={cn(
-            "px-12 py-5 rounded-2xl font-bold text-lg shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 mx-auto",
-            passed ? "bg-secondary text-on-secondary shadow-secondary/30" : "bg-error text-on-error shadow-error/30"
-          )}
-        >
-          {passed ? 'Avanzar al Siguiente Nivel' : 'Repetir Nivel con Variaciones'}
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      </motion.div>
-    );
+    console.log('🚀 Enviando métricas reales a Fase C:', payload);
+    addEvent('CHALLENGE_COMPLETED', payload);
+    navigate('/calibration', { state: payload });
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-6">
-      <AnimatePresence mode="wait">
-        {currentPhase === 'judgment' && renderJudgmentPhase()}
-        {currentPhase === 'resolution' && renderResolutionPhase()}
-        {currentPhase === 'calibration' && renderCalibrationPhase()}
-      </AnimatePresence>
+    <div className={`fb-root ${theme} clean-ui`}>
+      {/* Header Minimalista */}
+      <div className="fb-header-clean">
+        <div className="fb-header-left">
+          <div className="fb-logo-mini">MP</div>
+          <div className="fb-header-info">
+            <span className="fb-level-tag">Reto {challenge.id}</span>
+            <h1 className="fb-task-name">{challenge.nombre}</h1>
+          </div>
+        </div>
+        <div className="fb-header-right">
+          <div className="fb-timer-minimal">
+            <i className="ti ti-clock"></i>
+            {Math.floor(seconds / 60).toString().padStart(2, '0')}:{(seconds % 60).toString().padStart(2, '0')}
+          </div>
+          <button className="fb-btn-finish" onClick={handleSubmit}>
+            Terminar Reto <i className="ti ti-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <div className="fb-main-container">
+        {/* Panel de Instrucciones Colapsable o Fijo Estilizado */}
+        <div className="fb-side-panel instructions">
+          <div className="fb-panel-label">Instrucciones</div>
+          <div className="fb-content-scroll">
+            <p className="fb-instruction-text">{challenge.ejercicio_fase_b}</p>
+            <div className="fb-criteria-box">
+              <span className="fb-box-label">Criterio de éxito</span>
+              <p>{challenge.evaluacion_desempeño}</p>
+            </div>
+            
+            <AnimatePresence>
+              {showHint && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="fb-hint-minimal">
+                  <i className="ti ti-bulb"></i>
+                  <span>{challenge.pista}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Editor Central */}
+        <div className="fb-editor-container">
+          <div className="fb-editor-toolbar">
+            <div className="fb-tabs-minimal">
+              <button className={`fb-tab-btn ${activeTab === 'editor' ? 'active' : ''}`} onClick={() => setActiveTab('editor')}>
+                <i className="ti ti-code"></i> Editor
+              </button>
+              {challenge.interfaz === 'web' && (
+                <button className={`fb-tab-btn ${activeTab === 'preview' ? 'active' : ''}`} onClick={() => setActiveTab('preview')}>
+                  <i className="ti ti-eye"></i> Vista Previa
+                </button>
+              )}
+            </div>
+            <button className="fb-run-btn-clean" onClick={handleRun}>
+              <i className="ti ti-player-play"></i> Ejecutar
+            </button>
+          </div>
+
+          <div className="fb-workspace">
+            {activeTab === 'preview' ? (
+              <iframe ref={iframeRef} title="preview" className="fb-preview-frame-clean" />
+            ) : challenge.interfaz === 'terminal' ? (
+              <div className="fb-terminal-clean">
+                <div className="fb-term-scroll">
+                  <div className="fb-term-line sys">{">"} Git Terminal Ready</div>
+                  <div className="fb-term-line in">$ git branch</div>
+                  <div className="fb-term-line ok">* main</div>
+                </div>
+                <div className="fb-term-input-line">
+                  <span className="fb-term-cursor">$</span>
+                  <input type="text" className="fb-term-field" placeholder="Escribe un comando..." />
+                </div>
+              </div>
+            ) : (
+              <textarea
+                className="fb-editor-field"
+                value={code}
+                onChange={(e) => { setCode(e.target.value); setEditCount(c => c+1); lastEditTime.current = Date.now(); }}
+                spellCheck={false}
+              />
+            )}
+          </div>
+
+          {/* Consola Integrada */}
+          <div className="fb-console-clean">
+            <div className="fb-console-title">Salida de Consola</div>
+            <div className="fb-console-lines">
+              {consoleMessages.map((m, i) => (
+                <div key={i} className={`fb-console-line ${m.type}`}>{m.text}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

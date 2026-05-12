@@ -92,6 +92,19 @@ interface CognitiveStore {
   addStudentEvent: (studentId: string, event: CognitiveEvent) => void;
   getStudentResults: () => StudentResult[];
   getStudentById: (studentId: string) => StudentResult | undefined;
+  
+  isSidebarCollapsed: boolean;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+
+  // Seguimiento de retos
+  currentLevel: number;
+  currentChallengeId: string | null;
+  setCurrentLevel: (level: number) => void;
+  setCurrentChallengeId: (id: string | null) => void;
+  currentSessionId: string | null;
+  setCurrentSessionId: (id: string | null) => void;
+  removeStudent: (id: string) => void;
+  consolidateSession: () => void;
 }
 
 export const useCognitiveStore = create<CognitiveStore>()(
@@ -109,6 +122,13 @@ export const useCognitiveStore = create<CognitiveStore>()(
       user: null,
       students: [],
       currentTestSession: null,
+      isSidebarCollapsed: false,
+      currentLevel: 1,
+      currentChallengeId: null,
+      currentSessionId: null,
+      setCurrentLevel: (level) => set({ currentLevel: level }),
+      setCurrentChallengeId: (id) => set({ currentChallengeId: id }),
+      setCurrentSessionId: (id) => set({ currentSessionId: id }),
 
       setUser: (user) => set({ user }),
       setRole: (role) => set({ role }),
@@ -210,6 +230,12 @@ export const useCognitiveStore = create<CognitiveStore>()(
         }
       },
 
+      removeStudent: (id) => {
+        set((state) => ({
+          students: state.students.filter(s => s.id !== id)
+        }));
+      },
+
       registerStudent: (student) => {
         const newStudent: StudentResult = {
           ...student,
@@ -282,6 +308,85 @@ export const useCognitiveStore = create<CognitiveStore>()(
         return get().students.find(s => s.id === studentId);
       },
 
+      setSidebarCollapsed: (collapsed) => set({ isSidebarCollapsed: collapsed }),
+
+      consolidateSession: () => {
+        console.log('🏁 Consolidando sesión (Upsert)...');
+        const { events, user } = get();
+        if (events.length === 0 || !user) return;
+
+        const challengeEvents = events.filter(e => e.type === 'CHALLENGE_COMPLETED');
+        if (challengeEvents.length === 0) return;
+
+        // Tomamos el último evento para tener las métricas más actuales
+        const lastChallenge = challengeEvents[challengeEvents.length - 1].metadata;
+        const jolAnswers = lastChallenge.jolAnswers || {};
+        const jolValues = Object.values(jolAnswers) as number[];
+        const jolAvg = jolValues.length > 0 ? jolValues.reduce((a, b) => a + b, 0) / jolValues.length : 5;
+        const score = lastChallenge.технические_метрики?.score || 0;
+        const performance = score / 10;
+        const gap = jolAvg - performance;
+
+        let cluster: 'over' | 'sub' | 'cal' = 'cal';
+        if (gap > 2) cluster = 'over';
+        else if (gap < -2) cluster = 'sub';
+
+        const studentEmail = user.email || 'anon@example.com';
+        const currentSessionId = get().currentSessionId;
+        
+        // Calcular tiempo total acumulado de todos los retos completados en esta sesión
+        const totalSessionTime = challengeEvents.reduce((acc, e) => acc + (e.metadata.biometricas?.total_time || 0), 0);
+        
+        // Desglose por fases (asumiendo que cada evento CHALLENGE_COMPLETED representa una fase/reto)
+        const phaseTimes = challengeEvents.map((e, idx) => ({
+          label: `Fase ${idx + 1}`,
+          seconds: e.metadata.biometricas?.total_time || 0
+        }));
+
+        set((state) => {
+          // Intentar encontrar por ID de sesión única en lugar de email para permitir historial
+          const existingIndex = currentSessionId ? state.students.findIndex(s => s.id === currentSessionId) : -1;
+          
+          const studentId = currentSessionId || `${user.name?.substring(0, 2).toUpperCase() || 'ST'}-${Math.floor(Math.random() * 1000)}`;
+          
+          const studentData: StudentResult = {
+            id: studentId,
+            name: `${user.name || 'Estudiante'} ${user.lastName || ''}`.trim(),
+            email: studentEmail,
+            testDate: Date.now(),
+            status: 'completed',
+            totalTime: totalSessionTime,
+            totalClicks: lastChallenge.biometricas?.clicks || 0,
+            pageNavigations: 1,
+            score: score,
+            events: [...events],
+            metadata: {
+              cluster,
+              jol: jolAvg,
+              nota: performance,
+              desfase: gap,
+              err: (100 - score),
+              tiempo: Math.round(totalSessionTime / 60),
+              urgent: gap > 3 || score < 40,
+              mouseHistory: lastChallenge.biometricas?.mouse_history || [],
+              phaseTimes: phaseTimes
+            }
+          } as any;
+
+          if (existingIndex >= 0) {
+            // Actualizar existente
+            const updatedStudents = [...state.students];
+            updatedStudents[existingIndex] = studentData;
+            console.log('🔄 Estudiante actualizado:', studentEmail);
+            return { students: updatedStudents };
+          } else {
+            // Añadir nuevo
+            console.log('🆕 Nuevo estudiante consolidado:', studentEmail);
+            return { students: [studentData, ...state.students].slice(0, 200) };
+          }
+        });
+      },
+
       reset: () => {
         set({
           role: null,
@@ -293,8 +398,9 @@ export const useCognitiveStore = create<CognitiveStore>()(
           latentStrategies: [],
           transferReadiness: 0.5,
           lastEventTime: Date.now(),
-          students: [],
-          currentTestSession: null
+          currentTestSession: null,
+          currentSessionId: null,
+          currentLevel: 1
         });
       }
     }),

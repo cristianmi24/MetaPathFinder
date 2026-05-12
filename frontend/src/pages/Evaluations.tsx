@@ -210,11 +210,10 @@ export function Evaluations() {
   }, [phase, currentLevelIdx, actualQuestionIdx, variationIdx]);
 
   const startEvaluationAfterTutorial = () => {
-    evaluationStartTime.current = Date.now();
-    totalClicks.current = 0;
-    clicksPerQuestion.current = {};
-    setPhase('perception');
+    useCognitiveStore.getState().setCurrentLevel(1);
+    useCognitiveStore.getState().setCurrentChallengeId(null);
     addEvent('PHASE_START', { phase: 'Juicio_Pretest', theme: 'Autopercepción_Programación' });
+    navigate('/evaluation-prep');
   };
 
   const handlePerceptionSubmit = () => {
@@ -467,319 +466,66 @@ export function Evaluations() {
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-6">
-      <AnimatePresence mode="wait">
-        {phase === 'tutorial' && (
-          <motion.div
-            key="tutorial"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            className="space-y-8"
-          >
-            <div className="bento-card p-12 bg-white border-2 border-primary/10 shadow-2xl rounded-[2.5rem]">
-              <div className="flex flex-col md:flex-row gap-12 items-center">
-                <div className="flex-1 space-y-6">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-secondary/10 text-secondary rounded-full text-[10px] font-black uppercase tracking-widest">
-                    <Sparkles className="w-4 h-4" /> Guía de Supervivencia Cognitiva
-                  </div>
-                  <h3 className="text-4xl font-black text-on-surface tracking-tight leading-tight">
-                    ¿Cómo funciona esta <span className="text-primary italic">Evaluación</span>?
-                  </h3>
-                  <p className="text-on-surface-variant font-medium text-lg leading-relaxed">
-                    No es un examen tradicional. Es un entorno de <strong>calibración intensa</strong> diseñado para mapear tus fortalezas y puntos ciegos.
-                  </p>
-
-                  <div className="space-y-4">
-                    <TutorialStep
-                      number="1"
-                      title="Fase A: Autopercepción"
-                      desc="Te presentamos el tema y nos dices qué tan seguro te sientes (1-10) antes de ver el reto."
-                      icon={Target}
-                    />
-                    <TutorialStep
-                      number="2"
-                      title="Fase B: Ejecución Técnica"
-                      desc="Resuelves el desafío técnico en un contexto real (Médico, Gaming, E-commerce, etc)."
-                      icon={Zap}
-                    />
-                    <TutorialStep
-                      number="3"
-                      title="Protocolo de Andamiaje"
-                      desc="Si fallas, te damos una segunda oportunidad con un contexto diferente. Si fallas de nuevo, bloqueamos el nodo para que no te frustres."
-                      icon={ShieldCheck}
-                    />
-                  </div>
-                </div>
-
-                <div className="w-full md:w-[350px] aspect-[9/16] bg-surface-container-highest rounded-[3rem] border-8 border-on-surface shadow-2xl relative overflow-hidden">
-                  <video
-                    src="/Instructivoevalaucion.webm"
-                    controls
-                    preload="metadata"
-                    className="w-full h-full object-cover absolute inset-0"
-                  />
-                </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="space-y-8"
+      >
+        <div className="bento-card p-12 bg-white border-2 border-primary/10 shadow-2xl rounded-[2.5rem]">
+          <div className="flex flex-col md:flex-row gap-12 items-center">
+            <div className="flex-1 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-secondary/10 text-secondary rounded-full text-[10px] font-black uppercase tracking-widest">
+                <Sparkles className="w-4 h-4" /> Guía de Supervivencia Cognitiva
               </div>
-
-              <div className="mt-12 flex justify-center pt-8 border-t border-outline-variant/10">
-                <button
-                  onClick={startEvaluationAfterTutorial}
-                  className="px-16 py-6 bg-primary text-on-primary rounded-[2rem] font-black text-2xl shadow-2xl shadow-primary/40 hover:scale-105 transition-all active:scale-95 flex items-center gap-4"
-                >
-                  Entendido, ¡Empecemos! <ChevronRight className="w-8 h-8" />
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {phase === 'perception' && (
-          <motion.div key="perc" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
-            <div className="text-center">
-              <div className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-widest mb-4">
-                {variationIdx > 0 ? 'RETO ALTERNATIVO' : 'FASE 1: JUICIO DE CONFIANZA'}
-              </div>
-              {variationIdx > 0 && (
-                <p className="text-xs text-warning font-bold mb-2">Mismo tema — Nuevo reto</p>
-              )}
-              <p className="text-sm text-on-surface-variant italic mb-2">{currentDisplayQuestion.context}</p>
-              <h3 className="text-3xl font-bold mb-2">{currentDisplayQuestion.metacognitivePrompt}</h3>
-              <p className="text-on-surface-variant">{currentLevel.name} — {currentDisplayQuestion.category}</p>
-            </div>
-            <div className="bento-card p-12 bg-white border border-primary/20 text-center">
-              <div className="flex justify-between mb-8">
-                {[...Array(10)].map((_, i) => (
-                  <span key={i} className={cn("text-[10px] font-bold", currentPerceptionValue > i ? "text-primary" : "text-outline")}>{i + 1}</span>
-                ))}
-              </div>
-              <input type="range" min="1" max="10" value={currentPerceptionValue} onChange={(e) => setCurrentPerceptionValue(parseInt(e.target.value))} className="w-full h-3 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary mb-12" />
-              <div className="flex justify-between items-center p-8 bg-primary/5 rounded-3xl border border-primary/10">
-                <div className="text-left"><p className="text-xs font-bold text-primary uppercase">Confianza</p><p className="text-4xl font-black">{currentPerceptionValue} / 10</p></div>
-                <button onClick={handlePerceptionSubmit} className="px-10 py-5 bg-primary text-on-primary rounded-2xl font-bold flex items-center gap-2 shadow-xl">Siguiente <Send className="w-4 h-4 ml-2" /></button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {phase === 'challenge' && (
-          <motion.div key="chal" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-            <div className="flex justify-between items-center p-4 bg-surface-container-low rounded-2xl border border-outline-variant/30">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
-                <span className="text-xs font-bold uppercase tracking-widest text-primary">
-                  {currentLevel.name} - {currentDisplayQuestion.category}
-                </span>
-              </div>
-              <span className="text-xs font-black text-secondary">
-                Juicio: {currentPerceptionValue} / 10
-              </span>
-            </div>
-
-            <div className="bento-card p-10 bg-white border-2 border-primary/5 shadow-xl">
-              <p className="text-xl text-on-surface-variant mb-6 font-medium leading-relaxed">{currentDisplayQuestion.context}</p>
-              <h3 className="text-2xl font-bold mb-10 text-on-surface leading-tight">{currentDisplayQuestion.text}</h3>
-              <div className="grid grid-cols-1 gap-3">
-                {currentDisplayQuestion.options.map((opt, i) => (
-                  <button key={i} onClick={() => { questionClicks.current++; totalClicks.current++; const qId = currentDisplayQuestion.id; clicksPerQuestion.current[qId] = (clicksPerQuestion.current[qId] || 0) + 1; handleAnswerSelect(i); }} className="p-6 text-left rounded-2xl border-2 border-outline-variant/20 hover:border-primary hover:bg-primary/5 transition-all group flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-bold text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">{String.fromCharCode(65 + i)}</div>
-                    <span className="text-lg font-bold">{opt}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {phase === 'humility_tip' && (
-          <motion.div key="hum" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bento-card p-12 border-2 border-warning bg-warning/5 text-center">
-            <div className="w-20 h-20 bg-warning text-on-warning rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl">
-              <AlertCircle className="w-12 h-12" />
-            </div>
-            <h3 className="text-3xl font-black text-warning mb-2">¡ALERTA DE HUMILDAD!</h3>
-            <p className="text-sm text-on-surface-variant mb-6">Has cometido un error, pero aún puedes corregirlo.</p>
-            <div className="bg-white p-8 rounded-3xl border border-warning/20 mb-8 max-w-2xl mx-auto">
-              <p className="text-xl font-medium text-on-surface leading-relaxed" dangerouslySetInnerHTML={{ __html: getHumilityTip(currentMainQuestion.id) }} />
-            </div>
-            <div className="flex gap-4 justify-center">
-              <button onClick={handleHumilityContinue} className="px-10 py-4 bg-warning text-on-warning rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-warning/30">
-                Intentar de Nuevo <ChevronRight className="w-5 h-5 inline ml-2" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {phase === 'blocked' && (
-          <motion.div key="blk" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
-            <motion.div className="bento-card p-12 text-center border-2 border-error bg-error/5">
-              <div className="w-20 h-20 bg-error text-on-error rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl">
-                <Lock className="w-12 h-12" />
-              </div>
-              <h3 className="text-3xl font-black text-error mb-2">NODO BLOQUEADO</h3>
-              <p className="text-on-surface-variant mb-4">
-                Has fallado este concepto dos veces seguidas. El sistema ha bloqueado temporalmente este nodo para evitar frustración.
+              <h3 className="text-4xl font-black text-on-surface tracking-tight leading-tight">
+                ¿Cómo funciona esta <span className="text-primary italic">Evaluación</span>?
+              </h3>
+              <p className="text-on-surface-variant font-medium text-lg leading-relaxed">
+                No es un examen tradicional. Es un entorno de <strong>calibración intensa</strong> diseñado para mapear tus fortalezas y puntos ciegos.
               </p>
-              {justBlockedInfo && (
-                <div className="space-y-4">
-                  <div className="bg-white p-6 rounded-3xl border border-error/20 mb-4 max-w-2xl mx-auto text-left">
-                    <div className="flex items-center gap-3 mb-4">
-                      <BookOpen className="w-6 h-6 text-error" />
-                      <h4 className="text-xl font-bold text-error">{getLessonTitle(justBlockedInfo.nodeId)}</h4>
-                    </div>
-                    <p className="text-base text-on-surface leading-relaxed" dangerouslySetInnerHTML={{ __html: getLessonText(justBlockedInfo.nodeId) }} />
-                  </div>
-                  {blockedCategories[currentLevelIdx]?.length > 1 && (
-                    <p className="text-sm text-on-surface-variant max-w-xl mx-auto">
-                      Temas bloqueados en niveles superiores: {blockedCategories[currentLevelIdx]?.join(', ')}
-                    </p>
-                  )}
-                </div>
-              )}
-            </motion.div>
 
-            {alternativeRoute && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bento-card p-10 text-center border-2 border-secondary bg-secondary/5">
-                <div className="w-16 h-16 bg-secondary text-on-secondary rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Route className="w-8 h-8" />
-                </div>
-                <h4 className="text-2xl font-bold mb-2">Ruta Alternativa Sugerida</h4>
-                <p className="text-on-surface-variant mb-6">
-                  Mientras refuerzas este concepto, puedes continuar con:
-                </p>
-                <div className="bg-white p-6 rounded-2xl border border-secondary/20 mb-6 inline-block">
-                  <p className="text-sm font-bold text-secondary uppercase tracking-widest mb-1">{alternativeRoute.question.category}</p>
-                  <p className="text-lg font-bold">{alternativeRoute.question.text}</p>
-                </div>
-                <div className="flex gap-4 justify-center">
-                  <button onClick={handleAlternativeRoute} className="px-10 py-4 bg-secondary text-on-secondary rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-secondary/30 flex items-center gap-2">
-                    Probar esta Ruta <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {!alternativeRoute && (
-              <div className="text-center">
-                <p className="text-on-surface-variant mb-4">No hay más temas disponibles en este nivel.</p>
-                <button onClick={() => navigate('/student')} className="px-10 py-4 bg-error text-on-error rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-error/30">
-
-  Ir al Panel Principal
-                </button>
+              <div className="space-y-4">
+                <TutorialStep
+                  number="1"
+                  title="Fase A: Autopercepción"
+                  desc="Te presentamos el tema y nos dices qué tan seguro te sientes (1-10) antes de ver el reto."
+                  icon={Target}
+                />
+                <TutorialStep
+                  number="2"
+                  title="Fase B: Ejecución Técnica"
+                  desc="Resuelves el desafío técnico en un contexto real (Médico, Gaming, E-commerce, etc)."
+                  icon={Zap}
+                />
+                <TutorialStep
+                  number="3"
+                  title="Protocolo de Andamiaje"
+                  desc="Si fallas, te damos una segunda oportunidad con un contexto diferente. Si fallas de nuevo, bloqueamos el nodo para que no te frustres."
+                  icon={ShieldCheck}
+                />
               </div>
-            )}
-          </motion.div>
-        )}
-
-        {phase === 'freno' && (
-          <motion.div key="fre" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bento-card p-12 text-center border-2 border-error bg-error/5">
-            <div className="w-24 h-24 bg-error text-on-error rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl">
-              <AlertCircle className="w-14 h-14" />
             </div>
-            <h3 className="text-4xl font-black text-error mb-4">¡FRENO DE SEGURIDAD!</h3>
 
-            {frenoReason === 'low_perception_double_fail' ? (
-              <>
-                <p className="text-lg text-on-surface-variant mb-8 max-w-xl mx-auto">
-                  Reconoces que no dominas este tema y tus resultados lo confirman. No tiene sentido continuar sin antes repasar los fundamentos.
-                </p>
-                <div className="bg-white p-8 rounded-3xl border border-error/20 mb-8 max-w-md mx-auto text-left">
-                  <p className="text-sm font-bold text-error uppercase mb-3">Tema detectado:</p>
-                  <p className="text-lg font-bold text-on-surface">{justBlockedInfo?.category || 'Desconocido'}</p>
-                </div>
-                <p className="text-sm text-on-surface-variant mb-8 max-w-md mx-auto">
-                  Tu autopercepción fue baja y acertaste al no sentirte seguro. Dedica tiempo a estudiar este tema antes de volver a intentarlo.
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-lg text-on-surface-variant mb-8 max-w-xl mx-auto">
-                  Has fallado múltiples temas en este nivel. El sistema ha detenido tu avance para evitar frustración y sobrecarga cognitiva.
-                </p>
-                <div className="bg-white p-8 rounded-3xl border border-error/20 mb-8 max-w-md mx-auto text-left">
-                  <p className="text-sm font-bold text-error uppercase mb-3">Temas bloqueados en {phase1Levels[currentLevelIdx].name}:</p>
-                  <ul className="space-y-2">
-                    {(blockedCategories[currentLevelIdx] || []).map(cat => (
-                      <li key={cat} className="flex items-center gap-2 text-sm font-medium text-on-surface">
-                        <Lock className="w-4 h-4 text-error flex-shrink-0" />
-                        {cat}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <p className="text-sm text-on-surface-variant mb-8 max-w-md mx-auto">
-                  Te recomendamos repasar los fundamentos de estos temas antes de volver a intentarlo.
-                  Mientras tanto, los temas que aprobaste ({passedCategories[currentLevelIdx]?.join(', ') || 'ninguno'}) han quedado desbloqueados para el siguiente nivel.
-                </p>
-              </>
-            )}
+            <div className="w-full md:w-[350px] aspect-[9/16] bg-surface-container-highest rounded-[3rem] border-8 border-on-surface shadow-2xl relative overflow-hidden">
+              <video
+                src="/Instructivoevalaucion.webm"
+                controls
+                preload="metadata"
+                className="w-full h-full object-cover absolute inset-0"
+              />
+            </div>
+          </div>
 
-            <button onClick={() => navigate('/student')} className="px-12 py-5 bg-error text-on-error rounded-2xl font-bold shadow-xl shadow-error/30 hover:scale-105 transition-all">
-              Ir al Panel Principal
+          <div className="mt-12 flex justify-center pt-8 border-t border-outline-variant/10">
+            <button
+              onClick={startEvaluationAfterTutorial}
+              className="px-16 py-6 bg-primary text-on-primary rounded-[2rem] font-black text-2xl shadow-2xl shadow-primary/40 hover:scale-105 transition-all active:scale-95 flex items-center gap-4"
+            >
+              Entendido, ¡Empecemos! <ChevronRight className="w-8 h-8" />
             </button>
-          </motion.div>
-        )}
-
-        {phase === 'socratic' && (
-          <motion.div key="soc" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bento-card p-12 border-2 border-error bg-error/5 text-center">
-            <div className="w-20 h-20 bg-error text-on-error rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl"><AlertCircle className="w-12 h-12" /></div>
-            <h3 className="text-3xl font-black text-error mb-4">FRENO METACOGNITIVO</h3>
-            <div className="bg-white p-8 rounded-3xl border border-error/20 mb-8 max-w-2xl mx-auto">
-              <p className="text-xl font-medium italic text-on-surface-variant">
-                "Detección de Primado Cognitivo: Estás respondiendo por impulso mecánico. ¿Cómo se conecta este problema con la heurística de {latentStrategies[0]?.replace(/_/g, ' ') || 'Verificación Sistemática'} que dominaste antes?"
-              </p>
-            </div>
-            <button onClick={handleRetry} className="px-12 py-5 bg-error text-on-error rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-error/30">Reiniciar Ciclo de Razonamiento</button>
-          </motion.div>
-        )}
-
-        {phase === 'results' && (
-          <motion.div key="res" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-            <div className="bento-card p-12 text-center border-t-8 border-secondary">
-              <h2 className="text-4xl font-black mb-2">Análisis de Desfase Metacognitivo</h2>
-              <p className="text-on-surface-variant mb-12">Fase 3: Comparación de Autopercepción vs Desempeño Real</p>
-
-              {Object.keys(blockedCategories).length > 0 && (
-                <div className="mb-8 p-6 bg-error/5 rounded-3xl border border-error/20 text-left">
-                  <h4 className="text-lg font-bold text-error mb-4 flex items-center gap-2">
-                    <Lock className="w-5 h-5" /> Temas Bloqueados por Nivel
-                  </h4>
-                  <div className="space-y-2">
-                    {Object.entries(blockedCategories).map(([levelIdx, cats]) => (
-                      <div key={levelIdx} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-error/10">
-                        <span className="text-xs font-bold text-secondary uppercase">{phase1Levels[Number(levelIdx)].name}</span>
-                        <div className="flex gap-2 ml-2">
-                          {cats.map(c => (
-                            <span key={c} className="text-xs font-bold text-error bg-error/10 px-3 py-1 rounded-full">{c}</span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 gap-4 mb-12 text-left">
-                {attempts.map((att, i) => {
-                  const mainQ = phase1Levels.flatMap(l => l.questions).find(q => q.id === att.questionId);
-                  return (
-                    <div key={i} className="p-6 bg-surface-container-low rounded-3xl border border-outline-variant/30 flex flex-col sm:flex-row justify-between items-center gap-4">
-                      <div>
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">{mainQ?.category || att.questionId}</p>
-                        <p className="text-lg font-bold">{att.isCorrect ? 'Acierto Técnico' : 'Fallo de Concepto'} {att.variationAttempts > 0 && `(Var. ${att.variationAttempts})`}</p>
-                      </div>
-                      <div className="flex gap-8 items-center text-center">
-                        <div><p className="text-xs font-bold opacity-50 mb-1">Percepción</p><p className="text-2xl font-black text-primary">{Math.round(att.perception * 10)}%</p></div>
-                        <div className="w-px h-10 bg-outline-variant/30" />
-                        <div><p className="text-xs font-bold opacity-50 mb-1">Realidad</p><p className={cn("text-2xl font-black", att.isCorrect ? "text-secondary" : "text-error")}>{att.isCorrect ? '100%' : '0%'}</p></div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <button onClick={() => navigate('/student')} className="px-12 py-5 bg-secondary text-on-secondary rounded-2xl font-bold shadow-2xl shadow-secondary/30 hover:scale-105 transition-all">Guardar Rastro y Finalizar</button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

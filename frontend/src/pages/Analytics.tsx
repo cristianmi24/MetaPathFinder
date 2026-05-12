@@ -6,17 +6,24 @@ import { useCognitiveStore, stateTranslations } from '../stores/useCognitiveStor
 import { format } from 'date-fns';
 
 export function Analytics() {
-  const { events, calibration, cognitiveLoad } = useCognitiveStore();
+  const { events, calibration, cognitiveLoad, currentLevel } = useCognitiveStore();
 
   // Derive calibration data from evaluation events specifically if they exist
-  const evalEvents = events.filter(e => e.type === 'EVALUATION_COMPLETED');
+  const challengeEvents = events.filter(e => e.type === 'CHALLENGE_COMPLETED');
   
-  const calibrationData = evalEvents.length > 0 
-    ? evalEvents.slice(-6).map((e, i) => ({
-        name: `E${i+1}`,
-        cal: e.metadata.score,
-        load: Math.round((e.metadata.calibration || 0.5) * 100)
-      }))
+  const calibrationData = challengeEvents.length > 0 
+    ? challengeEvents.slice(-6).map((e, i) => {
+        const score = e.metadata.технические_метрики?.score || 0;
+        const jolAnswers = e.metadata.jolAnswers || {};
+        const jolValues = Object.values(jolAnswers) as number[];
+        const jolAvg = jolValues.length > 0 ? (jolValues.reduce((a, b) => a + b, 0) / jolValues.length) * 10 : 50;
+
+        return {
+          name: `R${i+1}`,
+          cal: score,
+          load: jolAvg
+        };
+      })
     : events
         .filter(e => e.type === 'COGNITIVE_STATE_SHIFT')
         .slice(-6)
@@ -32,21 +39,47 @@ export function Analytics() {
   ];
 
   const reflections = events
-    .filter(e => e.type === 'COGNITIVE_STATE_SHIFT' || e.type === 'EVALUATION_COMPLETED')
+    .filter(e => e.type === 'CHALLENGE_COMPLETED' || e.type === 'METACOGNITIVE_REFLECTION' || e.type === 'PHASE_START')
     .slice(-5)
     .reverse()
     .map((e, index) => {
-      const isEval = e.type === 'EVALUATION_COMPLETED';
+      const isChallenge = e.type === 'CHALLENGE_COMPLETED';
+      const isReflection = e.type === 'METACOGNITIVE_REFLECTION';
+      
+      let title = "Evento";
+      let content = "Descripción del evento cognitivo.";
+      let tag = "Sistema";
+      let color = "bg-surface-variant";
+      let light = "bg-surface-variant/20";
+
+      if (isChallenge) {
+        title = `Reto: ${e.metadata.challengeId}`;
+        content = `Completaste el reto con un score de ${e.metadata.технические_метрики?.score}%. Latencia: ${e.metadata.biometricas?.total_time}s.`;
+        tag = "Desempeño";
+        color = "bg-primary";
+        light = "bg-primary/20";
+      } else if (isReflection) {
+        title = "Reflexión Metacognitiva";
+        content = e.metadata.text?.substring(0, 80) + "...";
+        tag = "Regulación";
+        color = "bg-secondary";
+        light = "bg-secondary/20";
+      } else {
+        title = `Inicio de Fase: ${e.metadata.phase}`;
+        content = `Comenzaste la evaluación del nivel ${currentLevel || 1}.`;
+        tag = "Progreso";
+        color = "bg-tertiary-container";
+        light = "bg-tertiary-container/30";
+      }
+
       return {
         id: index,
-        tag: isEval ? 'Evaluación' : 'Estado Detectado',
+        tag,
         date: format(e.timestamp, 'HH:mm'),
-        title: isEval ? `Resultado: ${e.metadata.score}%` : `Cambio a ${stateTranslations[e.metadata.state as keyof typeof stateTranslations] || e.metadata.state}`,
-        content: isEval 
-          ? `Completaste la evaluación de ${e.metadata.theme} con un desempeño del ${e.metadata.score}%.`
-          : `El sistema detectó una transición hacia ${stateTranslations[e.metadata.state as keyof typeof stateTranslations] || e.metadata.state} basado en patrones de interacción.`,
-        color: isEval ? 'bg-primary' : (e.metadata.state === 'Flow' ? 'bg-secondary' : 'bg-tertiary-container'),
-        light: isEval ? 'bg-primary-container/30' : (e.metadata.state === 'Flow' ? 'bg-secondary-container/30' : 'bg-tertiary-container/30')
+        title,
+        content,
+        color,
+        light
       };
     });
 
