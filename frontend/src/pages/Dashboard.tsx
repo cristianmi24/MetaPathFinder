@@ -10,7 +10,7 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, 
   ScatterChart, Scatter, CartesianGrid, XAxis, YAxis, 
   ZAxis, Tooltip, LineChart, Line, Legend,
-  AreaChart, Area, ReferenceLine
+  AreaChart, Area, ReferenceLine, Label
 } from 'recharts';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { useTheme } from '../ThemeContext';
@@ -311,31 +311,35 @@ export function Dashboard() {
         </div>
 
         <div className="dd-bottom-grid">
-          <div className="dd-card">
-            <div className="flex flex-col gap-1 mb-8">
-              <h3 className="text-[10px] font-mono text-gray-500 tracking-[0.2em] uppercase">Mapa JOL vs. Desempeño Real · Todos los Estudiantes</h3>
-              <div className="flex gap-4 mt-2">
+          <div className="dd-card !p-4 flex flex-col">
+            <div className="flex flex-col gap-1 mb-2">
+              <h3 className="text-[10px] font-mono text-gray-500 tracking-[0.2em] uppercase">Mapa JOL vs. Valor Real · Todos los Estudiantes</h3>
+              <div className="flex gap-4 mt-1">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#ffa657]" />
-                  <span className="text-[10px] font-mono text-gray-400">Sobreconfianza</span>
+                  <div className="w-2 h-2 rounded-full bg-[#ffa657]" />
+                  <span className="text-[9px] font-mono text-gray-400 uppercase">Sobreconfianza</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 transform rotate-45 bg-[#58a6ff]" />
-                  <span className="text-[10px] font-mono text-gray-400">Subestimación</span>
+                  <div className="w-2 h-2 transform rotate-45 bg-[#58a6ff]" />
+                  <span className="text-[9px] font-mono text-gray-400 uppercase">Subestimación</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[10px] border-b-[#3fb950]" />
-                  <span className="text-[10px] font-mono text-gray-400">Calibrado</span>
+                  <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[8px] border-b-[#3fb950]" />
+                  <span className="text-[9px] font-mono text-gray-400 uppercase">Calibrado</span>
                 </div>
               </div>
             </div>
-
-            <div className="h-64">
+ 
+            <div className="flex-1 min-h-[360px]" role="img" aria-label={`Gráfico de dispersión con jol declarado en el eje X y valor real en el eje Y para ${realStudents.length} estudiantes. La línea diagonal representa calibración perfecta.`}>
               <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: -20 }}>
+                <ScatterChart margin={{ top: 10, right: 10, bottom: 25, left: 25 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={true} />
-                  <XAxis type="number" dataKey="x" name="JOL" unit="" domain={[0, 10]} stroke="#484f58" fontSize={9} label={{ value: 'JOL declarado', position: 'bottom', fill: '#484f58', fontSize: 9 }} />
-                  <YAxis type="number" dataKey="y" name="Nota" unit="" domain={[0, 10]} stroke="#484f58" fontSize={9} label={{ value: 'Desempeño real', angle: -90, position: 'insideLeft', fill: '#484f58', fontSize: 9 }} />
+                  <XAxis type="number" dataKey="x" name="jol declarado" unit="" domain={[0, 10]} stroke="#484f58" fontSize={9} tickLine={false}>
+                    <Label value="jol declarado" position="bottom" offset={5} fill="#484f58" fontSize={9} fontWeight="bold" />
+                  </XAxis>
+                  <YAxis type="number" dataKey="y" name="valor real" unit="" domain={[0, 10]} stroke="#484f58" fontSize={9} tickLine={false}>
+                    <Label value="valor real" angle={-90} position="insideLeft" offset={5} style={{ textAnchor: 'middle', fill: '#484f58', fontSize: 9, fontWeight: 'bold' }} />
+                  </YAxis>
                   <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ background: '#0d1117', border: '1px solid #30363d', borderRadius: '12px', fontSize: '10px' }} />
                   
                   {/* Línea de Calibración Ideal (Diagonal) */}
@@ -354,30 +358,30 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="dd-card overflow-hidden relative">
+          <div className="dd-card overflow-hidden relative flex flex-col !p-4">
             <div className="absolute top-4 right-4 px-2 py-1 bg-green-500/10 border border-green-500/20 rounded text-[8px] font-mono text-green-400 uppercase tracking-tighter">
               Tendencia: Mejora continua
             </div>
             
-            <div className="dd-card-title mb-2">
+            <div className="dd-card-title mb-1">
               <div className="flex items-center gap-2">
                 <div className="w-1 h-4 bg-primary rounded-full" />
                 <span className="text-[10px] font-mono text-gray-500 tracking-widest uppercase">Evolución Metacognitiva del Grupo</span>
               </div>
             </div>
             
-            <div className="flex gap-6 mb-6">
+            <div className="flex gap-6 mb-4">
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#ff7b72] shadow-[0_0_10px_rgba(255,123,114,0.4)]" />
-                <span className="text-[10px] font-mono text-gray-400">Sobreconf.</span>
+                <div className="w-2 h-2 rounded-full bg-[#ff7b72] shadow-[0_0_10px_rgba(255,123,114,0.4)]" />
+                <span className="text-[9px] font-mono text-gray-400 uppercase">Sobreconf.</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#5dcaa5] shadow-[0_0_10px_rgba(93,202,165,0.4)]" />
-                <span className="text-[10px] font-mono text-gray-400">Calibrados</span>
+                <div className="w-2 h-2 rounded-full bg-[#5dcaa5] shadow-[0_0_10px_rgba(93,202,165,0.4)]" />
+                <span className="text-[9px] font-mono text-gray-400 uppercase">Calibrados</span>
               </div>
             </div>
 
-            <div className="h-56 -ml-6">
+            <div className="flex-1 min-h-[360px] -ml-6">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <defs>

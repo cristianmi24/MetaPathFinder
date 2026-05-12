@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { useTheme } from '../ThemeContext';
 import { Challenge } from '../data/challengeBank';
+import { EvaluationTracker } from '../components/EvaluationTracker';
 import './CognitiveChallenge.css';
 
 export function CognitiveChallenge() {
@@ -178,9 +179,11 @@ export function CognitiveChallenge() {
   return (
     <div className={`fb-root ${theme} clean-ui`}>
       {/* Header Minimalista */}
-      <div className="fb-header-clean">
+      <EvaluationTracker currentPhase="B" />
+      
+      {/* Header Minimalista (Adaptado para convivir con el Tracker) */}
+      <div className="fb-header-clean" style={{ marginTop: '50px', background: 'transparent', borderBottom: 'none' }}>
         <div className="fb-header-left">
-          <div className="fb-logo-mini">MP</div>
           <div className="fb-header-info">
             <span className="fb-level-tag">Reto {challenge.id}</span>
             <h1 className="fb-task-name">{challenge.nombre}</h1>

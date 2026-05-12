@@ -28,6 +28,7 @@ import {
   Video
 } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
+import { EvaluationTracker } from '../components/EvaluationTracker';
 import './ChallengeCalibration.css';
 
 ChartJS.register(
@@ -167,21 +168,11 @@ export function ChallengeCalibration() {
 
   return (
     <div className={`fc-root ${theme}`}>
-      <div className="fc-topbar">
-        <div className="fc-logo">
-          <div className="fc-logo-mark">MP</div>
-          <span className="fc-logo-text">Meta-Pathfinder</span>
-        </div>
-        <div className="fc-phase-track">
-          <div className="fc-phase-item done"><span className="fc-pd"></span>Fase A</div>
-          <div className="fc-phase-item done"><span className="fc-pd"></span>Fase B</div>
-          <div className="fc-phase-item active"><span className="fc-pd"></span>Fase C — Reflexión</div>
-        </div>
-        <div className={`fc-profile-chip ${profile.type}`}>
-          <profile.icon className="w-4 h-4 mr-2" />
-          Perfil: {profile.label}
-        </div>
-      </div>
+      <EvaluationTracker 
+        currentPhase="C" 
+        profileLabel={profile.label} 
+        profileType={profile.type as any} 
+      />
 
       <div className="fc-body">
         <div className="fc-main">
@@ -288,9 +279,9 @@ export function ChallengeCalibration() {
         <aside className="fc-sidebar">
           <div className="fc-side-title"><Brain className="w-4 h-4" /> Clasificación del Modelo</div>
           
-          <div className="fc-perfil-badge">
-            <div className="fc-perfil-name">{profile.label}</div>
-            <p className="fc-perfil-desc">{profile.desc}</p>
+          <div className={`fc-profile-card ${profile.type}`}>
+            <div className="fc-profile-card-name">{profile.label}</div>
+            <p className="fc-profile-card-desc">{profile.desc}</p>
           </div>
 
           <div className="fc-vector-card">

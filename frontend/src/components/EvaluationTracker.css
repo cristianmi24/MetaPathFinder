@@ -1,0 +1,166 @@
+.em-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  font-family: "Inter", sans-serif;
+}
+
+/* Light theme support if needed, but we focus on premium dark/glass */
+.light .em-topbar {
+  background: rgba(255, 255, 255, 0.8);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+}
+
+.em-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.em-logo-mark {
+  font-weight: 800;
+  font-size: 12px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.em-logo-text {
+  color: #f0f6fc;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+.light .em-logo-text {
+  color: #1f2328;
+}
+
+.em-phase-track {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.light .em-phase-track {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.em-phase-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(240, 246, 252, 0.4);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.em-phase-item.active {
+  color: #f0f6fc;
+}
+
+.light .em-phase-item {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.light .em-phase-item.active {
+  color: #000000;
+}
+
+.em-phase-item.done {
+  color: #3fb950;
+}
+
+.em-pd {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(240, 246, 252, 0.1);
+  transition: all 0.3s ease;
+}
+
+.light .em-pd {
+  background: rgba(31, 35, 40, 0.1);
+}
+
+.em-phase-item.active .em-pd {
+  background: #388bfd;
+  box-shadow: 0 0 10px rgba(56, 139, 253, 0.5);
+  transform: scale(1.2);
+}
+
+.em-phase-item.done .em-pd {
+  background: #3fb950;
+}
+
+.em-perfil-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 500;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+/* Profiles from user example and ChallengeCalibration */
+.em-perfil-chip.overconf {
+  background: rgba(255, 123, 114, 0.1);
+  border: 0.5px solid rgba(255, 123, 114, 0.35);
+  color: #ff7b72;
+}
+
+.em-perfil-chip.underconf {
+  background: rgba(121, 192, 255, 0.1);
+  border: 0.5px solid rgba(121, 192, 255, 0.35);
+  color: #79c0ff;
+}
+
+.em-perfil-chip.calibrated {
+  background: rgba(63, 185, 80, 0.1);
+  border: 0.5px solid rgba(63, 185, 80, 0.35);
+  color: #3fb950;
+}
+
+@media (max-width: 900px) {
+  .em-logo-text {
+    display: none;
+  }
+  .em-phase-track {
+    gap: 12px;
+    padding: 4px 10px;
+  }
+  .em-phase-item {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .em-phase-item:not(.active) {
+    display: none;
+  }
+}

@@ -18,6 +18,7 @@ import { useCognitiveTracking } from './hooks/useCognitiveTracking';
 import { CognitiveBrain } from './components/CognitiveBrain';
 import { Home } from './pages/Home';
 import { useCognitiveStore } from './stores/useCognitiveStore';
+import { cn } from './lib/utils';
 
 import { BackgroundNetwork } from './components/BackgroundNetwork';
 import { StudentDashboard } from './pages/StudentDashboard';
@@ -49,12 +50,13 @@ function StudentLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isCollapsed = useCognitiveStore((s) => s.isSidebarCollapsed);
   const isEval = location.pathname === '/evaluations';
+  const isEvalFlow = ['/evaluation-prep', '/pretest', '/challenge', '/calibration'].includes(location.pathname);
 
-  if (isEval) {
+  if (isEval || isEvalFlow) {
     return (
       <div className="min-h-screen bg-background">
         <CognitiveBrain />
-        <main className="p-6 lg:p-12 min-h-screen">
+        <main className={cn("min-h-screen", !isEval && "pt-16")}>
           <AnimatePresence mode="wait">
             <motion.div
               initial={{ opacity: 0, y: 10 }}

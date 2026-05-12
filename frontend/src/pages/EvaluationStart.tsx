@@ -4,6 +4,7 @@ import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../ThemeContext';
 import { challengeBank, JOLQuestion } from '../data/challengeBank';
+import { EvaluationTracker } from '../components/EvaluationTracker';
 import './EvaluationStart.css';
 
 export function EvaluationStart() {
@@ -132,27 +133,7 @@ export function EvaluationStart() {
 
   return (
     <div className={`mp-root ${theme}`}>
-      <div className="mp-header">
-        <div className="mp-logo">
-          <div className="mp-logo-mark">MP</div>
-          <span className="mp-logo-text">Meta-Pathfinder</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div className="mp-progress">
-            {selectedJols.map((_, i) => (
-              <span key={i} className={`mp-phase-dot ${activeStep >= i ? 'active' : ''} ${activeStep > i ? 'done' : ''}`}></span>
-            ))}
-            <span className="mp-phase-line"></span>
-            <span className={`mp-phase-dot ${activeStep >= selectedJols.length ? 'active' : ''}`}></span>
-          </div>
-          <span className="mp-phase-label">
-            {activeStep < selectedJols.length 
-              ? `JOL ${activeStep + 1}/3` 
-              : 'Tiempo'}
-          </span>
-        </div>
-        <div className="mp-badge">Nivel {currentLevel}</div>
-      </div>
+      <EvaluationTracker currentPhase="A" />
 
       <div className={`mp-body sidebar-closed`}>
         <div className="mp-main">
