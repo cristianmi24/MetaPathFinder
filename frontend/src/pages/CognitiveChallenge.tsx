@@ -3,8 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { useTheme } from '../ThemeContext';
-import { Challenge } from '../data/challengeBank';
+import { DynamicChallenge } from '../data/dynamicChallengeBank';
 import { EvaluationTracker } from '../components/EvaluationTracker';
+import { DragAndDropBoard } from '../components/DragAndDropBoard';
+import { EssayBoard } from '../components/EssayBoard';
+import { UploadBoard } from '../components/UploadBoard';
+import { CanvasBoard } from '../components/CanvasBoard';
+import { SpreadsheetBoard } from '../components/SpreadsheetBoard';
 import './CognitiveChallenge.css';
 
 export function CognitiveChallenge() {
@@ -13,14 +18,39 @@ export function CognitiveChallenge() {
   const { theme } = useTheme();
   const { addEvent, currentLevel } = useCognitiveStore();
 
-  const challenge: Challenge = location.state?.challenge || {
+  const getBoardType = (id: string): 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' => {
+    const mappings: Record<string, 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet'> = {
+      // Básico
+      "RB-C1-N1": "drag_drop", "RB-C2-N1": "drag_drop", "RB-C3-N1": "canvas", "RB-C4-N1": "canvas",
+      "RB-C1-N2": "upload", "RB-C2-N2": "upload", "RB-C3-N2": "code", "RB-C4-N2": "text",
+      "RB-C1-N3": "text", "RB-C2-N3": "spreadsheet", "RB-C3-N3": "canvas", "RB-C4-N3": "text",
+      // Medio
+      "RM-C1-N1": "canvas", "RM-C1-N2": "text", "RM-C1-N3": "text", 
+      "RM-C2-N1": "spreadsheet", "RM-C2-N2": "canvas", "RM-C2-N3": "spreadsheet", 
+      "RM-C3-N1": "upload", "RM-C3-N2": "code", "RM-C3-N3": "code", 
+      "RM-C4-N1": "text", "RM-C4-N2": "text", "RM-C4-N3": "text",
+      // Avanzado
+      "RA-C1-N1": "upload", "RA-C1-N2": "text", "RA-C1-N3": "text", 
+      "RA-C2-N1": "code", "RA-C2-N2": "upload", "RA-C2-N3": "code",
+      "RA-C3-N1": "upload", "RA-C3-N2": "upload", "RA-C3-N3": "upload", 
+      "RA-C4-N1": "text", "RA-C4-N2": "upload", "RA-C4-N3": "upload"
+    };
+    return mappings[id] || 'code';
+  };
+
+  const challenge: DynamicChallenge = location.state?.challenge || {
     id: "0",
-    nombre: "Reto no seleccionado",
-    ejercicio_fase_b: "Selecciona un reto en la Fase A.",
-    evaluacion_desempeño: "N/A",
-    interfaz: 'logic',
-    pista: "Sin pistas.",
-    jol_preguntas: []
+    nivel: "Básico",
+    sub_nivel: "N1",
+    componente: "Ninguno",
+    codigo_men: "0",
+    titulo: "Reto no seleccionado",
+    descripcion: "Selecciona un reto en la Fase A.",
+    criterios: ["N/A"],
+    recursos: "Sin recursos.",
+    tiempo_estimado: "0",
+    jol_esp_1: { pregunta: "", escala: "" },
+    jol_esp_2: { pregunta: "", escala: "" }
   };
 
   const initialJolAnswers = location.state?.jolAnswers || {};
@@ -38,6 +68,7 @@ export function CognitiveChallenge() {
   const [activeTab, setActiveTab] = useState('editor');
   
   const [showHint, setShowHint] = useState(false);
+  const [boardSuccess, setBoardSuccess] = useState(false);
   const [consoleMessages, setConsoleMessages] = useState([
     { type: 'sys', text: '> Entorno preparado.' }
   ]);
@@ -90,7 +121,7 @@ export function CognitiveChallenge() {
   }, [challenge.id]);
 
   useEffect(() => {
-    if (challenge.interfaz === 'web' && iframeRef.current) {
+    if (iframeRef.current) {
       const doc = iframeRef.current.contentDocument;
       if (doc) {
         doc.open();
@@ -98,7 +129,7 @@ export function CognitiveChallenge() {
         doc.close();
       }
     }
-  }, [code, challenge.interfaz]);
+  }, [code]);
 
   const handleRun = () => {
     const newRuns = totalRuns + 1;
@@ -148,7 +179,7 @@ export function CognitiveChallenge() {
   };
 
   const handleSubmit = () => {
-    const isSuccess = consoleMessages.some(m => m.type === 'ok');
+    const isSuccess = boardSuccess || consoleMessages.some(m => m.type === 'ok');
     
     const payload = {
       challengeId: challenge.id,
@@ -185,8 +216,8 @@ export function CognitiveChallenge() {
       <div className="fb-header-clean" style={{ marginTop: '50px', background: 'transparent', borderBottom: 'none' }}>
         <div className="fb-header-left">
           <div className="fb-header-info">
-            <span className="fb-level-tag">Reto {challenge.id}</span>
-            <h1 className="fb-task-name">{challenge.nombre}</h1>
+            <span className="fb-level-tag">{challenge.nivel} · {challenge.sub_nivel} | {challenge.componente}</span>
+            <h1 className="fb-task-name">{challenge.titulo}</h1>
           </div>
         </div>
         <div className="fb-header-right">
@@ -205,75 +236,135 @@ export function CognitiveChallenge() {
         <div className="fb-side-panel instructions">
           <div className="fb-panel-label">Instrucciones</div>
           <div className="fb-content-scroll">
-            <p className="fb-instruction-text">{challenge.ejercicio_fase_b}</p>
+            <p className="fb-instruction-text">{challenge.descripcion}</p>
             <div className="fb-criteria-box">
-              <span className="fb-box-label">Criterio de éxito</span>
-              <p>{challenge.evaluacion_desempeño}</p>
-            </div>
+              <span className="fb-box-label">Criterios de evaluación</span>
+              <ul style={{ paddingLeft: '20px', margin: '10px 0' }}>
+                  {challenge.criterios.map((c: string, i: number) => (
+                    <li key={i}>{c}</li>
+                  ))}
+                </ul>
+              </div>
             
             <AnimatePresence>
               {showHint && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="fb-hint-minimal">
                   <i className="ti ti-bulb"></i>
-                  <span>{challenge.pista}</span>
+                  <span>{(challenge as any).pista || "Recuerda leer atentamente las instrucciones antes de enviar tu solución."}</span>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </div>
 
-        {/* Editor Central */}
+        {/* Tablero Dinámico (Multimodal) */}
         <div className="fb-editor-container">
-          <div className="fb-editor-toolbar">
-            <div className="fb-tabs-minimal">
-              <button className={`fb-tab-btn ${activeTab === 'editor' ? 'active' : ''}`} onClick={() => setActiveTab('editor')}>
-                <i className="ti ti-code"></i> Editor
-              </button>
-              {challenge.interfaz === 'web' && (
-                <button className={`fb-tab-btn ${activeTab === 'preview' ? 'active' : ''}`} onClick={() => setActiveTab('preview')}>
-                  <i className="ti ti-eye"></i> Vista Previa
-                </button>
-              )}
+          {getBoardType(challenge.id) === 'drag_drop' ? (
+            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+              <DragAndDropBoard 
+                challengeId={challenge.id} 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> ¡Orden correcto! Reto completado con éxito.' }]);
+                    setErrCount(0);
+                  } else {
+                    setConsoleMessages([{ type: 'sys', text: '> Entorno preparado.' }]);
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
             </div>
-            <button className="fb-run-btn-clean" onClick={handleRun}>
-              <i className="ti ti-player-play"></i> Ejecutar
-            </button>
-          </div>
-
-          <div className="fb-workspace">
-            {activeTab === 'preview' ? (
-              <iframe ref={iframeRef} title="preview" className="fb-preview-frame-clean" />
-            ) : challenge.interfaz === 'terminal' ? (
-              <div className="fb-terminal-clean">
-                <div className="fb-term-scroll">
-                  <div className="fb-term-line sys">{">"} Git Terminal Ready</div>
-                  <div className="fb-term-line in">$ git branch</div>
-                  <div className="fb-term-line ok">* main</div>
+          ) : getBoardType(challenge.id) === 'text' ? (
+            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+              <EssayBoard 
+                challengeId={challenge.id} 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                }} 
+              />
+            </div>
+          ) : getBoardType(challenge.id) === 'upload' ? (
+            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+              <UploadBoard 
+                challengeId={challenge.id} 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                }} 
+              />
+            </div>
+          ) : getBoardType(challenge.id) === 'canvas' ? (
+            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+              <CanvasBoard 
+                challengeId={challenge.id} 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                }} 
+              />
+            </div>
+          ) : getBoardType(challenge.id) === 'spreadsheet' ? (
+            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+              <SpreadsheetBoard 
+                challengeId={challenge.id} 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                }} 
+              />
+            </div>
+          ) : (
+            <>
+              <div className="fb-editor-toolbar">
+                <div className="fb-tabs-minimal">
+                  <button className={`fb-tab-btn ${activeTab === 'editor' ? 'active' : ''}`} onClick={() => setActiveTab('editor')}>
+                    <i className="ti ti-code"></i> Editor
+                  </button>
+                  {true && (
+                    <button className={`fb-tab-btn ${activeTab === 'preview' ? 'active' : ''}`} onClick={() => setActiveTab('preview')}>
+                      <i className="ti ti-eye"></i> Vista Previa
+                    </button>
+                  )}
                 </div>
-                <div className="fb-term-input-line">
-                  <span className="fb-term-cursor">$</span>
-                  <input type="text" className="fb-term-field" placeholder="Escribe un comando..." />
+                <button className="fb-run-btn-clean" onClick={handleRun}>
+                  <i className="ti ti-player-play"></i> Ejecutar
+                </button>
+              </div>
+
+              <div className="fb-workspace">
+                {activeTab === 'preview' ? (
+                  <iframe ref={iframeRef} title="preview" className="fb-preview-frame-clean" />
+                ) : false ? (
+                  <div className="fb-terminal-clean">
+                    <div className="fb-term-scroll">
+                      <div className="fb-term-line sys">{">"} Git Terminal Ready</div>
+                      <div className="fb-term-line in">$ git branch</div>
+                      <div className="fb-term-line ok">* main</div>
+                    </div>
+                    <div className="fb-term-input-line">
+                      <span className="fb-term-cursor">$</span>
+                      <input type="text" className="fb-term-field" placeholder="Escribe un comando..." />
+                    </div>
+                  </div>
+                ) : (
+                  <textarea
+                    className="fb-editor-field"
+                    value={code}
+                    onChange={(e) => { setCode(e.target.value); setEditCount(c => c+1); lastEditTime.current = Date.now(); }}
+                    spellCheck={false}
+                  />
+                )}
+              </div>
+
+              {/* Consola Integrada (Solo para Medio/Avanzado) */}
+              <div className="fb-console-clean">
+                <div className="fb-console-title">Salida de Consola</div>
+                <div className="fb-console-lines">
+                  {consoleMessages.map((m, i) => (
+                    <div key={i} className={`fb-console-line ${m.type}`}>{m.text}</div>
+                  ))}
                 </div>
               </div>
-            ) : (
-              <textarea
-                className="fb-editor-field"
-                value={code}
-                onChange={(e) => { setCode(e.target.value); setEditCount(c => c+1); lastEditTime.current = Date.now(); }}
-                spellCheck={false}
-              />
-            )}
-          </div>
-
-          {/* Consola Integrada */}
-          <div className="fb-console-clean">
-            <div className="fb-console-title">Salida de Consola</div>
-            <div className="fb-console-lines">
-              {consoleMessages.map((m, i) => (
-                <div key={i} className={`fb-console-line ${m.type}`}>{m.text}</div>
-              ))}
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
     </div>

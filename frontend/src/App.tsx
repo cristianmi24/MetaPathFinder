@@ -7,12 +7,14 @@ import { StudentProfile } from './pages/StudentProfile';
 import { Experiments } from './pages/Experiments';
 import { Analytics } from './pages/Analytics';
 import { SettingsPage } from './pages/Settings';
-import { Evaluations } from './pages/Evaluations';
+import { Tutorial } from './pages/Tutorial';
 import { EvaluationStart } from './pages/EvaluationStart';
 import { PreTest } from './pages/PreTest';
 import { CognitiveChallenge } from './pages/CognitiveChallenge';
 import { ChallengeCalibration } from './pages/ChallengeCalibration';
+import { MetacognitiveStrategies } from './pages/MetacognitiveStrategies';
 import { RegisteredUsers } from './pages/RegisteredUsers';
+import PreviewPhaseB from './pages/PreviewPhaseB';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCognitiveTracking } from './hooks/useCognitiveTracking';
 import { CognitiveBrain } from './components/CognitiveBrain';
@@ -49,8 +51,8 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
 function StudentLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isCollapsed = useCognitiveStore((s) => s.isSidebarCollapsed);
-  const isEval = location.pathname === '/evaluations';
-  const isEvalFlow = ['/evaluation-prep', '/pretest', '/challenge', '/calibration'].includes(location.pathname);
+  const isEval = location.pathname === '/tutorial';
+  const isEvalFlow = ['/evaluation-prep', '/pretest', '/challenge', '/calibration', '/metacognitive-strategies'].includes(location.pathname);
 
   if (isEval || isEvalFlow) {
     return (
@@ -152,12 +154,14 @@ export default function App() {
           <Route path="/registered-users" element={<RegisteredUsers />} />
           <Route path="/experiments" element={<Experiments />} />
           <Route path="/analytics" element={<Analytics />} />
-          <Route path="/evaluations" element={<Evaluations />} />
+          <Route path="/tutorial" element={<Tutorial />} />
           <Route path="/evaluation-prep" element={<EvaluationStart />} />
           <Route path="/pretest" element={<PreTest />} />
           <Route path="/challenge" element={<CognitiveChallenge />} />
           <Route path="/calibration" element={<ChallengeCalibration />} />
+          <Route path="/metacognitive-strategies" element={<MetacognitiveStrategies />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/preview-phase-b" element={<PreviewPhaseB />} />
           <Route path="*" element={<RootRedirect />} />
         </Routes>
       </AppLayout>

@@ -333,7 +333,7 @@ export function StudentProfile() {
                 onClick={() => {
                   useCognitiveStore.getState().setCurrentLevel(1);
                   useCognitiveStore.getState().setCurrentChallengeId(null);
-                  navigate('/evaluations');
+                  navigate('/tutorial');
                 }}
                 className="w-full sm:w-auto px-8 py-4 bg-primary text-on-primary rounded-2xl font-black text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-all flex items-center justify-center gap-3 active:scale-95"
               >

@@ -27,7 +27,7 @@ export function TopBar() {
   const mobileItems = role === 'student'
     ? [
         { icon: User, label: 'Mi Perfil', path: '/' },
-        { icon: GraduationCap, label: 'Evaluaciones', path: '/evaluations' },
+        { icon: GraduationCap, label: 'Tutorial', path: '/tutorial' },
         { icon: BarChart3, label: 'Analíticas', path: '/analytics' },
       ]
     : [

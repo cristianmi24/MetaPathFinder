@@ -156,14 +156,14 @@ export function ChallengeCalibration() {
       setCurrentChallengeId(null);
       navigate('/evaluation-prep');
     } else {
-      // Fin de la evaluación completa
-      navigate('/student-profile');
+      // Fin de la evaluación completa - ir a estrategias metacognitivas
+      navigate('/metacognitive-strategies');
     }
   };
 
   const handleRetrySimplified = () => {
-    // Si decide reintentar, le asignamos el reto "Muy Fácil" del mismo nivel
-    navigate('/evaluation-prep', { state: { retryVariation: true } });
+    // Si decide reintentar, le asignamos el reto "N1" (Fácil) del mismo componente
+    navigate('/evaluation-prep', { state: { retryVariation: true, previousChallengeId: metrics.challengeId } });
   };
 
   return (

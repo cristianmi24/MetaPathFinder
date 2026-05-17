@@ -24,7 +24,7 @@
 .fb-root.clean-ui {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: calc(100vh - 4rem);
   background: var(--fb-bg);
   color: var(--fb-text);
   font-family: 'Sora', sans-serif;

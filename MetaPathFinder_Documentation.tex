@@ -1,0 +1,1186 @@
+# MetaPathFinder: Sistema de Evaluación Metacognitiva
+
+> **Sistema de Evaluación Metacognitiva para Investigación Q1**
+
+Un sistema pedagógico revolucionario que mide el aprendizaje metacognitivo **en tiempo real** mediante ciclos cerrados por nivel, diseñado específicamente para investigación académica de alto impacto.
+
+## 🎯 Características Principales
+
+### 🔄 Flujo Pedagógico "Loop-per-Level"
+- **3 Niveles**: Básico → Intermedio → Experto
+- **3 Fases por Nivel**: Juicio → Resolución → Calibración
+- **Decisión Inteligente**: Progreso basado en calibración metacognitiva real
+- **Sistema de Variaciones**: Repeticiones con equivalencia cognitiva
+
+### 📊 Dashboard Administrador
+- **Métricas Detalladas**: Rendimiento por estudiante y nivel
+- **Análisis por Pregunta**: Tiempo, clicks, navegación
+- **Tracking Completo**: Eventos en tiempo real durante pruebas
+- **Visualización Científica**: Datos listos para publicación Q1
+
+### 🧠 Evaluación Metacognitiva
+- **Calibración en Tiempo Real**: Juicio vs Desempeño real
+- **Detección de Sobreconfianza**: Algoritmo inteligente de repetición
+- **Aprendizaje Adaptativo**: Dificultad ajustada según calibración
+- **Métricas Psicometricas**: Datos validados científicamente
+
+## 🚀 Inicio Rápido
+
+### Prerrequisitos
+- Node.js 18+
+- npm o yarn
+
+### Instalación
+
+```bash
+# Clonar repositorio
+git clone <repository-url>
+cd MetaPathFinder
+
+# Instalar dependencias del backend
+cd backend
+npm install
+
+# Instalar dependencias del frontend
+cd ../frontend
+npm install
+```
+
+### Ejecución
+
+```bash
+# Terminal 1: Backend
+cd backend
+npm run dev
+
+# Terminal 2: Frontend
+cd frontend
+npm run dev
+```
+
+Accede a `http://localhost:5173` para la aplicación.
+
+## 🏗️ Arquitectura
+
+### Tecnologías
+- **Frontend**: React 18 + TypeScript + Vite
+- **Backend**: Node.js + Express + TypeScript
+- **Estado**: Zustand con persistencia localStorage
+- **UI**: Tailwind CSS + Material Design 3
+- **Base de Datos**: PostgreSQL (configurado para despliegue)
+
+### Estructura del Proyecto
+```
+MetaPathFinder/
+├── frontend/           # Aplicación React
+│   ├── src/
+│   │   ├── components/ # Componentes reutilizables
+│   │   ├── pages/      # Páginas principales
+│   │   ├── stores/     # Estado global (Zustand)
+│   │   └── hooks/      # Hooks personalizados
+├── backend/            # API REST
+│   ├── src/
+│   │   ├── routes/     # Endpoints API
+│   │   └── models/     # Modelos de datos
+└── docs/               # Documentación técnica
+```
+
+## 📚 Sistema Pedagógico
+
+### Ciclo por Nivel
+Cada nivel sigue un ciclo cerrado de 3 fases:
+
+1. **Fase A: Juicio** 🧠
+   - Estudiante indica confianza (1-10) antes de resolver
+   - Establece línea base metacognitiva
+
+2. **Fase B: Resolución** ⚡
+   - Evaluación técnica del nivel
+   - Tracking de interacciones en tiempo real
+
+3. **Fase C: Calibración** 🎯
+   - Confrontación: Juicio vs Realidad
+   - Reflexión metacognitiva guiada
+
+### Algoritmo de Decisión
+```typescript
+if (calibración >= umbral_requerido) {
+  // ✅ Avanzar al siguiente nivel
+  nextLevel();
+} else {
+  // ❌ Repetir con variación
+  repeatWithVariation();
+}
+```
+
+## 🔬 Investigación Q1
+
+### Métricas Capturadas
+- **Calibración Metacognitiva**: Alineación juicio-realidad
+- **Gap de Confianza**: |juicio - desempeño|
+- **Tendencias de Aprendizaje**: Mejora entre niveles
+- **Interacciones por Pregunta**: Clicks, tiempo, navegación
+
+### Variables de Investigación
+- **Independientes**: Nivel de dificultad, tipo de variación
+- **Dependientes**: Precisión metacognitiva, confianza ajustada
+
+## 📊 Dashboard Admin
+
+### Funcionalidades
+- **Vista General**: Lista de estudiantes registrados
+- **Análisis Detallado**: Modal con métricas por estudiante
+- **Filtros**: Por estado de prueba, fecha, rendimiento
+- **Exportación**: Datos listos para análisis estadístico
+
+### Métricas por Estudiante
+- Tiempo total de prueba
+- Número de clicks durante resolución
+- Cambios de página durante evaluación
+- Salidas de pestaña (distracciones)
+- Rendimiento por pregunta individual
+
+## 🛠️ Desarrollo
+
+### Scripts Disponibles
+
+```bash
+# Frontend
+cd frontend
+npm run dev          # Desarrollo con hot reload
+npm run build        # Build de producción
+npm run preview      # Vista previa del build
+npm run type-check   # Verificación de tipos TypeScript
+
+# Backend
+cd backend
+npm run dev          # Desarrollo con nodemon
+npm run build        # Compilación TypeScript
+npm run start        # Producción
+```
+
+### Testing
+```bash
+# Ejecutar tests
+npm test
+
+# Tests con coverage
+npm run test:coverage
+```
+
+## 📖 Documentación
+
+- **[Framework Pedagógico](PEDAGOGICAL_FRAMEWORK.md)**: Detalles técnicos del sistema Loop-per-Level
+- **[API Documentation](docs/API.md)**: Endpoints y esquemas
+- **[Deployment](DEPLOYMENT.md)**: Guía de despliegue en producción
+
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## 👥 Autores
+
+- **Equipo MetaPathFinder** - Desarrollo inicial
+- **Investigadores Q1** - Validación psicométrica
+
+## 🙏 Agradecimientos
+
+- Comunidad académica en metacognición
+- Investigadores en evaluación adaptativa
+- Desarrolladores de React y TypeScript
+
+---
+
+# Flujo Pedagógico: Loop-per-Level (Ciclo por Nivel)
+
+## 🎯 Visión General
+
+El sistema MetaPathFinder implementa un **flujo pedagógico revolucionario** basado en la psicometría metacognitiva, diseñado específicamente para investigación académica de nivel Q1. El sistema mide el aprendizaje metacognitivo **en tiempo real** mediante ciclos cerrados por nivel.
+
+## 🧠 Fundamento Científico
+
+### ¿Por qué "Loop-per-Level"?
+
+**Problema Tradicional**: Los sistemas de evaluación evalúan todos los niveles al final, perdiendo la oportunidad de medir el aprendizaje metacognitivo en tiempo real.
+
+**Solución MetaPathFinder**: Cada nivel debe completarse en su totalidad (3 fases) antes de pasar al siguiente, permitiendo medir cambios en la calibración metacognitiva.
+
+## 🔄 Ciclo por Nivel
+
+### Estructura del Ciclo
+```
+Nivel N → [Fase A + Fase B + Fase C] → Decisión → Nivel N+1
+```
+
+### Las 3 Fases de Cada Nivel
+
+#### **Fase A: Juicio de Aprendizaje** 🧠
+- **Propósito**: Medir autopercepción inicial
+- **Actividad**: Estudiante indica confianza (1-10) antes de resolver
+- **Dato Científico**: Establece línea base para medir calibración
+- **Tracking**: `LEVEL_JUDGMENT`
+
+#### **Fase B: Resolución Técnica** ⚡
+- **Propósito**: Evaluar desempeño real
+- **Actividad**: Estudiante resuelve retos del nivel
+- **Dato Científico**: Mide competencia técnica objetiva
+- **Tracking**: `QUIZ_ANSWER`, `UI_CLICK`, `PAGE_NAVIGATION`
+
+#### **Fase C: Calibración Metacognitiva** 🎯
+- **Propósito**: Confrontar juicio vs realidad
+- **Actividad**: Sistema muestra desfase y explica
+- **Dato Científico**: Punto crítico de aprendizaje metacognitivo
+- **Tracking**: `LEVEL_CALIBRATION`
+
+## 🤖 Algoritmo de Decisión Inteligente
+
+### Lógica de Progreso
+
+```typescript
+if (calibración_actual >= umbral_requerido) {
+  // ✅ Calibración adecuada
+  pasar_al_siguiente_nivel()
+} else {
+  // ❌ Sobreconfianza detectada
+  repetir_nivel_con_variación()
+}
+```
+
+### Umbrales por Nivel
+- **Básico**: 60% de calibración requerida
+- **Intermedio**: 70% de calibración requerida
+- **Experto**: 80% de calibración requerida
+
+### ¿Qué es "Calibración"?
+```
+Calibración = (Desempeño_Real / Juicio_Inicial) × 100
+
+Ejemplo:
+- Juicio: "Estoy 8/10 seguro" (80%)
+- Desempeño: 6/10 correctas (60%)
+- Calibración: (60/80) × 100 = 75%
+```
+
+## 🔄 Sistema de Variaciones
+
+### ¿Por qué Variaciones?
+Cuando un estudiante falla la calibración, **NO** repite exactamente los mismos retos (evita memorización), sino **variaciones equivalentes**.
+
+### Ejemplo de Variación
+```javascript
+// Reto Original (Básico)
+"¿Cuál es el resultado de: (true && false) || (true && !false)?"
+
+// Variación Equivalente
+"¿Qué devuelve esta expresión: (verdadero Y falso) O (verdadero Y NO falso)?"
+```
+
+## 📊 Métricas Científicas Capturadas
+
+### Por Nivel
+- **Juicio Promedio**: Confianza expresada por el estudiante
+- **Desempeño Real**: Porcentaje de aciertos
+- **Calibración**: Alineación entre juicio y realidad
+- **Gap de Calibración**: |juicio - desempeño|
+- **Intentos**: Número de repeticiones del nivel
+
+### Por Pregunta
+- **Tiempo Empleado**: Segundos por pregunta
+- **Clicks Realizados**: Interacciones durante resolución
+- **Cambios de Página**: Navegación durante la prueba
+- **Salidas de Pestaña**: Detección de distracciones
+
+### Tendencias Metacognitivas
+- **Mejora de Calibración**: ¿El estudiante aprende a autoevaluarse?
+- **Reducción de Sobreconfianza**: ¿Disminuyen los gaps negativos?
+- **Eficiencia Temporal**: ¿Se vuelve más preciso con menos tiempo?
+
+## 🎓 Impacto Pedagógico
+
+### Beneficios del Sistema
+
+#### **1. Medición en Tiempo Real**
+- Captura evolución metacognitiva durante el aprendizaje
+- No solo resultado final, sino proceso completo
+
+#### **2. Intervención Inmediata**
+- Si hay sobreconfianza → repetición con reflexión
+- Evita frustración en niveles superiores
+
+#### **3. Personalización Adaptativa**
+- Dificultad se ajusta según calibración real
+- No según auto-percepción sesgada
+
+#### **4. Datos para Investigación Q1**
+- Métricas psicométricas validadas
+- Tracking completo del proceso cognitivo
+- Comparación juicio vs realidad por nivel
+
+## 🔬 Aplicación en Investigación
+
+### Variables Dependientes
+- **Precisión Metacognitiva**: Calibración promedio
+- **Confianza Ajustada**: Cambios en juicios entre niveles
+- **Aprendizaje Transferible**: Mejora en calibración global
+
+### Variables Independientes
+- **Dificultad del Nivel**: Básico → Intermedio → Experto
+- **Tipo de Variación**: Equivalencia cognitiva
+- **Feedback Metacognitivo**: Reflexión guiada en Fase C
+
+### Hipótesis de Investigación
+1. **H1**: Los estudiantes mejoran su calibración metacognitiva al avanzar niveles
+2. **H2**: La repetición con variaciones acelera el aprendizaje metacognitivo
+3. **H3**: El gap de calibración disminuye significativamente entre nivel básico y experto
+
+## 🛠️ Implementación Técnica
+
+### Estados del Sistema
+```typescript
+type Level = 'basic' | 'intermediate' | 'expert';
+type Phase = 'judgment' | 'resolution' | 'calibration';
+
+interface LevelState {
+  currentLevel: Level;
+  currentPhase: Phase;
+  attempts: Record<Level, number>;
+  passedLevels: Level[];
+}
+```
+
+### Eventos Tracked
+- `LEVEL_JUDGMENT`: Juicio inicial de confianza
+- `QUIZ_ANSWER`: Respuesta a pregunta individual
+- `LEVEL_CALIBRATION`: Resultado de calibración
+- `LEVEL_REPEAT`: Decisión de repetición
+- `UI_CLICK`: Interacciones del usuario
+- `PAGE_NAVIGATION`: Cambios entre fases
+
+### Lógica de Decisión
+```typescript
+const decideProgression = (calibration: number, required: number) => {
+  if (calibration >= required) {
+    return 'advance';
+  } else {
+    return 'repeat_with_variation';
+  }
+};
+```
+
+## 📈 Resultados Esperados
+
+### Perfil de Estudiante Exitoso
+1. **Nivel Básico**: Juicio 7/10 → Desempeño 70% → Calibración 100%
+2. **Nivel Intermedio**: Juicio 6/10 → Desempeño 60% → Calibración 100%
+3. **Nivel Experto**: Juicio 5/10 → Desempeño 50% → Calibración 100%
+
+### Patrón de Aprendizaje Metacognitivo
+- **Disminución de Juicios Iniciales**: Más cauteloso
+- **Mejora de Calibración**: Mejor alineación
+- **Reducción de Repeticiones**: Menos sobreconfianza
+
+## 🎯 Conclusión
+
+El sistema **Loop-per-Level** representa un avance significativo en la evaluación metacognitiva porque:
+
+1. **Mide el proceso**, no solo el resultado
+2. **Interviene en tiempo real** cuando detecta sobreconfianza
+3. **Adapta la dificultad** según calibración real
+4. **Genera datos científicos** válidos para publicación Q1
+5. **Enseña a pensar metacognitivamente** a través de ciclos reflexivos
+
+Este enfoque asegura que el software no solo evalúa conocimientos técnicos, sino que **desarrolla la capacidad metacognitiva** de los estudiantes, preparándolos para el aprendizaje autónomo y la resolución de problemas complejos.
+
+---
+
+# Flujo de Evaluación Adaptativa con Retos, Variaciones y FRENO
+
+## Arquitectura del Sistema
+
+El sistema implementa una evaluación metacognitiva adaptativa en 3 niveles (Básico → Intermedio → Experto), donde cada nivel contiene 5 temas (HTML, CSS, JavaScript, Git, Lógica) con 3 variaciones por reto.
+
+## Estructura de Datos
+
+`frontend/src/data/phase1Questions.ts`:
+- **3 niveles**: Básico, Intermedio, Experto
+- **5 temas por nivel**: HTML, CSS, JavaScript, Git, Lógica
+- **3 variaciones por reto**: pregunta original + 2 variaciones alternativas
+- Almacenadas en `phase1Levels` (preguntas principales) y `questionVariations` (variaciones por `questionId`)
+
+## Flujo de Evaluación (`Evaluations.tsx`)
+
+### Fases
+```
+intro → perception → challenge → humility_tip → blocked → freno → results
+```
+
+### 1. Intro
+Pantalla de bienvenida con descripción de las 3 fases (Juicio de Percepción, Desafío Cognitivo, Análisis de Desfase).
+
+### 2. Perception
+El estudiante autoevalúa su confianza (1-10) ante el reto actual. Se muestra:
+- `context`: Situación hipotética para empatizar
+- `metacognitivePrompt`: Pregunta de autopercepción
+- Categoría y nivel actual
+
+### 3. Challenge
+Se presenta la pregunta técnica con 4 opciones de respuesta. Se usa `useCognitiveTracking` para monitorear el tiempo y sesgos.
+
+### 4. Manejo de Errores
+
+**Primer fallo** → `humility_tip`:
+- Muestra alerta de humildad con tip educativo
+- Al continuar, se asigna una **variación** diferente del mismo tema (distinta pregunta, mismo concepto)
+- La variación se elige aleatoriamente de `variationPool`
+- Vuelve a fase `perception` para re-evaluar confianza
+
+**Segundo fallo (variación)** → depende de la autopercepción:
+
+### Caso A: Baja autopercepción en ambos intentos (percepción ≤ 3)
+Si el estudiante **se autopercibió con baja confianza en el reto original y en la variación**, y falló ambos → **FRENO directo**. No se bloquea el tema ni se busca ruta alternativa. El mensaje indica que el estudiante reconoce su falta de dominio y los resultados lo confirman, por lo que debe estudiar antes de continuar.
+
+### Caso B: Alguna percepción fue alta (≥ 4)
+Si en al menos uno de los dos intentos el estudiante tuvo confianza media/alta → `blocked`:
+- El tema se **bloquea** en el nivel actual y todos los superiores
+- Se muestra micro-lección educativa
+- El sistema busca una **ruta alternativa**: el siguiente tema no bloqueado en el mismo nivel
+- Si existe: se ofrece botón "Probar esta Ruta"
+- Si no existe: se informa que no hay más temas disponibles
+
+### FRENO por doble bloqueo
+Si al bloquear un tema se alcanzan **2 temas bloqueados en el mismo nivel**, la evaluación se detiene inmediatamente con alerta de freno de seguridad. No es necesario que se hayan agotado todos los temas.
+
+### 5. Success (aplica a primer intento o variación)
+- Se registra el intento como superado
+- Se avanza al **siguiente nivel**
+- Se busca el primer reto no bloqueado en ese nivel
+- Si no hay retos disponibles en el siguiente nivel, la evaluación termina
+
+## Aleatoriedad
+
+- `shuffledOrder`: Orden aleatorio de los retos dentro de cada nivel (generado una vez por nivel)
+- `variationPool`: Índices de variaciones barajados (generado al enviar percepción, consumido al fallar)
+
+## Bloqueo de Categorías
+
+```typescript
+blockedCategories: Record<number, string[]>
+```
+- Key = índice del nivel, Value = array de categorías bloqueadas
+- Al fallar la variación, se propaga a `[currentLevelIdx ... último nivel]`
+- `isCategoryBlocked()` verifica si una categoría está bloqueada en un nivel dado
+- `getAvailableAlternative()` busca el siguiente reto no bloqueado dentro del mismo nivel
+
+## Eventos Registrados
+
+| Evento | Trigger |
+|--------|---------|
+| `PHASE_START` | Inicio de perception, challenge, ruta alternativa |
+| `PHASE_COMPLETED` | Fin de perception, challenge |
+| `EVALUATION_COMPLETED` | Fin de toda la evaluación |
+| `COGNITIVE_BIAS` | Fallo doble, freno, tiempo excesivo (>30s) |
+
+## Archivos Relevantes
+
+| Archivo | Propósito |
+|---------|-----------|
+| `frontend/src/pages/Evaluations.tsx` | Componente principal con toda la lógica de fases |
+| `frontend/src/data/phase1Questions.ts` | Datos de niveles, preguntas y variaciones |
+| `frontend/src/hooks/useCognitiveTracking.ts` | Hook de monitoreo cognitivo en challenge |
+| `frontend/src/stores/useCognitiveStore.ts` | Store global con eventos y métricas |
+| `frontend/src/index.css` | Tema Tailwind con colores warning, error, etc. |
+
+---
+
+# Estructura del Proyecto
+
+El proyecto está dividido en dos carpetas para deployment separado en Railway:
+
+```
+MetaPathFinder/
+├── backend/          # 🔷 Express API Server
+│   ├── server.ts
+│   ├── package.json
+│   └── tsconfig.json
+├── frontend/         # 🔶 React + Vite App
+│   ├── src/
+│   ├── public/
+│   ├── index.html
+│   ├── vite.config.ts
+│   ├── package.json
+│   └── tsconfig.json
+└── package.json      # 📦 Root config
+```
+
+## Instalación y Desarrollo
+
+### Opción 1: Instalar todo de una vez
+```bash
+npm run install-all
+```
+
+### Opción 2: Instalar manualmente
+```bash
+# Backend
+cd backend
+npm install
+
+# Frontend
+cd ../frontend
+npm install
+cd ..
+```
+
+## Ejecutar en Desarrollo
+
+```bash
+# Terminal 1: Backend (Puerto 3000)
+cd backend
+npm run dev
+
+# Terminal 2: Frontend (Puerto 5173)
+cd frontend
+npm run dev
+```
+
+O ejecutar ambos simultáneamente:
+```bash
+npm run dev
+```
+
+## Build para Producción
+
+```bash
+npm run build
+```
+
+Esto compilará el frontend a `frontend/dist/`
+
+## Deploy en Railway
+
+### Backend
+1. Conectar el repositorio a Railway
+2. Seleccionar carpeta raíz
+3. Variables de entorno:
+   - `PORT` = 3000 (o dejar vacío para auto)
+   - `NODE_ENV` = production
+4. Build command: `cd backend && npm install`
+5. Start command: `cd backend && npm start`
+
+### Frontend
+1. El frontend se construye y sirve desde el backend
+2. El `backend/server.ts` sirve los archivos estáticos desde `../frontend/dist/`
+
+## Variables de Entorno
+
+Crear `.env.local` en la raíz:
+```
+GEMINI_API_KEY=your_key_here
+```
+
+Copiar desde `.env.example` para referencia.
+
+## APIs Disponibles
+
+- **POST** `/api/tracking/events` - Registrar eventos cognitivos
+- **GET** `/api/cognitive/state/:userId` - Obtener estado cognitivo del usuario
+- **GET** `/*` - Servir aplicación React (SPA)
+
+---
+
+# Guía de Integración: Dashboard Admin y Rastreo de Estudiantes
+
+## 1. Acceso al Dashboard Admin
+
+### Ubicación
+- **Ruta**: `/registered-users`
+- **Acceso**: Solo para usuarios con rol `admin`
+- **Menú**: "Usuarios Registrados" en el Sidebar (aparece automáticamente para admins)
+
+### Vista Incluye
+- ✅ Total de estudiantes registrados
+- ✅ Pruebas completadas vs en progreso
+- ✅ Tarjetas por estudiante con estadísticas principales
+- ✅ Modal detallado con análisis por pregunta
+- ✅ Filtros por estado (Todos, Completadas, En Progreso, Pendientes)
+
+---
+
+## 2. Rastreo de Eventos en Pruebas
+
+### Hook: `useStudentTestTracking`
+
+Usar este hook en cualquier página de pruebas para rastrear automáticamente:
+
+```typescript
+import { useStudentTestTracking } from '../hooks/useStudentTestTracking';
+
+export function MiPrueba() {
+  const { trackClick, trackQuestionAnswer, trackPageNavigation } = useStudentTestTracking();
+
+  const handleAnswerQuestion = (questionNumber: number, answer: string) => {
+    const isCorrect = checkAnswer(answer);
+    const timeSpent = calculateTimeSpent();
+    const clicksUsed = getClickCount();
+
+    // Rastrear respuesta
+    trackQuestionAnswer(questionNumber, isCorrect, timeSpent, clicksUsed);
+  };
+
+  const handleNavigate = (nextPage: string) => {
+    trackPageNavigation('current-page', nextPage);
+    // navegar...
+  };
+
+  return (
+    <div>
+      <button onClick={() => trackClick('submit-btn')}>Enviar</button>
+    </div>
+  );
+}
+```
+
+### Métodos Disponibles
+
+#### `trackClick(target: string)`
+Rastrear un click del usuario
+```typescript
+trackClick('answer-option-1');
+trackClick('submit-button');
+```
+
+#### `trackQuestionAnswer(questionNumber, isCorrect, timeSpent, clicks)`
+Rastrear respuesta a una pregunta
+```typescript
+trackQuestionAnswer(
+  1,              // número de pregunta
+  true,           // ¿es correcta?
+  45,             // tiempo en segundos
+  8               // cantidad de clicks
+);
+```
+
+#### `trackPageNavigation(fromPage, toPage)`
+Rastrear navegación entre páginas
+```typescript
+trackPageNavigation('question-1', 'question-2');
+trackPageNavigation('preview', 'question-1');
+```
+
+---
+
+## 3. Gestión de Sesiones de Prueba
+
+### Store Actions
+
+#### Registrar un nuevo estudiante
+```typescript
+import { useCognitiveStore } from '../stores/useCognitiveStore';
+
+const { registerStudent } = useCognitiveStore();
+
+registerStudent({
+  name: 'Juan Pérez',
+  email: 'juan@example.com',
+  testDate: Date.now(),
+  totalTime: 0,
+  totalClicks: 0,
+  pageNavigations: 0,
+  score: 0
+});
+```
+
+#### Iniciar sesión de prueba
+```typescript
+const { startTestSession } = useCognitiveStore();
+
+// Al comenzar la prueba
+startTestSession('student-id-123');
+```
+
+#### Finalizar sesión de prueba
+```typescript
+const { endTestSession } = useCognitiveStore();
+
+// Al terminar la prueba
+endTestSession('student-id-123', 85); // 85 es la calificación
+```
+
+#### Obtener resultados
+```typescript
+const { getStudentResults, getStudentById } = useCognitiveStore();
+
+// Todos los resultados
+const allResults = getStudentResults();
+
+// Resultados de un estudiante específico
+const studentData = getStudentById('student-id-123');
+```
+
+---
+
+## 4. Datos Capturados Automáticamente
+
+### Por Estudiante
+- `name`: Nombre completo
+- `email`: Correo electrónico
+- `status`: 'pending' | 'in-progress' | 'completed'
+- `testDate`: Fecha/hora de realización
+- `totalTime`: Tiempo total en segundos
+- `totalClicks`: Total de clicks durante la prueba
+- `pageNavigations`: Cambios de página
+- `score`: Calificación final (0-100)
+
+### Por Pregunta
+- `number`: Número de pregunta
+- `timeSpent`: Tiempo en segundos
+- `clicks`: Cantidad de clicks
+- `answered`: ¿fue respondida?
+- `correct`: ¿respuesta correcta?
+
+### Eventos Rastreados
+- `UI_CLICK`: Click del usuario
+- `QUIZ_ANSWER`: Respuesta a pregunta
+- `PAGE_NAVIGATION`: Cambio de página
+- `PAGE_LEFT`: Estudiante se fue de la pestaña
+- `PAGE_RETURNED`: Estudiante regresó
+
+---
+
+## 5. Indicadores de Análisis
+
+El dashboard muestra automáticamente:
+
+### Velocidad Promedio
+```
+clicks / (tiempo en minutos)
+```
+
+### Eficiencia
+- **Alta**: < 30 clicks
+- **Media**: 30-50 clicks
+- **Baja**: > 50 clicks
+
+### Estabilidad
+- **Estable**: ≤ 5 cambios de página
+- **Inestable**: > 5 cambios de página
+
+---
+
+## 6. Ejemplo Completo: Integración en CognitiveChallenge
+
+```typescript
+import { useStudentTestTracking } from '../hooks/useStudentTestTracking';
+import { useCognitiveStore } from '../stores/useCognitiveStore';
+
+export function CognitiveChallenge() {
+  const { trackQuestionAnswer, trackPageNavigation } = useStudentTestTracking();
+  const { startTestSession, endTestSession } = useCognitiveStore();
+  
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [startTime] = useState(Date.now());
+  const [clickCount, setClickCount] = useState(0);
+
+  useEffect(() => {
+    // Iniciar sesión cuando carga la prueba
+    startTestSession('student-123');
+  }, []);
+
+  const handleAnswerSubmit = (answer: string) => {
+    const isCorrect = checkIfCorrect(answer);
+    const timeSpent = Math.round((Date.now() - startTime) / 1000);
+
+    // Rastrear la respuesta
+    trackQuestionAnswer(
+      currentQuestion + 1,
+      isCorrect,
+      timeSpent,
+      clickCount
+    );
+
+    // Resetear contador
+    setClickCount(0);
+  };
+
+  const handleNextQuestion = () => {
+    trackPageNavigation(`question-${currentQuestion}`, `question-${currentQuestion + 1}`);
+    setCurrentQuestion(prev => prev + 1);
+  };
+
+  const handleFinishTest = (finalScore: number) => {
+    // Finalizar sesión
+    endTestSession('student-123', finalScore);
+    // Los datos se guardaron automáticamente
+    navigate('/dashboard');
+  };
+
+  return (
+    <div>
+      {/* Componentes de prueba */}
+      <button onClick={() => setClickCount(prev => prev + 1)}>
+        Opción
+      </button>
+    </div>
+  );
+}
+```
+
+---
+
+## 7. Visualización de Resultados
+
+Acceder a `/registered-users` para ver:
+
+1. **Resumen General**: Cards con estadísticas agregadas
+2. **Listado de Estudiantes**: Grid con tarjetas de cada estudiante
+3. **Detalles Expandibles**: Click en tarjeta abre modal con:
+   - Gráficos de eficiencia
+   - Tabla detallada por pregunta
+   - Análisis de patrones cognitivos
+   - Métricas de velocidad y estabilidad
+
+---
+
+## 8. Notas Importantes
+
+⚠️ **Almacenamiento**: Actualmente los datos se guardan en `localStorage`. Para producción, conectar con backend.
+
+⚠️ **Datos de Ejemplo**: El dashboard usa datos mock. Reemplazar con datos reales cuando esté disponible el backend.
+
+✅ **Rastreo Automático**: La visibilidad de pestañas se rastrea automáticamente.
+
+✅ **Persistencia**: Los datos persisten incluso después de recargar la página.
+
+---
+
+# Fase 1 - Contexto y Estructura del Sistema de Preguntas y Retos
+
+## 1. Objetivo de la Fase 1
+
+La Fase 1 documenta el diseño inicial del flujo pedagógico y la organización de las preguntas y retos en MetaPathFinder. Se trabaja sobre un sistema que no solo evalúa el conocimiento técnico, sino que mide la metacognición: cómo el estudiante se autoevalúa, resuelve el reto y ajusta su confianza.
+
+## 2. Contexto del Trabajo
+
+Esta fase se basa en el enfoque de evaluación por niveles, con un ciclo por nivel que contiene tres fases:
+
+- **Fase A: Juicio de Aprendizaje**
+- **Fase B: Resolución Técnica**
+- **Fase C: Calibración Metacognitiva**
+
+En este contexto, los estudiantes responden preguntas y retos diseñados para capturar:
+
+- Su confianza inicial antes de resolver
+- Su desempeño real durante la resolución
+- La brecha entre confianza y resultado
+
+## 3. Cómo se estructuraron las preguntas y retos
+
+### 3.1. Reto por Nivel
+
+Cada nivel tiene una colección de preguntas/retos que se presentan en la **Fase B**. La idea es que cada nivel represente una dificultad progresiva:
+
+- **Básico**: retos de comprensión inicial
+- **Intermedio**: retos con mayor complejidad lógica
+- **Experto**: retos que exigen análisis profundo y transferencia de conocimientos
+
+### 3.2. Tipos de preguntas
+
+Se trabajó con preguntas que combinan:
+
+- lógica booleana
+- preguntas de programación estructurada
+- análisis de casos
+
+El sistema puede ampliar estas preguntas en futuros niveles, manteniendo siempre la misma estructura de juicio, resolución y calibración.
+
+### 3.3. Variaciones para repetición
+
+Cuando un estudiante completa un reto y se calcula su calibración:
+
+- Si **calibración >= umbral del nivel** → avanza al siguiente reto
+- Si **calibración < umbral del nivel** → se le muestra una **variación** de la misma pregunta
+
+Una variación mantiene la misma respuesta técnica correcta, pero cambia:
+- El enunciado de la pregunta
+- El contexto narrativo
+- El orden de las opciones
+
+Esto evita memorización y valida si el estudiante comprendió realmente el concepto.
+
+### 3.4. Estructura real de la Fase 1
+
+La implementación se conectó con la siguiente estructura de niveles y retos:
+
+- **Nivel Básico**
+  - `B1_HTML_H1` (HTML): jerarquía semántica y encabezados principales
+  - `B2_CSS_BACKGROUND` (CSS): propiedades de fondo
+  - `B3_JS_ALERT` (JavaScript): funciones emergentes básicas
+  - `B4_GITHUB_INIT` (GitHub): inicialización de repositorios
+  - `B5_LOGICA_VARIABLES` (Lógica): variables dinámicas y reasignación
+
+- **Nivel Medio**
+  - `M1_HTML_LINKS` (HTML): atributos de enlaces y navegación
+  - `M2_CSS_PADDING` (CSS): espacio interno con padding
+  - `M3_JS_ONCLICK` (JavaScript): eventos de clic
+  - `M4_GITHUB_COMMIT` (GitHub): registro de cambios con commit
+  - `M5_LOGICA_COMPARACION` (Lógica): operadores de comparación
+
+- **Nivel Experto**
+  - `E1_HTML_REQUIRED` (HTML): validación obligatoria en formularios
+  - `E2_CSS_FLEXBOX` (CSS): alineación avanzada con Flexbox
+  - `E3_JS_DOM` (JavaScript): manipulación del DOM por ID
+  - `E4_GITHUB_PUSH` (GitHub): sincronización remota a GitHub
+  - `E5_LOGICA_IF` (Lógica): estructuras condicionales
+
+Cada reto cuenta con varias variaciones narrativas que mantienen la misma respuesta técnica correcta, pero cambian el contexto y la formulación para medir mejor la calibración.
+
+## 4. El flujo de usuarios y resultados
+
+### 4.1. Flujo por Reto (Challenge)
+
+El sistema avanza nivel por nivel (Básico → Medio → Experto), presentando **retos** de forma secuencial:
+
+1. **Juicio Metacognitivo**: Se presenta la pregunta metacognitiva y el estudiante indica su confianza (1-10)
+2. **Resolución**: El estudiante responde la pregunta principal
+3. **Evaluación**: El sistema compara percepción vs realidad
+   - Si es **correcto** → Avanza al siguiente reto del nivel
+   - Si es **incorrecto** → Se le presenta una **variación** de la misma pregunta
+4. **Repetición de Variaciones**: El estudiante puede intentar variaciones hasta que:
+   - Acierta una variación (demuestra comprensión) → Avanza al siguiente reto
+   - Se agotan las variaciones sin acierto → Se marca como incompleto y avanza igual
+
+### 4.2. Estructura de datos: Retos y Variaciones
+
+- **Reto Principal**: La pregunta base de cada skills (ej: `B1_HTML_H1`)
+- **Variaciones**: Alternativas narrativas con la misma respuesta correcta (3 versiones por pregunta)
+  - Cambian el contexto y enunciado
+  - Mantienen la respuesta técnica correcta
+  - Permiten validar comprensión genuina
+
+### 4.3. Lista de usuarios registrados
+
+En la sección de administración se muestra una lista compacta de estudiantes con:
+- Nombre del estudiante
+- Estado (Completada / En Progreso / Pendiente)
+
+Al hacer clic, se revelan detalles incluyendo:
+- Tiempo total
+- Clicksnavegaciones
+- Calificación
+- Análisis por pregunta
+
+## 5. Decisión pedagógica central
+
+### 5.1. Evaluación de la confianza (Juicio)
+
+Para cada reto, el estudiante indica su confianza con una escala 1-10 antes de responder.
+
+### 5.2. Evaluación del desempeño (Resolución)
+
+El estudiante responde la pregunta principal. El sistema registra:
+- Si la respuesta es correcta
+- Tiempo empleado
+- Número de variaciones necesarias (si fue al primer intento, o requirió variaciones)
+
+### 5.3. Análisis de Desfase Metacognitivo (Calibración)
+
+Se compara la percepción inicial con el desempeño real:
+
+- **Confianza = Desempeño**: Calibración correcta (verde)
+- **Confianza > Desempeño**: Sobreconfianza (naranja)
+- **Confianza < Desempeño**: Subconfianza (azul)
+
+Si el estudiante requirió variaciones para acertar, se registra también el número de intentos.
+
+### 5.4. Progresión del Nivel
+
+Cada nivel tiene un umbral de calibración requerida:
+- **Básico**: 60% de calibración
+- **Medio**: 70% de calibración
+- **Experto**: 80% de calibración
+
+Si el promedio de calibración de todos los retos del nivel alcanza el umbral, el estudiante avanza al siguiente nivel.
+
+## 5.5. Implementación técnica de retos y variaciones
+
+En el código, la evaluación funciona así:
+
+```
+for each level (basic → intermediate → expert):
+  for each question in level.questions:
+    - Mostrar juicio metacognitivo (1-10)
+    - Mostrar pregunta principal
+    - Si respuesta correcta:
+        → Guardar intento
+        → Pasar al siguiente reto
+    - Si respuesta incorrecta:
+        → Obtener variaciones[questionId]
+        → Mostrar variación[0], luego variación[1], etc.
+        → Si alguna variación es correcta:
+            → Registrar intento con variationIndex
+            → Pasar al siguiente reto
+        - Si se agotan variaciones sin acierto:
+            → Registrar intento fallido
+            → Pasar al siguiente reto
+```
+
+Cada intento registra:
+- `questionId`: ID único de la pregunta principal
+- `perception`: Confianza del estudiante (1-10)
+- `isCorrect`: Si acertó
+- `calibration`: Brecha (percepción vs realidad)
+- `variationAttempts`: Número de variación intentada (0=principal)
+
+## 6. Resultado de la Fase 1
+
+- Mide el **proceso de aprendizaje** mediante retos con variaciones
+- Detecta sobreconfianza y ajusta el flujo automáticamente
+- Organiza preguntas y retos en **3 niveles** (Básico, Medio, Experto) con progresión clara
+- Utiliza **variaciones equivalentes** para validar comprensión genuina, no memorización
+- Registra la **brecha entre percepción y desempeño** en tiempo real
+- Presenta resultados en un **perfil de estudiante** con métricas de calibración
+
+El sistema ahora implementa:
+
+- Evaluación por **retos secuenciales** dentro de cada nivel
+- Sistema de **variaciones** para reintentos de preguntas no acertadas
+- Flujo de **juicio → resolución → evaluación → progresión**
+- Análisis visual del desfase metacognitivo en el perfil del estudiante
+
+Esta fase prepara el proyecto para continuar con más niveles, integración de heurísticas cognitivas avanzadas y un mejor análisis del transferencia de conocimiento entre dominios.
+
+---
+
+# BANCO DE PREGUNTAS JOL GENERALES — Meta-Pathfinder
+
+> Preguntas metacognitivas transversales · aplican a TODOS los retos · 3 por nivel (básico / medio / avanzado)
+
+| ID JOL | Nivel | Código | Pregunta JOL (texto para el estudiante) | Escala | Dimensión metacognitiva | Referente teórico |
+|---|---|---|---|---|---|---|
+| JG-B1 | Básico | B-G1 | Antes de comenzar este reto, ¿qué tan seguro/a estás de poder completarlo sin necesitar ayuda externa? (1 = muy inseguro · 10 = totalmente seguro) | 1 – 10 | Confianza general ante el reto | Flavell (1979) · Juicio de Aprendizaje (JOL) |
+| JG-B2 | Básico | B-G2 | Piensa en el tiempo que crees que necesitarás para resolver este reto. ¿Cuántos minutos estimas que tardarás? | Numérico (min) | Estimación temporal · planificación | Brown (1987) · regulación del aprendizaje |
+| JG-B3 | Básico | B-G3 | ¿En qué momento de tu aprendizaje te encuentras respecto a este tipo de actividades? Marca dónde te ves. | Nunca lo he hecho · He leído sobre ello · Lo he practicado poco · Lo domino | Conocimiento declarativo vs. procedimental | Schraw & Dennison (1994) · conocimiento metacognitivo |
+| JG-M1 | Medio | M-G1 | Antes de iniciar, ¿qué tan seguro/a estás de poder diseñar una solución ÓPTIMA (no solo funcional) para este reto? (1 = muy inseguro · 10 = experto/a total) | 1 – 10 | Confianza en calidad de la solución | Kruger & Dunning (1999) · metacognición de dominio |
+| JG-M2 | Medio | M-G2 | ¿Cuántos intentos o revisiones crees que necesitarás antes de tener una solución que cumpla todos los criterios? Escribe un número. | Numérico (intentos) | Estimación de esfuerzo · densidad de edición | Pintrich (2002) · evaluación metacognitiva |
+| JG-M3 | Medio | M-G3 | ¿Qué parte del reto te parece más difícil ANTES de comenzar? Describe brevemente. | Texto libre (máx. 60 palabras) | Identificación de lagunas de conocimiento | Efklides (2006) · experiencias metacognitivas |
+| JG-A1 | Avanzado | A-G1 | Considerando todos los criterios de evaluación de este reto, ¿en qué porcentaje estás seguro/a de cumplirlos todos? (0 % = ninguno · 100 % = todos con certeza) | 0 % – 100 % | Calibración metacognitiva de criterios | Schraw (2009) · calibración metacognitiva |
+| JG-A2 | Avanzado | A-G2 | Si tuvieras que enseñarle a un compañero cómo resolver este reto ahora mismo, ¿qué tan capaz te sentirías de explicarlo sin errores? (1 = incapaz · 10 = puedo enseñarlo sin dudar) | 1 – 10 | Autoeficacia de transferencia · efecto de enseñanza | Chi et al. (1994) · auto-explicación |
+| JG-A3 | Avanzado | A-G3 | Compara este reto con los anteriores que has resuelto. ¿Qué tan bien crees que tu experiencia previa te ayudará aquí? Explica en una frase qué elemento de experiencias anteriores aplicarás. | Texto libre (máx. 80 palabras) | Transferencia y metacognición acumulada | Perkins & Salomon (1992) · transferencia del aprendizaje |
+
+---
+
+# BANCO DE RETOS · NIVEL BÁSICO — Meta-Pathfinder · MEN Tecnología e Informática
+
+> N1 = sub-nivel más sencillo · N2 = intermedio · N3 = más desafiante  
+> Cada reto tiene 5 preguntas JOL Fase A: 3 generales (ver hoja JOL Generales) + 2 específicas
+
+| ID Reto | Nivel | Sub-nivel | Componente MEN | Código MEN | Título del reto (briefing) | Descripción del problema (150 palabras) | Criterios de evaluación | Recursos Fase B | Tiempo estimado (min) | JOL Esp. 1 (pregunta) | JOL Esp. 1 (escala) | JOL Esp. 2 (pregunta) | JOL Esp. 2 (escala) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| RB-C1-N1 | Básico | N1 | Naturaleza y evolución | C1 | La línea del tiempo tecnológica de mi colegio | Tu colegio quiere crear una exhibición sobre cómo la tecnología ha cambiado la vida escolar. Debes identificar al menos 5 artefactos o sistemas tecnológicos que han transformado la educación en los últimos 50 años (ej. tablero, retroproyector, computador, tablet) y construir una línea del tiempo ordenada cronológicamente, explicando para cada uno qué problema resolvía y qué lo reemplazó. | 1. Identifica 5+ artefactos con fecha aproximada.<br>2. Explica qué problema resolvía cada uno.<br>3. Señala la evolución (qué reemplazó a qué).<br>4. Presenta la línea ordenada correctamente. | Línea de tiempo en papel / herramienta digital (Canva, Google Slides)<br>Fuentes: internet, entrevistas a docentes | 20 | ¿Qué tanto sabes sobre la historia de la tecnología en la educación colombiana? Marca tu nivel. | 1=Nada · 2=Algo · 3=Bastante · 4=Mucho | ¿Podrías explicarle a un compañero por qué los artefactos tecnológicos evolucionan con el tiempo? (1=no podría · 5=lo explico con ejemplos propios) | 1 – 5 |
+| RB-C1-N2 | Básico | N2 | Naturaleza y evolución | C1 | ¿Qué tiene de tecnológico mi barrio? | Camina por tu barrio o comunidad y registra (con fotos o dibujos) al menos 6 sistemas tecnológicos que encuentres: infraestructura de agua, electricidad, telecomunicaciones, transporte, construcción. Para cada uno, describe: (a) cuál es su función, (b) qué materiales o conocimientos técnicos requirió y (c) cómo ha mejorado la calidad de vida. Presenta tus hallazgos en un informe de una página con imágenes. | 1. Identifica 6+ sistemas tecnológicos reales.<br>2. Describe función, materiales y conocimientos para cada uno.<br>3. Argumenta el impacto en la calidad de vida.<br>4. Informe coherente con imágenes o dibujos. | Cámara o celular, libreta de campo<br>Formato de informe sencillo | 30 | ¿Qué tan capaz eres de identificar y clasificar sistemas tecnológicos en entornos cotidianos? (1=no sé cómo · 5=lo hago con facilidad) | 1 – 5 | ¿Cuánto sabes sobre los materiales y procesos que requiere la construcción de infraestructura tecnológica (agua, luz, red)? | 1=Muy poco · 5=Mucho |
+| RB-C1-N3 | Básico | N3 | Naturaleza y evolución | C1 | Compara dos tecnologías que resuelven el mismo problema | Elige un problema cotidiano (ej. comunicarse a distancia, conservar alimentos, transportarse) e identifica DOS tecnologías distintas que lo resuelven: una antigua y una moderna. Analiza ambas usando los criterios: eficiencia, costo, accesibilidad, impacto ambiental e impacto social. Elabora una tabla comparativa argumentada y concluye cuál considerarías "mejor" y por qué, reconociendo que la respuesta puede depender del contexto. | 1. Problema claramente definido.<br>2. Dos tecnologías bien descritas.<br>3. Tabla comparativa con 5 criterios argumentados.<br>4. Conclusión contextualizada y matizada.<br>5. Usa vocabulario técnico del área. | Tabla comparativa en hoja de cálculo o papel<br>Fuentes bibliográficas mínimas (2) | 35 | ¿Qué tan bien puedes evaluar y comparar dos tecnologías usando criterios técnicos como eficiencia, costo e impacto ambiental? (1=no sabría por dónde empezar · 5=lo hago con argumentos sólidos) | 1 – 5 | ¿Conoces el concepto de "impacto ambiental de la tecnología" lo suficiente como para incluirlo en un análisis comparativo? | 1=No lo conozco · 5=Lo manejo bien |
+| RB-C2-N1 | Básico | N1 | Apropiación y uso | C2 | Organiza el archivo digital de tu salón | Tu salón ha acumulado archivos desorganizados en una carpeta compartida de Google Drive. Tienes 20 archivos de distintos tipos (documentos, imágenes, videos, hojas de cálculo) que debes organizar. Crea una estructura de carpetas lógica y nombra cada archivo siguiendo una convención consistente (ej. GRADO_MATERIA_TIPO_FECHA). Explica por escrito (5–8 oraciones) los criterios que usaste para organizar. | 1. Estructura de carpetas lógica y coherente.<br>2. Convención de nombres consistente aplicada a los 20 archivos.<br>3. Justificación escrita clara de los criterios.<br>4. La organización permite encontrar un archivo en menos de 15 segundos. | Google Drive (o simulación en papel)<br>Lista de los 20 archivos proporcionada por el docente | 20 | ¿Qué tan hábil eres organizando información digital (carpetas, archivos, nombres) de forma que otros puedan usarla fácilmente? (1=muy poco hábil · 5=muy hábil) | 1 – 5 | ¿Conoces y aplicas convenciones de nombrado de archivos digitales en tu vida diaria? | Nunca · A veces · Siempre |
+| RB-C2-N2 | Básico | N2 | Apropiación y uso | C2 | Crea una presentación accesible para tus abuelos | Debes explicarle a un adulto mayor (sin conocimientos tecnológicos) cómo usar una aplicación de videollamadas (WhatsApp, Zoom o Meet) para comunicarse con su familia. Diseña una presentación de máximo 8 diapositivas con instrucciones visuales claras, usando capturas de pantalla reales o dibujos, textos en fuente grande y lenguaje sencillo. La presentación debe incluir: instalación, configuración básica, cómo llamar y cómo terminar la llamada. | 1. Máx. 8 diapositivas coherentes.<br>2. Lenguaje comprensible para no-técnicos.<br>3. Instrucciones paso a paso con imágenes.<br>4. Cubre los 4 momentos (instalación, config., llamar, terminar).<br>5. Tipografía legible (min. 24pt). | Google Slides o PowerPoint<br>Celular/tablet para capturas reales | 35 | ¿Qué tan bien sabes adaptar el lenguaje técnico a una audiencia no especializada (adultos mayores, niños)? (1=no sé cómo · 5=lo hago muy bien) | 1 – 5 | ¿Puedes diseñar material visual instructivo (con imágenes + texto) que sea claro sin que alguien te lo explique? (1=nunca lo he hecho · 5=sí, con facilidad) | 1 – 5 |
+| RB-C2-N3 | Básico | N3 | Apropiación y uso | C2 | Hoja de cálculo para el presupuesto del evento escolar | El comité estudiantil necesita planear el presupuesto para la izada de bandera del mes. Debes crear una hoja de cálculo que registre: todos los gastos previstos (decoración, refrigerio, sonido), los ingresos posibles (colecta, patrocinio), calcule el saldo automáticamente con fórmulas, y genere un gráfico de barras que muestre la distribución de gastos. El presupuesto total disponible es $150.000 COP. | 1. Hoja con fórmulas funcionales (suma, resta, porcentaje).<br>2. Cero errores de fórmula.<br>3. Gráfico de barras generado automáticamente.<br>4. Saldo calculado correctamente.<br>5. Formato limpio y legible. | Google Sheets o Excel<br>Plantilla base (opcional, proporcionada por el docente) | 40 | ¿Qué tan seguro/a estás de crear fórmulas básicas en una hoja de cálculo (SUMA, RESTA, porcentajes) sin consultar tutoriales? (1=no sé · 5=totalmente seguro) | 1 – 5 | ¿Has creado gráficos automáticos en una hoja de cálculo antes? ¿Qué tan fácil te resulta? | Nunca · Una vez · Varias veces · Es fácil para mí |
+| RB-C3-N1 | Básico | N1 | Solución de problemas | C3 | Instrucciones para hacer un sándwich (algoritmo cotidiano) | El pensamiento algorítmico comienza con actividades cotidianas. Escribe un algoritmo detallado paso a paso para preparar un sándwich de jamón y queso, como si se lo explicaras a un robot que no sabe nada de cocina. Usa estructura de pasos numerados, incluye condiciones (si no hay pan, entonces…) y considera al menos un ciclo repetitivo (repite hasta que…). Luego dibuja el diagrama de flujo correspondiente. | 1. Algoritmo secuencial y completo.<br>2. Al menos 1 condición (if/else).<br>3. Al menos 1 ciclo (while/for).<br>4. Diagrama de flujo con símbolos correctos.<br>5. No hay ambigüedad en los pasos. | Papel cuadriculado para diagrama de flujo<br>Símbolos de diagrama de flujo (referencia proporcionada) | 25 | ¿Sabes qué es un algoritmo y puedes escribir uno paso a paso para una tarea cotidiana? (1=no sé qué es · 5=sí, puedo escribirlo sin ayuda) | 1 – 5 | ¿Conoces los símbolos básicos de un diagrama de flujo (inicio, proceso, decisión, fin)? (1=no los conozco · 4=los uso correctamente) | 1 – 4 |
+| RB-C3-N2 | Básico | N2 | Solución de problemas | C3 | Automatiza la lista de asistencia con código básico | Tu curso tiene 30 estudiantes. Diseña (en pseudocódigo o en Scratch/Python básico) un programa que: lea una lista de nombres, pregunte para cada nombre si asistió (sí/no), cuente el total de presentes y ausentes, y muestre el porcentaje de asistencia. El programa debe manejar el caso en que se ingrese una respuesta diferente a "sí" o "no" (validación de entrada). | 1. Programa lee lista de nombres.<br>2. Bucle para recorrer todos los estudiantes.<br>3. Contador de presentes y ausentes.<br>4. Cálculo y muestra del porcentaje.<br>5. Validación de entrada incorrecta. | Scratch / Python (IDLE) / pseudocódigo en papel<br>Lista de 30 nombres (proporcionada) | 40 | ¿Qué tan seguro/a estás de implementar un bucle (for o while) en un lenguaje de programación o pseudocódigo para recorrer una lista? (1=no sé qué es un bucle · 5=lo implemento sin dificultad) | 1 – 5 | ¿Puedes diseñar la validación de entradas incorrectas en un programa (qué pasa si el usuario escribe algo que no se esperaba)? (1=nunca lo he pensado · 5=lo incluyo siempre) | 1 – 5 |
+| RB-C3-N3 | Básico | N3 | Solución de problemas | C3 | Diseña el sistema de préstamo de libros de la biblioteca | La biblioteca de tu colegio quiere digitalizar su sistema de préstamo. Diseña (sin código, usando diagrama de flujo y pseudocódigo) un sistema que: registre estudiantes y libros, permita prestar un libro (verifica disponibilidad), registre la devolución (calcula días de retraso si los hay) y genere un reporte de los libros más prestados. Considera qué datos necesitas guardar y cómo los organizarías. | 1. Diagrama de flujo completo del proceso.<br>2. Identificación de datos necesarios (entidades).<br>3. Lógica de préstamo y devolución correcta.<br>4. Cálculo de días de retraso.<br>5. Propuesta de reporte de uso. | Papel o herramienta de diagramas (draw.io)<br>Referencia de símbolos de flujo | 45 | ¿Qué tan capaz eres de descomponer un sistema complejo (como una biblioteca) en sus partes, datos y procesos, antes de escribir código? (1=no sé por dónde empezar · 5=lo hago sistemáticamente) | 1 – 5 | ¿Puedes identificar qué datos necesita guardar un sistema digital para funcionar correctamente (entidades, campos, relaciones)? (1=no lo entiendo · 5=lo diseño con facilidad) | 1 – 5 |
+| RB-C4-N1 | Básico | N1 | Tecnología y sociedad | C4 | ¿Quién tiene acceso a la tecnología en Colombia? | Investiga (con al menos 2 fuentes) el porcentaje de hogares colombianos con acceso a internet en zonas urbanas y rurales. Crea una infografía sencilla (1 página) que muestre: los datos encontrados, una comparación entre zonas, y tu reflexión personal sobre qué consecuencias tiene esta brecha digital para los estudiantes rurales. Usa datos del DANE o del Ministerio TIC. | 1. Datos reales y citados (mínimo 2 fuentes).<br>2. Comparación urbana vs. rural visible.<br>3. Infografía visualmente clara.<br>4. Reflexión personal argumentada (mín. 3 oraciones). | Canva / Google Slides / papel<br>Datos: dane.gov.co · mintic.gov.co | 30 | ¿Qué tanto sabes sobre la brecha digital en Colombia (diferencias de acceso a internet entre zonas y grupos sociales)? (1=nada · 5=bastante) | 1 – 5 | ¿Puedes analizar datos estadísticos simples (porcentajes, comparaciones) y convertirlos en una reflexión argumentada? (1=no puedo · 5=lo hago con facilidad) | 1 – 5 |
+| RB-C4-N2 | Básico | N2 | Tecnología y sociedad | C4 | Las redes sociales y mi bienestar: análisis crítico | Registra durante 3 días el tiempo que pasas en redes sociales y cómo te sientes antes y después de usarlas (ansiedad, alegría, comparación social, etc.). Luego analiza: ¿existe relación entre el tiempo de uso y tu estado emocional? Presenta tus hallazgos en un informe de una página con datos propios + al menos 1 referencia científica sobre el impacto de redes sociales en adolescentes. Propón 2 recomendaciones para un uso saludable. | 1. Registro de datos propios de 3 días.<br>2. Análisis de correlación tiempo–emoción.<br>3. Al menos 1 fuente científica citada.<br>4. 2 recomendaciones fundamentadas.<br>5. Informe cohesivo de 1 página. | Plantilla de registro (proporcionada)<br>Fuentes: artículos de salud digital (OMS, APA) | 35 | ¿Qué tan bien puedes analizar el impacto de las redes sociales en tu bienestar emocional usando datos propios y fuentes externas? (1=nunca lo he pensado · 5=lo analizo críticamente) | 1 – 5 | ¿Conoces investigaciones o estudios sobre el impacto psicológico de las redes sociales en adolescentes? (1=no conozco ninguno · 5=conozco varios y puedo citarlos) | 1 – 5 |
+| RB-C4-N3 | Básico | N3 | Tecnología y sociedad | C4 | Propuesta de solución tecnológica para un problema de tu comunidad | Identifica un problema real de tu comunidad (ej. manejo de residuos, agua, movilidad, seguridad) y diseña una propuesta de solución tecnológica viable considerando: (a) descripción del problema con evidencia, (b) tecnología propuesta y por qué es pertinente, (c) recursos necesarios, (d) posibles impactos positivos y negativos en la comunidad, y (e) consideraciones éticas. Presenta en un documento de 2 páginas con imágenes o diagramas. | 1. Problema real documentado con evidencia.<br>2. Tecnología propuesta pertinente y justificada.<br>3. Análisis de impactos positivos y negativos.<br>4. Consideraciones éticas explícitas.<br>5. Documento de 2 págs. con imágenes/diagramas. | Procesador de texto · fuentes de información local<br>Formato de propuesta (proporcionado) | 50 | ¿Qué tan capaz eres de diseñar una propuesta tecnológica que considere tanto impactos positivos como negativos y factores éticos? (1=no sé cómo · 5=lo hago con argumentos sólidos) | 1 – 5 | ¿Puedes identificar dilemas éticos relacionados con el uso de tecnología en contextos sociales colombianos? (1=no los identifico · 5=los analizo profundamente) | 1 – 5 |
+
+---
+
+# BANCO DE RETOS · NIVEL MEDIO — Meta-Pathfinder · MEN Tecnología e Informática
+
+> N1 = sub-nivel más sencillo · N2 = intermedio · N3 = más desafiante  
+> Cada reto tiene 5 preguntas JOL Fase A: 3 generales (ver hoja JOL Generales) + 2 específicas
+
+| ID Reto | Nivel | Sub-nivel | Componente MEN | Código MEN | Título del reto (briefing) | Descripción del problema (150 palabras) | Criterios de evaluación | Recursos Fase B | Tiempo estimado (min) | JOL Esp. 1 (pregunta) | JOL Esp. 1 (escala) | JOL Esp. 2 (pregunta) | JOL Esp. 2 (escala) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| RM-C1-N1 | Medio | N1 | Naturaleza y evolución | C1 | Anatomía de un smartphone: disección tecnológica | Sin desarmar físicamente un celular, investiga y documenta todos los sistemas tecnológicos que lo componen: procesador, memoria, sensores (acelerómetro, GPS, cámara), batería, pantalla táctil y módulos de comunicación. Para cada componente: explica su función, el principio científico que lo hace funcionar, cuándo fue inventado y cómo ha evolucionado. Presenta en un diagrama anotado + texto de apoyo. | 1. Mínimo 8 componentes identificados.<br>2. Función y principio científico por componente.<br>3. Línea de evolución para al menos 3 componentes.<br>4. Diagrama anotado legible.<br>5. Fuentes citadas correctamente. | Diagrama en papel o digital (draw.io / Canva)<br>Fuentes: IEEE Spectrum · Wikipedia técnica · documentación oficial | 45 | ¿Qué tan profundamente conoces los componentes internos de un smartphone y los principios científicos detrás de cada uno? (1=solo sé que existe · 5=explico su funcionamiento técnico) | 1 – 5 | ¿Puedes investigar y sintetizar información técnica de múltiples fuentes en un diagrama anotado coherente? (1=nunca lo he hecho · 5=lo hago eficientemente) | 1 – 5 |
+| RM-C1-N2 | Medio | N2 | Naturaleza y evolución | C1 | De la calculadora mecánica al procesador cuántico | Investiga la evolución del cómputo desde la calculadora mecánica de Pascal (1642) hasta los procesadores cuánticos actuales. Identifica al menos 6 hitos tecnológicos, explica para cada uno: (a) el avance técnico que representó, (b) quién lo desarrolló y en qué contexto social/histórico, (c) qué limitación superó y cuál nueva impuso. Concluye con una reflexión: ¿qué patrón ves en la evolución tecnológica? ¿Aplica la Ley de Moore? | 1. 6+ hitos ordenados cronológicamente.<br>2. Análisis técnico, histórico y social de cada uno.<br>3. Discusión sobre limitaciones.<br>4. Reflexión sobre la Ley de Moore fundamentada.<br>5. Fuentes académicas o técnicas. | Línea de tiempo digital (Timeline JS o similar)<br>Fuente base: Computer History Museum · ACM Digital Library | 55 | ¿Qué tan bien conoces la historia de la computación desde sus inicios mecánicos hasta los procesadores actuales? (1=casi nada · 5=la manejo con profundidad) | 1 – 5 | ¿Puedes aplicar conceptos como la Ley de Moore a un análisis histórico real y discutir sus limitaciones actuales? (1=no la conozco · 5=la aplico y critico con argumentos) | 1 – 5 |
+| RM-C1-N3 | Medio | N3 | Naturaleza y evolución | C1 | Prospectiva tecnológica: ¿cómo será la educación en 2040? | Basándote en tendencias tecnológicas actuales (IA generativa, realidad aumentada, computación en la nube, biometría, blockchain educativo), elabora un escenario prospectivo de cómo podría ser una clase de tecnología e informática en el año 2040 en Colombia. Argumenta cada tecnología incluida: ¿por qué crees que estará disponible en Colombia para ese año?, ¿qué problemas resolverá?, ¿qué nuevas inequidades podría generar? Presenta en formato ensayo (600 palabras) o video de 3 minutos. | 1. Mínimo 4 tecnologías prospectadas con fundamento.<br>2. Argumentación de disponibilidad en Colombia.<br>3. Análisis de impactos positivos y de inequidad.<br>4. Coherencia interna del escenario.<br>5. Formato ensayo o video completo. | Fuentes prospectivas: WEF Future of Jobs · UNESCO 2040 · CEPAL Colombia digital<br>Herramienta de video (opcional) | 60 | ¿Qué tan preparado/a estás para analizar tendencias tecnológicas actuales y proyectarlas a futuro con argumentos? (1=no sé cómo hacerlo · 5=lo hago con rigor) | 1 – 5 | ¿Puedes argumentar por qué una tecnología emergente global podría o no estar disponible en el contexto colombiano en el mediano plazo? (1=nunca lo he pensado · 5=tengo argumentos sólidos) | 1 – 5 |
+| RM-C2-N1 | Medio | N1 | Apropiación y uso | C2 | Automatiza una tarea repetitiva con macros | Tienes una hoja de cálculo con 200 filas de datos de calificaciones de 5 grupos. Semanalmente debes calcular el promedio, máximo, mínimo y resaltar en rojo a los estudiantes con nota inferior a 3.0. Crea una macro (en Google Sheets con Apps Script o en Excel con VBA) que realice todo esto automáticamente con un clic. La macro debe ser comentada explicando qué hace cada sección. | 1. Macro funcional que calcula promedio, máx. y mín.<br>2. Resalta automáticamente notas < 3.0 en rojo.<br>3. Código comentado (explicación de cada sección).<br>4. Funciona correctamente con datos nuevos.<br>5. Sin errores de ejecución. | Google Sheets + Apps Script / Excel + VBA<br>Hoja de datos de práctica (proporcionada) | 50 | ¿Qué tan seguro/a estás de escribir un script o macro básico en Google Apps Script o VBA para automatizar tareas en hojas de cálculo? (1=nunca he programado macros · 5=lo hago sin tutoriales) | 1 – 5 | ¿Puedes identificar tareas repetitivas en un flujo de trabajo y diseñar la lógica de automatización antes de escribir el código? (1=no lo relaciono · 5=lo hago sistemáticamente) | 1 – 5 |
+| RM-C2-N2 | Medio | N2 | Apropiación y uso | C2 | Diseña la identidad digital del proyecto de grado | Tu grupo de trabajo necesita una identidad digital coherente para presentar el proyecto de grado. Diseña: (1) un logo vectorial simple, (2) una paleta de colores (máx. 4) con justificación, (3) tipografía principal y secundaria, (4) una plantilla de diapositivas de 5 slides, y (5) un banner para redes sociales. Todo debe seguir principios de diseño: contraste, alineación, repetición y proximidad (CARP). Entrega todos los archivos editables. | 1. Logo vectorial coherente con el proyecto.<br>2. Paleta justificada (contraste y armonía).<br>3. Tipografía apropiada y justificada.<br>4. Plantilla de 5 slides funcional.<br>5. Banner de redes (1920×1080 px mínimo).<br>6. Principios CARP aplicados y señalados. | Canva Pro / Figma / Adobe Express<br>Guía de principios CARP (proporcionada) | 60 | ¿Qué tan bien dominas los principios de diseño visual (contraste, alineación, repetición, proximidad) para aplicarlos en una identidad de marca? (1=no los conozco · 5=los aplico conscientemente) | 1 – 5 | ¿Puedes crear materiales digitales coherentes (logo, paleta, tipografía, plantilla) siguiendo una identidad visual unificada? (1=nunca lo he hecho · 5=lo hago con criterio) | 1 – 5 |
+| RM-C2-N3 | Medio | N3 | Apropiación y uso | C2 | Base de datos de la tienda escolar (SQL básico) | La tienda escolar quiere digitalizar su inventario. Diseña e implementa una base de datos relacional simple con al menos 3 tablas: Productos, Ventas y Proveedores. En SQLite (o un entorno online como SQLiteOnline.com): crea las tablas con sus campos y tipos de datos, inserta 10 registros por tabla, y ejecuta 5 consultas: total de ventas del día, producto más vendido, stock bajo mínimo, ventas por categoría, y reporte de proveedores activos. | 1. 3 tablas con relaciones correctas (FK).<br>2. Tipos de datos apropiados.<br>3. 10 registros por tabla sin errores.<br>4. 5 consultas SQL funcionales.<br>5. Consultas producen resultados correctos. | SQLiteOnline.com / DB Browser for SQLite<br>Esquema de referencia (proporcionado) | 60 | ¿Qué tan seguro/a estás de diseñar un esquema de base de datos relacional con tablas, campos, tipos de datos y relaciones (llaves foráneas)? (1=nunca he creado una BD · 5=lo diseño sin ayuda) | 1 – 5 | ¿Puedes escribir consultas SQL básicas (SELECT, WHERE, GROUP BY, ORDER BY, JOIN) para obtener información específica de una base de datos? (1=no conozco SQL · 5=las escribo con confianza) | 1 – 5 |
+| RM-C3-N1 | Medio | N1 | Solución de problemas | C3 | Sensor de temperatura con Arduino (simulación) | Usando Tinkercad Circuits (simulador online gratuito), conecta un sensor de temperatura NTC o TMP36 a un Arduino Uno. Programa el Arduino para: leer la temperatura cada 2 segundos, mostrarla en el monitor serial, encender un LED rojo si la temperatura supera 30°C y un LED verde si es normal. Documenta el circuito con un esquema y el código con comentarios. | 1. Circuito correcto en simulador.<br>2. Lectura de temperatura funcional.<br>3. Lógica de LEDs correcta (>30°C rojo · resto verde).<br>4. Código comentado.<br>5. Esquema del circuito incluido. | Tinkercad Circuits (tinkercad.com) — gratuito<br>Referencia de pinout del sensor y Arduino | 50 | ¿Qué tan seguro/a estás de conectar un sensor a un Arduino y programar la lectura de datos en un simulador como Tinkercad? (1=nunca lo he intentado · 5=lo hago con confianza) | 1 – 5 | ¿Puedes escribir código Arduino (C++) que incluya condicionales para controlar actuadores (LEDs) según el valor leído por un sensor? (1=no conozco el lenguaje · 5=lo escribo sin problemas) | 1 – 5 |
+| RM-C3-N2 | Medio | N2 | Solución de problemas | C3 | Aplicación web de votación estudiantil | Diseña e implementa una aplicación web sencilla para la votación del personero estudiantil. Debe tener: una página de inicio con los candidatos (nombre + foto + propuesta breve), un botón de votar por candidato, un mecanismo para evitar votos dobles (al menos por sesión del navegador), y una página de resultados que muestre el conteo en tiempo real. Usa HTML, CSS y JavaScript básico. | 1. Interfaz con mínimo 3 candidatos.<br>2. Botón de votación funcional.<br>3. Prevención de voto doble (localStorage o similar).<br>4. Página de resultados con conteo correcto.<br>5. Diseño responsive (funciona en celular). | Editor de código: VS Code / CodePen / Replit<br>Referencia: MDN Web Docs · W3Schools | 65 | ¿Qué tan seguro/a estás de construir una aplicación web interactiva con HTML, CSS y JavaScript que incluya lógica (condicionales, eventos)? (1=nunca he programado web · 5=lo hago con confianza) | 1 – 5 | ¿Puedes diseñar la lógica para prevenir acciones duplicadas en una aplicación web (como votos dobles) usando almacenamiento del navegador? (1=no lo conozco · 5=lo implemento sin ayuda) | 1 – 5 |
+| RM-C3-N3 | Medio | N3 | Solución de problemas | C3 | Sistema de clasificación de residuos con lógica de sensores | Diseña en Python un sistema que simule la clasificación automática de residuos en una planta de reciclaje. El sistema recibe como entrada: el peso del objeto (gramos), su material (string: "plástico", "vidrio", "papel", "orgánico", "metal") y su tamaño (pequeño/mediano/grande). Con base en estos datos, debe: clasificarlo en la banda correcta (4 bandas), calcular el porcentaje de ocupación de cada banda, manejar errores de entrada inválida, y generar un reporte al final. | 1. Clases definidas para Objeto y Clasificador.<br>2. Lógica de clasificación correcta para los 5 materiales.<br>3. Cálculo de porcentaje de ocupación.<br>4. Manejo de excepciones para entradas inválidas.<br>5. Reporte final generado.<br>6. Código con docstrings. | Python 3.x (IDLE / Replit / VS Code)<br>Especificaciones de bandas (proporcionadas) | 60 | ¿Qué tan seguro/a estás de implementar clases y objetos en Python para modelar un sistema del mundo real con múltiples entidades? (1=no he aprendido POO · 5=lo implemento con confianza) | 1 – 5 | ¿Puedes diseñar el manejo de excepciones (try/except) en Python para que tu programa responda correctamente a entradas inválidas sin crashear? (1=no lo conozco · 5=lo implemento siempre) | 1 – 5 |
+| RM-C4-N1 | Medio | N1 | Tecnología y sociedad | C4 | Auditoría de huella digital personal | Realiza una auditoría completa de tu presencia digital: (1) lista todos los servicios y redes donde tienes cuenta, (2) revisa los permisos que has concedido a apps (cámara, micrófono, ubicación, contactos), (3) analiza qué datos podrían estar siendo recopilados sobre ti y con qué fin, (4) aplica al menos 5 medidas de seguridad (contraseña fuerte, 2FA, configuración de privacidad) y documenta el antes y después. Entrega un informe de 1.5 páginas. | 1. Inventario completo de cuentas y permisos.<br>2. Análisis de datos recopilados por categoría.<br>3. Mínimo 5 medidas de seguridad aplicadas.<br>4. Documentación del antes y después.<br>5. Informe coherente con recomendaciones. | Herramienta: Google My Activity · privacy.google.com<br>Guía de seguridad digital (proporcionada) | 50 | ¿Qué tan consciente eres de tu huella digital (qué datos generas, dónde están y quién los usa)? (1=nunca lo he pensado · 5=lo monitoreo activamente) | 1 – 5 | ¿Puedes identificar y aplicar medidas de seguridad digital (contraseñas seguras, 2FA, permisos de apps) de forma autónoma? (1=no sé cómo · 5=lo hago sistemáticamente) | 1 – 5 |
+| RM-C4-N2 | Medio | N2 | Tecnología y sociedad | C4 | Debate: ¿debe el Estado colombiano regular la IA? | Prepara una postura argumentada (a favor o en contra de la regulación estatal de la IA en Colombia) con mínimo 4 argumentos respaldados por evidencia. Debe incluir: definición de qué tipo de regulación propones o rechazas, ejemplos de regulación en otros países (UE AI Act, EEUU, China), análisis del contexto colombiano (MinTIC, Conpes digital), y consideración del contraargumento más fuerte. Presenta en debate grupal o ensayo de 700 palabras. | 1. Postura clara y definida.<br>2. Mínimo 4 argumentos con evidencia.<br>3. Referencia a regulaciones reales (EU, EEUU o China).<br>4. Análisis del contexto colombiano.<br>5. Contraargumento abordado honestamente. | EU AI Act summary · OCDE AI Policy · MinTIC Colombia<br>Formato de debate (proporcionado) | 55 | ¿Qué tan bien conoces el debate actual sobre regulación de la Inteligencia Artificial en el mundo y en Colombia? (1=no lo conozco · 5=puedo argumentar con evidencia) | 1 – 5 | ¿Puedes construir una postura argumentada sobre política tecnológica, anticipando y respondiendo contraargumentos? (1=no sé debatir con evidencia · 5=lo hago con rigor) | 1 – 5 |
+| RM-C4-N3 | Medio | N3 | Tecnología y sociedad | C4 | Diseña una política de uso de IA en tu institución | Tu colegio quiere adoptar herramientas de IA (ChatGPT, Copilot, Gemini) en el aula pero no tiene una política clara. Diseña una política institucional de 2 páginas que incluya: propósito y alcance, usos permitidos y prohibidos (con justificación ética), derechos de los estudiantes (privacidad, autoría), responsabilidades del docente, consecuencias del incumplimiento y un mecanismo de revisión anual. Inspírate en políticas reales de universidades o colegios. | 1. Política completa con 6 secciones mínimas.<br>2. Justificación ética de prohibiciones.<br>3. Derechos y responsabilidades diferenciados.<br>4. Mecanismo de revisión incluido.<br>5. Lenguaje institucional apropiado.<br>6. Referencias a políticas reales existentes. | Políticas de referencia: UNESCO AI in Education · Stanford HAI · U. Nacional Colombia<br>Formato institucional (proporcionado) | 65 | ¿Qué tan capaz eres de diseñar un documento de política institucional sobre uso de IA que sea ético, claro y aplicable en un colegio colombiano? (1=nunca he redactado documentos de política · 5=lo hago con criterio) | 1 – 5 | ¿Puedes identificar y balancear los derechos de los estudiantes (privacidad, autoría) con las responsabilidades institucionales en el uso de herramientas de IA? (1=no los distingo · 5=los argumento con profundidad) | 1 – 5 |
+
+---
+
+# BANCO DE RETOS - NIVEL AVANZADO
+
+**Meta-Pathfinder — MEN Tecnología e Informática**
+
+*N1 = sub-nivel más sencillo | N2 = Intermedio | N3 = más desafiante*
+
+---
+
+## RA-C1-N1: Arqueología tecnológica: desarme y documento
+- **Nivel:** Avanzado (N1)
+- **Componente MEN:** Naturaleza y evolución (C1)
+- **Tiempo Estimado:** 70 min
+
+### Descripción del Problema
+Con un dispositivo electrónico en desuso (preferiblemente un celular o computador portátil viejo), desmóntalo con cuidado y documenta fotográficamente cada componente interno. Identifica el fabricante, función y fecha aproximada de cada pieza. Analiza de qué materiales (cobre, silicio, litio, plástico, etc.) están hechos y cuáles representan el mayor costo básico, lo que qué pasaría si no existiera cada componente en el mercado formal. Produce un informe técnico de 3 páginas con fotografías.
+
+### Criterios de Evaluación
+1. Desmontaje documentado fotográficamente. 2. Mínimo 8 componentes identificados con función. 3. Análisis de materiales y ciclo de vida.
+
+### Recursos Sugeridos (Fase 3)
+Dispositivo en desuso, juego de destornilladores de precisión, iFixit.com, PNUMA (E-waste), Google Lens.
+
+---
+
+## RA-C1-N2: Modelo comparativo de paradigmas de programación
+- **Nivel:** Avanzado (N2)
+- **Componente MEN:** Naturaleza y evolución (C1)
+- **Tiempo Estimado:** 75 min
+
+### Descripción del Problema
+Investiga y compara tres paradigmas de programación: imperativo (Python), funcional (Haskell/JS) y orientado a objetos (Java/Python). Para cada uno, define el paradigma y su filosofía central, resuelve el mismo problema de lógica en cada paradigma (ej. filtrar una lista de números pares), analiza ventajas, limitaciones y casos de uso ideales. Concluye: ¿qué paradigma se adapta mejor para qué tipo de tareas?
+
+### Criterios de Evaluación
+1. Proceso de resolución en 3 paradigmas con definición clara. 2. Mismo problema implementado en los tres. 3. Análisis comparativo de ventajas y limitaciones. 4. Casos de uso reales identificados.
+
+### Recursos Sugeridos (Fase 3)
+Repl.it o IDEs para ejecutar los tres ejemplos, referencia (FreeCodeCamp, Real Python).
+
+---
+
+## RA-C1-N3: Análisis crítico de una patente tecnológica
+- **Nivel:** Avanzado (N3)
+- **Componente MEN:** Naturaleza y evolución (C1)
+- **Tiempo Estimado:** 80 min
+
+### Descripción del Problema
+Selecciona una patente tecnológica reciente (2018-2024) relacionada con IA, biotecnología o energías renovables del repositorio USPTO o WIPO. Analiza: (a) qué problema resuelve y cuál es la innovación central, (b) qué conocimientos previos se construyeron para el desarrollo de la invención, (c) qué implicaciones tiene para la sociedad colombiana, (d) si crees que debería ser de dominio público o seguir patentada (argumento ético-económico), y (e) qué barreras tecnológicas impiden su aplicación en Colombia hoy. Ensayo de 800 palabras.
+
+### Criterios de Evaluación
+1. Patente identificada y vinculada. 2. Análisis técnico de la invención. 3. Relación con conocimientos previos. 4. Impacto en Colombia argumentado.
+
+### Recursos Sugeridos (Fase 3)
+USPTO.gov, WIPO.int, SIC Colombia (patentes nacionales).
+
+---
+
+## RA-C2-N1: API REST para el sistema de notas del colegio
+- **Nivel:** Avanzado (N1)
+- **Componente MEN:** Apropiación y uso (C2)
+- **Tiempo Estimado:** 80 min
+
+### Descripción del Problema</content>
+<parameter name="filePath">c:\Users\Cristian\Downloads\MetaPathFinder\MetaPathFinder_Documentation.md

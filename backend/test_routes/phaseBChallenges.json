@@ -1,0 +1,310 @@
+[
+  {
+    "id": "RB-C1-N1",
+    "nivel": "Básico",
+    "sub_nivel": "N1",
+    "componente": "Naturaleza y evolución",
+    "codigo_men": "C1",
+    "titulo": "La línea del tiempo tecnológica de mi colegio",
+    "descripcion": "Tu colegio quiere crear una exhibición sobre cómo la tecnología ha cambiado la vida escolar. Debes identificar al menos 5 artefactos o sistemas tecnológicos que han transformado la educación en los últimos 50 años (ej. tablero, retroproyector, computador, tablet) y construir una línea del tiempo ordenada cronológicamente, explicando para cada uno qué problema resolvía y qué lo reemplazó.",
+    "criterios": [
+      "1. Identifica 5+ artefactos con fecha aproximada.",
+      "2. Explica qué problema resolvía cada uno.",
+      "3. Señala la evolución (qué reemplazó a qué).",
+      "4. Presenta la línea ordenada correctamente."
+    ],
+    "recursos": "Línea de tiempo en papel / herramienta digital (Canva, Google Slides)<br>Fuentes: internet, entrevistas a docentes",
+    "tiempo_estimado": "20",
+    "jol_esp_1": {
+      "pregunta": "¿Qué tanto sabes sobre la historia de la tecnología en la educación colombiana? Marca tu nivel.",
+      "escala": "1=Nada · 2=Algo · 3=Bastante · 4=Mucho"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Podrías explicarle a un compañero por qué los artefactos tecnológicos evolucionan con el tiempo? (1=no podría · 5=lo explico con ejemplos propios)",
+      "escala": "1 – 5"
+    }
+  },
+  {
+    "id": "RB-C1-N2",
+    "nivel": "Básico",
+    "sub_nivel": "N2",
+    "componente": "Naturaleza y evolución",
+    "codigo_men": "C1",
+    "titulo": "¿Qué tiene de tecnológico mi barrio?",
+    "descripcion": "Camina por tu barrio o comunidad y registra (con fotos o dibujos) al menos 6 sistemas tecnológicos que encuentres: infraestructura de agua, electricidad, telecomunicaciones, transporte, construcción. Para cada uno, describe: (a) cuál es su función, (b) qué materiales o conocimientos técnicos requirió y (c) cómo ha mejorado la calidad de vida. Presenta tus hallazgos en un informe de una página con imágenes.",
+    "criterios": [
+      "1. Identifica 6+ sistemas tecnológicos reales.",
+      "2. Describe función, materiales y conocimientos para cada uno.",
+      "3. Argumenta el impacto en la calidad de vida.",
+      "4. Informe coherente con imágenes o dibujos."
+    ],
+    "recursos": "Cámara o celular, libreta de campo<br>Formato de informe sencillo",
+    "tiempo_estimado": "30",
+    "jol_esp_1": {
+      "pregunta": "¿Qué tan capaz eres de identificar y clasificar sistemas tecnológicos en entornos cotidianos? (1=no sé cómo · 5=lo hago con facilidad)",
+      "escala": "1 – 5"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Cuánto sabes sobre los materiales y procesos que requiere la construcción de infraestructura tecnológica (agua, luz, red)?",
+      "escala": "1=Muy poco · 5=Mucho"
+    }
+  },
+  {
+    "id": "RB-C1-N3",
+    "nivel": "Básico",
+    "sub_nivel": "N3",
+    "componente": "Naturaleza y evolución",
+    "codigo_men": "C1",
+    "titulo": "Compara dos tecnologías que resuelven el mismo problema",
+    "descripcion": "Elige un problema cotidiano (ej. comunicarse a distancia, conservar alimentos, transportarse) e identifica DOS tecnologías distintas que lo resuelven: una antigua y una moderna. Analiza ambas usando los criterios: eficiencia, costo, accesibilidad, impacto ambiental e impacto social. Elabora una tabla comparativa argumentada y concluye cuál considerarías “mejor” y por qué, reconociendo que la respuesta puede depender del contexto.",
+    "criterios": [
+      "1. Problema claramente definido.",
+      "2. Dos tecnologías bien descritas.",
+      "3. Tabla comparativa con 5 criterios argumentados.",
+      "4. Conclusión contextualizada y matizada.",
+      "5. Usa vocabulario técnico del área."
+    ],
+    "recursos": "Tabla comparativa en hoja de cálculo o papel<br>Fuentes bibliográficas mínimas (2)",
+    "tiempo_estimado": "35",
+    "jol_esp_1": {
+      "pregunta": "¿Qué tan bien puedes evaluar y comparar dos tecnologías usando criterios técnicos como eficiencia, costo e impacto ambiental? (1=no sabría por dónde empezar · 5=lo hago con argumentos sólidos)",
+      "escala": "1 – 5"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Conoces el concepto de “impacto ambiental de la tecnología” lo suficiente como para incluirlo en un análisis comparativo?",
+      "escala": "1=No lo conozco · 5=Lo manejo bien"
+    }
+  },
+  {
+    "id": "RB-C2-N1",
+    "nivel": "Básico",
+    "sub_nivel": "N1",
+    "componente": "Apropiación y uso",
+    "codigo_men": "C2",
+    "titulo": "Organiza el archivo digital de tu salón",
+    "descripcion": "Tu salón ha acumulado archivos desorganizados en una carpeta compartida de Google Drive. Tienes 20 archivos de distintos tipos (documentos, imágenes, videos, hojas de cálculo) que debes organizar. Crea una estructura de carpetas lógica y nombra cada archivo siguiendo una convención consistente (ej. GRADO_MATERIA_TIPO_FECHA). Explica por escrito (5–8 oraciones) los criterios que usaste para organizar.",
+    "criterios": [
+      "1. Estructura de carpetas lógica y coherente.",
+      "2. Convención de nombres consistente aplicada a los 20 archivos.",
+      "3. Justificación escrita clara de los criterios.",
+      "4. La organización permite encontrar un archivo en menos de 15 segundos."
+    ],
+    "recursos": "Google Drive (o simulación en papel)<br>Lista de los 20 archivos proporcionada por el docente",
+    "tiempo_estimado": "20",
+    "jol_esp_1": {
+      "pregunta": "¿Qué tan hábil eres organizando información digital (carpetas, archivos, nombres) de forma que otros puedan usarla fácilmente? (1=muy poco hábil · 5=muy hábil)",
+      "escala": "1 – 5"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Conoces y aplicas convenciones de nombrado de archivos digitales en tu vida diaria?",
+      "escala": "Nunca · A veces · Siempre"
+    }
+  },
+  {
+    "id": "RB-C2-N2",
+    "nivel": "Básico",
+    "sub_nivel": "N2",
+    "componente": "Apropiación y uso",
+    "codigo_men": "C2",
+    "titulo": "Crea una presentación accesible para tus abuelos",
+    "descripcion": "Debes explicarle a un adulto mayor (sin conocimientos tecnológicos) cómo usar una aplicación de videollamadas (WhatsApp, Zoom o Meet) para comunicarse con su familia. Diseña una presentación de máximo 8 diapositivas con instrucciones visuales claras, usando capturas de pantalla reales o dibujos, textos en fuente grande y lenguaje sencillo. La presentación debe incluir: instalación, configuración básica, cómo llamar y cómo terminar la llamada.",
+    "criterios": [
+      "1. Máx. 8 diapositivas coherentes.",
+      "2. Lenguaje comprensible para no-técnicos.",
+      "3. Instrucciones paso a paso con imágenes.",
+      "4. Cubre los 4 momentos (instalación, config., llamar, terminar).",
+      "5. Tipografía legible (min. 24pt)."
+    ],
+    "recursos": "Google Slides o PowerPoint<br>Celular/tablet para capturas reales",
+    "tiempo_estimado": "35",
+    "jol_esp_1": {
+      "pregunta": "¿Qué tan bien sabes adaptar el lenguaje técnico a una audiencia no especializada (adultos mayores, niños)? (1=no sé cómo · 5=lo hago muy bien)",
+      "escala": "1 – 5"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Puedes diseñar material visual instructivo (con imágenes + texto) que sea claro sin que alguien te lo explique? (1=nunca lo he hecho · 5=sí, con facilidad)",
+      "escala": "1 – 5"
+    }
+  },
+  {
+    "id": "RB-C2-N3",
+    "nivel": "Básico",
+    "sub_nivel": "N3",
+    "componente": "Apropiación y uso",
+    "codigo_men": "C2",
+    "titulo": "Hoja de cálculo para el presupuesto del evento escolar",
+    "descripcion": "El comité estudiantil necesita planear el presupuesto para la izada de bandera del mes. Debes crear una hoja de cálculo que registre: todos los gastos previstos (decoración, refrigerio, sonido), los ingresos posibles (colecta, patrocinio), calcule el saldo automáticamente con fórmulas, y genere un gráfico de barras que muestre la distribución de gastos. El presupuesto total disponible es $150.000 COP.",
+    "criterios": [
+      "1. Hoja con fórmulas funcionales (suma, resta, porcentaje).",
+      "2. Cero errores de fórmula.",
+      "3. Gráfico de barras generado automáticamente.",
+      "4. Saldo calculado correctamente.",
+      "5. Formato limpio y legible."
+    ],
+    "recursos": "Google Sheets o Excel<br>Plantilla base (opcional, proporcionada por el docente)",
+    "tiempo_estimado": "40",
+    "jol_esp_1": {
+      "pregunta": "¿Qué tan seguro/a estás de crear fórmulas básicas en una hoja de cálculo (SUMA, RESTA, porcentajes) sin consultar tutoriales? (1=no sé · 5=totalmente seguro)",
+      "escala": "1 – 5"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Has creado gráficos automáticos en una hoja de cálculo antes? ¿Qué tan fácil te resulta?",
+      "escala": "Nunca · Una vez · Varias veces · Es fácil para mí"
+    }
+  },
+  {
+    "id": "RB-C3-N1",
+    "nivel": "Básico",
+    "sub_nivel": "N1",
+    "componente": "Solución de problemas",
+    "codigo_men": "C3",
+    "titulo": "Instrucciones para hacer un sándwich (algoritmo cotidiano)",
+    "descripcion": "El pensamiento algorítmico comienza con actividades cotidianas. Escribe un algoritmo detallado paso a paso para preparar un sándwich de jamón y queso, como si se lo explicaras a un robot que no sabe nada de cocina. Usa estructura de pasos numerados, incluye condiciones (si no hay pan, entonces…) y considera al menos un ciclo repetitivo (repite hasta que…). Luego dibuja el diagrama de flujo correspondiente.",
+    "criterios": [
+      "1. Algoritmo secuencial y completo.",
+      "2. Al menos 1 condición (if/else).",
+      "3. Al menos 1 ciclo (while/for).",
+      "4. Diagrama de flujo con símbolos correctos.",
+      "5. No hay ambigüedad en los pasos."
+    ],
+    "recursos": "Papel cuadriculado para diagrama de flujo<br>Símbolos de diagrama de flujo (referencia proporcionada)",
+    "tiempo_estimado": "25",
+    "jol_esp_1": {
+      "pregunta": "¿Sabes qué es un algoritmo y puedes escribir uno paso a paso para una tarea cotidiana? (1=no sé qué es · 5=sí, puedo escribirlo sin ayuda)",
+      "escala": "1 – 5"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Conoces los símbolos básicos de un diagrama de flujo (inicio, proceso, decisión, fin)? (1=no los conozco · 4=los uso correctamente)",
+      "escala": "1 – 4"
+    }
+  },
+  {
+    "id": "RB-C3-N2",
+    "nivel": "Básico",
+    "sub_nivel": "N2",
+    "componente": "Solución de problemas",
+    "codigo_men": "C3",
+    "titulo": "Automatiza la lista de asistencia con código básico",
+    "descripcion": "Tu curso tiene 30 estudiantes. Diseña (en pseudocódigo o en Scratch/Python básico) un programa que: lea una lista de nombres, pregunte para cada nombre si asistió (sí/no), cuente el total de presentes y ausentes, y muestre el porcentaje de asistencia. El programa debe manejar el caso en que se ingrese una respuesta diferente a “sí” o “no” (validación de entrada).",
+    "criterios": [
+      "1. Programa lee lista de nombres.",
+      "2. Bucle para recorrer todos los estudiantes.",
+      "3. Contador de presentes y ausentes.",
+      "4. Cálculo y muestra del porcentaje.",
+      "5. Validación de entrada incorrecta."
+    ],
+    "recursos": "Scratch / Python (IDLE) / pseudocódigo en papel<br>Lista de 30 nombres (proporcionada)",
+    "tiempo_estimado": "40",
+    "jol_esp_1": {
+      "pregunta": "¿Qué tan seguro/a estás de implementar un bucle (for o while) en un lenguaje de programación o pseudocódigo para recorrer una lista? (1=no sé qué es un bucle · 5=lo implemento sin dificultad)",
+      "escala": "1 – 5"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Puedes diseñar la validación de entradas incorrectas en un programa (qué pasa si el usuario escribe algo que no se esperaba)? (1=nunca lo he pensado · 5=lo incluyo siempre)",
+      "escala": "1 – 5"
+    }
+  },
+  {
+    "id": "RB-C3-N3",
+    "nivel": "Básico",
+    "sub_nivel": "N3",
+    "componente": "Solución de problemas",
+    "codigo_men": "C3",
+    "titulo": "Diseña el sistema de préstamo de libros de la biblioteca",
+    "descripcion": "La biblioteca de tu colegio quiere digitalizar su sistema de préstamo. Diseña (sin código, usando diagrama de flujo y pseudocódigo) un sistema que: registre estudiantes y libros, permita prestar un libro (verifica disponibilidad), registre la devolución (calcula días de retraso si los hay) y genere un reporte de los libros más prestados. Considera qué datos necesitas guardar y cómo los organizarías.",
+    "criterios": [
+      "1. Diagrama de flujo completo del proceso.",
+      "2. Identificación de datos necesarios (entidades).",
+      "3. Lógica de préstamo y devolución correcta.",
+      "4. Cálculo de días de retraso.",
+      "5. Propuesta de reporte de uso."
+    ],
+    "recursos": "Papel o herramienta de diagramas (draw.io)<br>Referencia de símbolos de flujo",
+    "tiempo_estimado": "45",
+    "jol_esp_1": {
+      "pregunta": "¿Qué tan capaz eres de descomponer un sistema complejo (como una biblioteca) en sus partes, datos y procesos, antes de escribir código? (1=no sé por dónde empezar · 5=lo hago sistemáticamente)",
+      "escala": "1 – 5"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Puedes identificar qué datos necesita guardar un sistema digital para funcionar correctamente (entidades, campos, relaciones)? (1=no lo entiendo · 5=lo diseño con facilidad)",
+      "escala": "1 – 5"
+    }
+  },
+  {
+    "id": "RB-C4-N1",
+    "nivel": "Básico",
+    "sub_nivel": "N1",
+    "componente": "Tecnología y sociedad",
+    "codigo_men": "C4",
+    "titulo": "¿Quién tiene acceso a la tecnología en Colombia?",
+    "descripcion": "Investiga (con al menos 2 fuentes) el porcentaje de hogares colombianos con acceso a internet en zonas urbanas y rurales. Crea una infografía sencilla (1 página) que muestre: los datos encontrados, una comparación entre zonas, y tu reflexión personal sobre qué consecuencias tiene esta brecha digital para los estudiantes rurales. Usa datos del DANE o del Ministerio TIC.",
+    "criterios": [
+      "1. Datos reales y citados (mínimo 2 fuentes).",
+      "2. Comparación urbana vs. rural visible.",
+      "3. Infografía visualmente clara.",
+      "4. Reflexión personal argumentada (mín. 3 oraciones)."
+    ],
+    "recursos": "Canva / Google Slides / papel<br>Datos: dane.gov.co · mintic.gov.co",
+    "tiempo_estimado": "30",
+    "jol_esp_1": {
+      "pregunta": "¿Qué tanto sabes sobre la brecha digital en Colombia (diferencias de acceso a internet entre zonas y grupos sociales)? (1=nada · 5=bastante)",
+      "escala": "1 – 5"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Puedes analizar datos estadísticos simples (porcentajes, comparaciones) y convertirlos en una reflexión argumentada? (1=no puedo · 5=lo hago con facilidad)",
+      "escala": "1 – 5"
+    }
+  },
+  {
+    "id": "RB-C4-N2",
+    "nivel": "Básico",
+    "sub_nivel": "N2",
+    "componente": "Tecnología y sociedad",
+    "codigo_men": "C4",
+    "titulo": "Las redes sociales y mi bienestar: análisis crítico",
+    "descripcion": "Registra durante 3 días el tiempo que pasas en redes sociales y cómo te sientes antes y después de usarlas (ansiedad, alegría, comparación social, etc.). Luego analiza: ¿existe relación entre el tiempo de uso y tu estado emocional? Presenta tus hallazgos en un informe de una página con datos propios + al menos 1 referencia científica sobre el impacto de redes sociales en adolescentes. Propón 2 recomendaciones para un uso saludable.",
+    "criterios": [
+      "1. Registro de datos propios de 3 días.",
+      "2. Análisis de correlación tiempo–emoción.",
+      "3. Al menos 1 fuente científica citada.",
+      "4. 2 recomendaciones fundamentadas.",
+      "5. Informe cohesivo de 1 página."
+    ],
+    "recursos": "Plantilla de registro (proporcionada)<br>Fuentes: artículos de salud digital (OMS, APA)",
+    "tiempo_estimado": "35",
+    "jol_esp_1": {
+      "pregunta": "¿Qué tan bien puedes analizar el impacto de las redes sociales en tu bienestar emocional usando datos propios y fuentes externas? (1=nunca lo he pensado · 5=lo analizo críticamente)",
+      "escala": "1 – 5"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Conoces investigaciones o estudios sobre el impacto psicológico de las redes sociales en adolescentes? (1=no conozco ninguno · 5=conozco varios y puedo citarlos)",
+      "escala": "1 – 5"
+    }
+  },
+  {
+    "id": "RB-C4-N3",
+    "nivel": "Básico",
+    "sub_nivel": "N3",
+    "componente": "Tecnología y sociedad",
+    "codigo_men": "C4",
+    "titulo": "Propuesta de solución tecnológica para un problema de tu comunidad",
+    "descripcion": "Identifica un problema real de tu comunidad (ej. manejo de residuos, agua, movilidad, seguridad) y diseña una propuesta de solución tecnológica viable considerando: (a) descripción del problema con evidencia, (b) tecnología propuesta y por qué es pertinente, (c) recursos necesarios, (d) posibles impactos positivos y negativos en la comunidad, y (e) consideraciones éticas. Presenta en un documento de 2 páginas con imágenes o diagramas.",
+    "criterios": [
+      "1. Problema real documentado con evidencia.",
+      "2. Tecnología propuesta pertinente y justificada.",
+      "3. Análisis de impactos positivos y negativos.",
+      "4. Consideraciones éticas explícitas.",
+      "5. Documento de 2 págs. con imágenes/diagramas."
+    ],
+    "recursos": "Procesador de texto · fuentes de información local<br>Formato de propuesta (proporcionado)",
+    "tiempo_estimado": "50",
+    "jol_esp_1": {
+      "pregunta": "¿Qué tan capaz eres de diseñar una propuesta tecnológica que considere tanto impactos positivos como negativos y factores éticos? (1=no sé cómo · 5=lo hago con argumentos sólidos)",
+      "escala": "1 – 5"
+    },
+    "jol_esp_2": {
+      "pregunta": "¿Puedes identificar dilemas éticos relacionados con el uso de tecnología en contextos sociales colombianos? (1=no los identifico · 5=los analizo profundamente)",
+      "escala": "1 – 5"
+    }
+  }
+]
