@@ -25,22 +25,22 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
-    "titulo": "La línea del tiempo tecnológica de mi colegio",
-    "descripcion": "Tu colegio quiere crear una exhibición sobre cómo la tecnología ha cambiado la vida escolar. Debes identificar al menos 5 artefactos o sistemas tecnológicos que han transformado la educación en los últimos 50 años (ej. tablero, retroproyector, computador, tablet) y construir una línea del tiempo ordenada cronológicamente, explicando para cada uno qué problema resolvía y qué lo reemplazó.",
+    "titulo": "Línea del tiempo del desarrollo tecnológico humano",
+    "descripcion": "Usa la línea de tiempo interactiva del juego para ordenar cronológicamente los 8 grandes hitos tecnológicos de la humanidad: desde la invención de la rueda y la construcción de las pirámides, pasando por la brújula, la imprenta, el telescopio, el teléfono, la televisión, hasta llegar al teléfono inteligente moderno. Comprueba tu ordenamiento en el simulador.",
     "criterios": [
-      "1. Identifica 5+ artefactos con fecha aproximada.",
-      "2. Explica qué problema resolvía cada uno.",
-      "3. Señala la evolución (qué reemplazó a qué).",
-      "4. Presenta la línea ordenada correctamente."
+      "1. Ordena cronológicamente los 8 hitos históricos de la humanidad.",
+      "2. Comprende el orden secuencial del desarrollo tecnológico de cada invento.",
+      "3. Valida y corrige su ordenamiento en la simulación interactiva.",
+      "4. Completa la actividad interactiva sin errores conceptuales."
     ],
-    "recursos": "Línea de tiempo en papel / herramienta digital (Canva, Google Slides)<br>Fuentes: internet, entrevistas a docentes",
+    "recursos": "Línea de tiempo interactiva incorporada<br>Lecciones breves de historia y desarrollo tecnológico",
     "tiempo_estimado": "20",
     "jol_esp_1": {
-      "pregunta": "¿Qué tanto sabes sobre la historia de la tecnología en la educación colombiana? Marca tu nivel.",
+      "pregunta": "¿Qué tanto sabes sobre el orden histórico de las principales invenciones de la humanidad? Marca tu nivel.",
       "escala": "1=Nada · 2=Algo · 3=Bastante · 4=Mucho"
     },
     "jol_esp_2": {
-      "pregunta": "¿Podrías explicarle a un compañero por qué los artefactos tecnológicos evolucionan con el tiempo? (1=no podría · 5=lo explico con ejemplos propios)",
+      "pregunta": "¿Podrías explicarle a un compañero el orden cronológico y evolución de tecnologías desde la antigüedad hasta la era moderna? (1=no podría · 5=lo explico con ejemplos propios)",
       "escala": "1 – 5"
     }
   },
@@ -50,22 +50,22 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
-    "titulo": "¿Qué tiene de tecnológico mi barrio?",
-    "descripcion": "Camina por tu barrio o comunidad y registra (con fotos o dibujos) al menos 6 sistemas tecnológicos que encuentres: infraestructura de agua, electricidad, telecomunicaciones, transporte, construcción. Para cada uno, describe: (a) cuál es su función, (b) qué materiales o conocimientos técnicos requirió y (c) cómo ha mejorado la calidad de vida. Presenta tus hallazgos en un informe de una página con imágenes.",
+    "titulo": "Sistemas tecnológicos cotidianos en mi barrio",
+    "descripcion": "Utiliza el módulo interactivo de clasificación para arrastrar y agrupar diferentes infraestructuras cotidianas de tu barrio en sus categorías correctas: Infraestructura Eléctrica (transformadores, postes de luz), de Transporte (buses, vías, paraderos), y de Construcción. Completa la clasificación de todos los elementos cotidianos sin fallos.",
     "criterios": [
-      "1. Identifica 6+ sistemas tecnológicos reales.",
-      "2. Describe función, materiales y conocimientos para cada uno.",
-      "3. Argumenta el impacto en la calidad de vida.",
-      "4. Informe coherente con imágenes o dibujos."
+      "1. Clasifica correctamente todos los elementos del entorno comunitario.",
+      "2. Agrupa los servicios urbanos en las categorías Eléctrica, Transporte y Construcción.",
+      "3. Comprende el papel de las infraestructuras en el desarrollo del barrio.",
+      "4. Valida y completa el juego interactivo sin errores de emparejamiento."
     ],
-    "recursos": "Cámara o celular, libreta de campo<br>Formato de informe sencillo",
-    "tiempo_estimado": "30",
+    "recursos": "Juego interactivo de emparejamiento de sistemas tecnológicos comunitarios",
+    "tiempo_estimado": "20",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan capaz eres de identificar y clasificar sistemas tecnológicos en entornos cotidianos? (1=no sé cómo · 5=lo hago con facilidad)",
+      "pregunta": "¿Qué tan capaz eres de identificar y clasificar sistemas tecnológicos cotidianos como transporte y electricidad? (1=no sé cómo · 5=lo hago con facilidad)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Cuánto sabes sobre los materiales y procesos que requiere la construcción de infraestructura tecnológica (agua, luz, red)?",
+      "pregunta": "¿Cuánto sabes sobre el tipo de infraestructura que requiere la distribución eléctrica y el transporte de tu barrio?",
       "escala": "1=Muy poco · 5=Mucho"
     }
   },
@@ -202,23 +202,22 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Solución de problemas",
     "codigo_men": "C3",
-    "titulo": "Automatiza la lista de asistencia con código básico",
-    "descripcion": "Tu curso tiene 30 estudiantes. Diseña (en pseudocódigo o en Scratch/Python básico) un programa que: lea una lista de nombres, pregunte para cada nombre si asistió (sí/no), cuente el total de presentes y ausentes, y muestre el porcentaje de asistencia. El programa debe manejar el caso en que se ingrese una respuesta diferente a “sí” o “no” (validación de entrada).",
+    "titulo": "Simulador lógico de lista de asistencia escolar",
+    "descripcion": "Ordena los bloques de código y parámetros del simulador para diseñar un programa automatizado de control de asistencia. El programa lee la lista de estudiantes, evalúa la presencia, calcula el porcentaje total de asistencia y muestra advertencias si la asistencia es inferior al 80%. Arrastra los bloques lógicos a su posición secuencial correcta y ejecuta el flujo.",
     "criterios": [
-      "1. Programa lee lista de nombres.",
-      "2. Bucle para recorrer todos los estudiantes.",
-      "3. Contador de presentes y ausentes.",
-      "4. Cálculo y muestra del porcentaje.",
-      "5. Validación de entrada incorrecta."
+      "1. Ordena los bloques de asignación inicial, bucle de lectura y cálculo de porcentaje.",
+      "2. Estructura el condicional de alerta de inasistencia (asistencia < 80%).",
+      "3. Ejecuta de forma exitosa el programa en el simulador dinámico.",
+      "4. Resuelve el reto obteniendo el reporte correcto de inasistencia."
     ],
-    "recursos": "Scratch / Python (IDLE) / pseudocódigo en papel<br>Lista de 30 nombres (proporcionada)",
-    "tiempo_estimado": "40",
+    "recursos": "Simulador de control de asistencia escolar por bloques integrado",
+    "tiempo_estimado": "30",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro/a estás de implementar un bucle (for o while) en un lenguaje de programación o pseudocódigo para recorrer una lista? (1=no sé qué es un bucle · 5=lo implemento sin dificultad)",
+      "pregunta": "¿Qué tan seguro/a estás de ordenar bloques de código lógico como bucles y condicionales para resolver un problema de clase? (1=no sé ordenarlos · 5=los ordeno sin dificultad)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes diseñar la validación de entradas incorrectas en un programa (qué pasa si el usuario escribe algo que no se esperaba)? (1=nunca lo he pensado · 5=lo incluyo siempre)",
+      "pregunta": "¿Puedes comprender la utilidad de una condicional simple para alertar si el porcentaje de asistencia escolar es muy bajo? (1=no lo comprendo · 5=lo entiendo claramente)",
       "escala": "1 – 5"
     }
   },
@@ -254,22 +253,21 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "¿Quién tiene acceso a la tecnología en Colombia?",
-    "descripcion": "Investiga (con al menos 2 fuentes) el porcentaje de hogares colombianos con acceso a internet en zonas urbanas y rurales. Crea una infografía sencilla (1 página) que muestre: los datos encontrados, una comparación entre zonas, y tu reflexión personal sobre qué consecuencias tiene esta brecha digital para los estudiantes rurales. Usa datos del DANE o del Ministerio TIC.",
+    "titulo": "Análisis digital: conectividad y acceso en el hogar",
+    "descripcion": "Lee atentamente los dos artículos breves sobre la realidad de la conectividad en el hogar y las consecuencias de la exclusión digital. Luego, responde la trivia de 3 preguntas de comprensión directa para evaluar tu nivel de análisis crítico sobre la brecha digital.",
     "criterios": [
-      "1. Datos reales y citados (mínimo 2 fuentes).",
-      "2. Comparación urbana vs. rural visible.",
-      "3. Infografía visualmente clara.",
-      "4. Reflexión personal argumentada (mín. 3 oraciones)."
+      "1. Lee de forma comprensiva la información estadística sobre conectividad urbana y rural.",
+      "2. Identifica correctamente la causa principal de la desconexión.",
+      "3. Responde de forma acertada todas las preguntas de la trivia."
     ],
-    "recursos": "Canva / Google Slides / papel<br>Datos: dane.gov.co · mintic.gov.co",
-    "tiempo_estimado": "30",
+    "recursos": "Lecturas integradas y cuestionario interactivo sobre brecha digital en Colombia",
+    "tiempo_estimado": "20",
     "jol_esp_1": {
-      "pregunta": "¿Qué tanto sabes sobre la brecha digital en Colombia (diferencias de acceso a internet entre zonas y grupos sociales)? (1=nada · 5=bastante)",
+      "pregunta": "¿Qué tanto sabes sobre la brecha digital en Colombia y la diferencia de acceso a internet entre zonas urbanas y rurales? (1=nada · 5=bastante)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes analizar datos estadísticos simples (porcentajes, comparaciones) y convertirlos en una reflexión argumentada? (1=no puedo · 5=lo hago con facilidad)",
+      "pregunta": "¿Puedes analizar datos estadísticos simples sobre conectividad en el hogar a partir de textos cortos? (1=no puedo · 5=lo hago con facilidad)",
       "escala": "1 – 5"
     }
   },
@@ -279,23 +277,21 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Las redes sociales y mi bienestar: análisis crítico",
-    "descripcion": "Registra durante 3 días el tiempo que pasas en redes sociales y cómo te sientes antes y después de usarlas (ansiedad, alegría, comparación social, etc.). Luego analiza: ¿existe relación entre el tiempo de uso y tu estado emocional? Presenta tus hallazgos en un informe de una página con datos propios + al menos 1 referencia científica sobre el impacto de redes sociales en adolescentes. Propón 2 recomendaciones para un uso saludable.",
+    "titulo": "Las redes sociales y mi bienestar: trivia de análisis",
+    "descripcion": "Lee con atención las investigaciones sobre el impacto del tiempo en pantalla en la salud mental de los jóvenes y las recomendaciones para un uso saludable. Responde de forma correcta el test de 3 preguntas de opción múltiple para validar tu nivel de análisis crítico.",
     "criterios": [
-      "1. Registro de datos propios de 3 días.",
-      "2. Análisis de correlación tiempo–emoción.",
-      "3. Al menos 1 fuente científica citada.",
-      "4. 2 recomendaciones fundamentadas.",
-      "5. Informe cohesivo de 1 página."
+      "1. Analiza con criterio los efectos del tiempo prolongado en redes sociales.",
+      "2. Identifica recomendaciones y hábitos de uso saludables en base a los artículos provistos.",
+      "3. Completa la trivia sin errores de comprensión."
     ],
-    "recursos": "Plantilla de registro (proporcionada)<br>Fuentes: artículos de salud digital (OMS, APA)",
-    "tiempo_estimado": "35",
+    "recursos": "Lecturas integradas y cuestionario interactivo sobre bienestar emocional y redes sociales",
+    "tiempo_estimado": "20",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan bien puedes analizar el impacto de las redes sociales en tu bienestar emocional usando datos propios y fuentes externas? (1=nunca lo he pensado · 5=lo analizo críticamente)",
+      "pregunta": "¿Qué tan bien puedes analizar el impacto de las redes sociales en el bienestar emocional a partir de lecturas recomendadas? (1=no lo comprendo · 5=lo analizo críticamente)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Conoces investigaciones o estudios sobre el impacto psicológico de las redes sociales en adolescentes? (1=no conozco ninguno · 5=conozco varios y puedo citarlos)",
+      "pregunta": "¿Conoces recomendaciones científicas o hábitos para un uso saludable de pantallas en jóvenes? (1=no conozco ninguno · 5=conozco varias pautas)",
       "escala": "1 – 5"
     }
   },
@@ -331,23 +327,22 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
-    "titulo": "Anatomía de un smartphone: disección tecnológica",
-    "descripcion": "Sin desarmar físicamente un celular, investiga y documenta todos los sistemas tecnológicos que lo componen: procesador, memoria, sensores (acelerómetro, GPS, cámara), batería, pantalla táctil y módulos de comunicación. Para cada componente: explica su función, el principio científico que lo hace funcionar, cuándo fue inventado y cómo ha evolucionado. Presenta en un diagrama anotado + texto de apoyo.",
+    "titulo": "Anatomía de un smartphone: disección virtual e interactiva",
+    "descripcion": "Explora la anatomía interna de un teléfono inteligente. Aprende sobre el funcionamiento y características de la batería de iones de litio, pantallas OLED frente a LCD, y la importancia de la memoria RAM. Al finalizar, responde de forma correcta las 3 preguntas de la trivia técnica para validar tu reto.",
     "criterios": [
-      "1. Mínimo 8 componentes identificados.",
-      "2. Función y principio científico por componente.",
-      "3. Línea de evolución para al menos 3 componentes.",
-      "4. Diagrama anotado legible.",
-      "5. Fuentes citadas correctamente."
+      "1. Identifica correctamente la tecnología detrás de las baterías de smartphones modernos.",
+      "2. Comprende la diferencia fundamental entre pantallas OLED y LCD.",
+      "3. Reconoce el papel de la memoria RAM en la multitarea y rendimiento.",
+      "4. Completa la trivia interactiva de forma exitosa."
     ],
-    "recursos": "Diagrama en papel o digital (draw.io / Canva)<br>Fuentes: IEEE Spectrum · Wikipedia técnica · documentación oficial",
-    "tiempo_estimado": "45",
+    "recursos": "Módulo de anatomía y cuestionario interactivo sobre hardware móvil",
+    "tiempo_estimado": "25",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan profundamente conoces los componentes internos de un smartphone y los principios científicos detrás de cada uno? (1=solo sé que existe · 5=explico su funcionamiento técnico)",
+      "pregunta": "¿Qué tan profundamente conoces los componentes internos de un smartphone y la importancia de la RAM o pantalla? (1=solo sé que existe · 5=explico su funcionamiento técnico)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes investigar y sintetizar información técnica de múltiples fuentes en un diagrama anotado coherente? (1=nunca lo he hecho · 5=lo hago eficientemente)",
+      "pregunta": "¿Puedes comprender la diferencia entre diferentes tecnologías de pantalla y baterías de litio? (1=nunca lo he hecho · 5=lo hago eficientemente)",
       "escala": "1 – 5"
     }
   },
@@ -358,16 +353,17 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
     "titulo": "De la calculadora mecánica al procesador cuántico",
-    "descripcion": "Investiga la evolución del cómputo desde la calculadora mecánica de Pascal (1642) hasta los procesadores cuánticos actuales. Identifica al menos 6 hitos tecnológicos, explica para cada uno: (a) el avance técnico que representó, (b) quién lo desarrolló y en qué contexto social/histórico, (c) qué limitación superó y cuál nueva impuso. Concluye con una reflexión: ¿qué patrón ves en la evolución tecnológica? ¿Aplica la Ley de Moore?",
+    "descripcion": "Explora de forma interactiva la evolución del cómputo desde la calculadora mecánica de Pascal (1642) y el motor analítico de Babbage hasta la Ley de Moore y el procesador cuántico actual Sycamore. Lee las lecciones detalladas y completa la evaluación exhaustiva de 6 preguntas conceptuales sobre hitos históricos y patrones de la evolución tecnológica.",
     "criterios": [
-      "1. 6+ hitos ordenados cronológicamente.",
-      "2. Análisis técnico, histórico y social de cada uno.",
-      "3. Discusión sobre limitaciones.",
-      "4. Reflexión sobre la Ley de Moore fundamentada.",
-      "5. Fuentes académicas o técnicas."
+      "1. Comprende el funcionamiento y fallas de computadores tempranos como el ENIAC.",
+      "2. Identifica el contexto histórico de la invención del circuito integrado.",
+      "3. Analiza la relación de Ada Lovelace y la computación teórica.",
+      "4. Identifica patrones de evolución tecnológica (mecánica a electrónica).",
+      "5. Evalúa críticamente la Ley de Moore y el rendimiento de procesadores cuánticos.",
+      "6. Responde correctamente todas las preguntas de la evaluación interactiva."
     ],
-    "recursos": "Línea de tiempo digital (Timeline JS o similar)<br>Fuente base: Computer History Museum · ACM Digital Library",
-    "tiempo_estimado": "55",
+    "recursos": "Línea de tiempo histórica y test interactivo de evolución de la computación",
+    "tiempo_estimado": "45",
     "jol_esp_1": {
       "pregunta": "¿Qué tan bien conoces la historia de la computación desde sus inicios mecánicos hasta los procesadores actuales? (1=casi nada · 5=la manejo con profundidad)",
       "escala": "1 – 5"
@@ -410,18 +406,17 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
     "titulo": "Automatiza una tarea repetitiva con macros",
-    "descripcion": "Tienes una hoja de cálculo con 200 filas de datos de calificaciones de 5 grupos. Semanalmente debes calcular el promedio, máximo, mínimo y resaltar en rojo a los estudiantes con nota inferior a 3.0. Crea una macro (en Google Sheets con Apps Script o en Excel con VBA) que realice todo esto automáticamente con un clic. La macro debe ser comentada explicando qué hace cada sección.",
+    "descripcion": "Usa el simulador interactivo de hoja de cálculo para automatizar el cálculo del promedio, máximo, mínimo y formato condicional (resaltar notas < 3.0 en rojo) utilizando un editor de bloques lógicos tipo Scratch o escribiendo la macro Apps Script. Ejecuta el flujo y comprueba la corrección de tus fórmulas y código.",
     "criterios": [
-      "1. Macro funcional que calcula promedio, máx. y mín.",
-      "2. Resalta automáticamente notas < 3.0 en rojo.",
-      "3. Código comentado (explicación de cada sección).",
-      "4. Funciona correctamente con datos nuevos.",
-      "5. Sin errores de ejecución."
+      "1. Utiliza el editor lógico para calcular el promedio, máx. y mín.",
+      "2. Resalta automáticamente notas < 3.0 mediante bloques condicionales.",
+      "3. Comenta los bloques lógicos para describir su funcionamiento.",
+      "4. Funciona y se ejecuta de manera correcta en el simulador."
     ],
-    "recursos": "Google Sheets + Apps Script / Excel + VBA<br>Hoja de datos de práctica (proporcionada)",
-    "tiempo_estimado": "50",
+    "recursos": "Simulador interactivo de hoja de cálculo MiniExcel con soporte de bloques",
+    "tiempo_estimado": "35",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro/a estás de escribir un script o macro básico en Google Apps Script o VBA para automatizar tareas en hojas de cálculo? (1=nunca he programado macros · 5=lo hago sin tutoriales)",
+      "pregunta": "¿Qué tan seguro/a estás de programar bloques lógicos tipo Scratch para automatizar tareas en hojas de cálculo? (1=nunca he programado macros · 5=lo hago sin tutoriales)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
@@ -435,20 +430,18 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
-    "titulo": "Diseña la identidad digital del proyecto de grado",
-    "descripcion": "Tu grupo de trabajo necesita una identidad digital coherente para presentar el proyecto de grado. Diseña: (1) un logo vectorial simple, (2) una paleta de colores (máx. 4) con justificación, (3) tipografía principal y secundaria, (4) una plantilla de diapositivas de 5 slides, y (5) un banner para redes sociales. Todo debe seguir principios de diseño: contraste, alineación, repetición y proximidad (CARP). Entrega todos los archivos editables.",
+    "titulo": "Diseño de identidad digital y logos en SVG",
+    "descripcion": "Aprende las bases de la creación de logos vectoriales escalables utilizando SVG. Explora la estructura de contenedores, formas primitivas y paletas de colores interactivas. Completa el módulo interactivo y la evaluación de 2 etapas (ordenar los pasos de construcción de un logo y la aplicación correcta de colores) para validar tu reto.",
     "criterios": [
-      "1. Logo vectorial coherente con el proyecto.",
-      "2. Paleta justificada (contraste y armonía).",
-      "3. Tipografía apropiada y justificada.",
-      "4. Plantilla de 5 slides funcional.",
-      "5. Banner de redes (1920×1080 px mínimo).",
-      "6. Principios CARP aplicados y señalados."
+      "1. Comprende la estructura jerárquica de un SVG (viewBox, shapes y defs).",
+      "2. Domina el uso de fill, stroke, opacidad y gradientes en SVG.",
+      "3. Ordena correctamente las etapas del proceso de construcción de un logo.",
+      "4. Resuelve sin errores el flujo de aplicación de colores en la evaluación interactiva."
     ],
-    "recursos": "Canva Pro / Figma / Adobe Express<br>Guía de principios CARP (proporcionada)",
-    "tiempo_estimado": "60",
+    "recursos": "Módulo interactivo de diseño y construcción de logos vectoriales en SVG incorporado",
+    "tiempo_estimado": "40",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan bien dominas los principios de diseño visual (contraste, alineación, repetición, proximidad) para aplicarlos en una identidad de marca? (1=no los conozco · 5=los aplico conscientemente)",
+      "pregunta": "¿Qué tan bien dominas la estructura de un archivo SVG y las etiquetas de formas básicas? (1=no las conozco · 5=las aplico conscientemente)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
@@ -463,16 +456,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
     "titulo": "Base de datos de la tienda escolar (SQL básico)",
-    "descripcion": "La tienda escolar quiere digitalizar su inventario. Diseña e implementa una base de datos relacional simple con al menos 3 tablas: Productos, Ventas y Proveedores. En SQLite (o un entorno online como SQLiteOnline.com): crea las tablas con sus campos y tipos de datos, inserta 10 registros por tabla, y ejecuta 5 consultas: total de ventas del día, producto más vendido, stock bajo mínimo, ventas por categoría, y reporte de proveedores activos.",
+    "descripcion": "Usa el simulador interactivo de SQL por bloques para digitalizar y consultar el inventario de la tienda escolar. El reto consta de 3 fases interactivas: (1) Crear las tablas Proveedores, Productos y Ventas, (2) Insertar los 10 registros de muestra en cada tabla, y (3) Resolver la consulta para calcular el total de ventas del día 2025-05-17 usando sumas y conteos agrupados con WHERE.",
     "criterios": [
-      "1. 3 tablas con relaciones correctas (FK).",
-      "2. Tipos de datos apropiados.",
-      "3. 10 registros por tabla sin errores.",
-      "4. 5 consultas SQL funcionales.",
-      "5. Consultas producen resultados correctos."
+      "1. Ejecuta con éxito la creación de las tablas Proveedores, Productos y Ventas en la base de datos simulada.",
+      "2. Inserta la base de registros requerida sin errores de ejecución.",
+      "3. Estructura y ejecuta correctamente con bloques la consulta SELECT SUM(total), COUNT(*), SUM(cantidad) FROM Ventas WHERE fecha = '2025-05-17' para obtener el reporte de ventas del día.",
+      "4. Completa las 3 fases lógicas del reto SQL."
     ],
-    "recursos": "SQLiteOnline.com / DB Browser for SQLite<br>Esquema de referencia (proporcionado)",
-    "tiempo_estimado": "60",
+    "recursos": "Simulador interactivo de SQL por bloques y base de datos relacional integrada",
+    "tiempo_estimado": "35",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro/a estás de diseñar un esquema de base de datos relacional con tablas, campos, tipos de datos y relaciones (llaves foráneas)? (1=nunca he creado una BD · 5=lo diseño sin ayuda)",
       "escala": "1 – 5"
@@ -489,22 +481,21 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Solución de problemas",
     "codigo_men": "C3",
     "titulo": "Sensor de temperatura con Arduino (simulación)",
-    "descripcion": "Usando Tinkercad Circuits (simulador online gratuito), conecta un sensor de temperatura NTC o TMP36 a un Arduino Uno. Programa el Arduino para: leer la temperatura cada 2 segundos, mostrarla en el monitor serial, encender un LED rojo si la temperatura supera 30°C y un LED verde si es normal. Documenta el circuito con un esquema y el código con comentarios.",
+    "descripcion": "Usa el simulador interactivo de Arduino para ordenar los bloques lógicos de configuración y ejecución. El código debe: configurar los Pines 13 (LED Rojo) y 12 (LED Verde) como SALIDA, iniciar el Monitor Serial, leer la temperatura de un sensor TMP36 (A0) cada 2 segundos y encender el LED Rojo si la temperatura supera los 30°C (normal: LED Verde encendido). Ejecuta tu código en el simulador incorporado y manipula la temperatura con el slider para probar la respuesta.",
     "criterios": [
-      "1. Circuito correcto en simulador.",
-      "2. Lectura de temperatura funcional.",
-      "3. Lógica de LEDs correcta (>30°C rojo · resto verde).",
-      "4. Código comentado.",
-      "5. Esquema del circuito incluido."
+      "1. Ordena correctamente todos los bloques lógicos del programa Arduino.",
+      "2. Inicia la simulación de hardware y visualiza los reportes en el Monitor Serial.",
+      "3. El simulador responde de manera correcta a los cambios de temperatura (>30°C: LED Rojo, <=30°C: LED Verde).",
+      "4. Completa la ejecución sin errores de código."
     ],
-    "recursos": "Tinkercad Circuits (tinkercad.com) — gratuito<br>Referencia de pinout del sensor y Arduino",
-    "tiempo_estimado": "50",
+    "recursos": "Tablero y simulador interactivo de Arduino Uno y hardware integrado",
+    "tiempo_estimado": "35",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro/a estás de conectar un sensor a un Arduino y programar la lectura de datos en un simulador como Tinkercad? (1=nunca lo he intentado · 5=lo hago con confianza)",
+      "pregunta": "¿Qué tan seguro/a estás de conectar un sensor a un Arduino y programar la lectura de datos en un simulador por bloques? (1=nunca lo he intentado · 5=lo hago con confianza)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes escribir código Arduino (C++) que incluya condicionales para controlar actuadores (LEDs) según el valor leído por un sensor? (1=no conozco el lenguaje · 5=lo escribo sin problemas)",
+      "pregunta": "¿Puedes escribir código Arduino que incluya condicionales para controlar actuadores (LEDs) según el valor leído por un sensor? (1=no conozco el lenguaje · 5=lo escribo sin problemas)",
       "escala": "1 – 5"
     }
   },
@@ -514,19 +505,18 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Solución de problemas",
     "codigo_men": "C3",
-    "titulo": "Aplicación web de votación estudiantil",
-    "descripcion": "Diseña e implementa una aplicación web sencilla para la votación del personero estudiantil. Debe tener: una página de inicio con los candidatos (nombre + foto + propuesta breve), un botón de votar por candidato, un mecanismo para evitar votos dobles (al menos por sesión del navegador), y una página de resultados que muestre el conteo en tiempo real. Usa HTML, CSS y JavaScript básico.",
+    "titulo": "Lógica de votación estudiantil en JavaScript",
+    "descripcion": "Usa el tablero interactivo de código por bloques para completar la función de registro de votos (`voting.html`) utilizando persistencia local con `localStorage`. Arrastra y suelta los bloques en los espacios en blanco para realizar la lectura de la lista (`localStorage.getItem`), la conversión a texto plano (`JSON.stringify`), y el ciclo de pintado dinámico (`forEach`). Ejecuta tu código para verificar el registro y visualización de votos sin duplicados.",
     "criterios": [
-      "1. Interfaz con mínimo 3 candidatos.",
-      "2. Botón de votación funcional.",
-      "3. Prevención de voto doble (localStorage o similar).",
-      "4. Página de resultados con conteo correcto.",
-      "5. Diseño responsive (funciona en celular)."
+      "1. Utiliza de forma correcta `localStorage.getItem` para recuperar los votos guardados.",
+      "2. Implementa la conversión de objetos a texto plano mediante `JSON.stringify` para la persistencia.",
+      "3. Utiliza la estructura iterativa `forEach` para actualizar de forma dinámica la interfaz de usuario con los resultados.",
+      "4. Ejecuta exitosamente la simulación de votación."
     ],
-    "recursos": "Editor de código: VS Code / CodePen / Replit<br>Referencia: MDN Web Docs · W3Schools",
-    "tiempo_estimado": "65",
+    "recursos": "Editor interactivo de código por bloques para JavaScript y simulación web",
+    "tiempo_estimado": "30",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro/a estás de construir una aplicación web interactiva con HTML, CSS y JavaScript que incluya lógica (condicionales, eventos)? (1=nunca he programado web · 5=lo hago con confianza)",
+      "pregunta": "¿Qué tan seguro/a estás de estructurar código de persistencia local en Javascript usando bloques? (1=nunca lo he hecho · 5=lo hago sin tutoriales)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
@@ -540,20 +530,18 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Solución de problemas",
     "codigo_men": "C3",
-    "titulo": "Sistema de clasificación de residuos con lógica de sensores",
-    "descripcion": "Diseña en Python un sistema que simule la clasificación automática de residuos en una planta de reciclaje. El sistema recibe como entrada: el peso del objeto (gramos), su material (string: “plástico”, “vidrio”, “papel”, “orgánico”, “metal”) y su tamaño (pequeño/mediano/grande). Con base en estos datos, debe: clasificarlo en la banda correcta (4 bandas), calcular el porcentaje de ocupación de cada banda, manejar errores de entrada inválida, y generar un reporte al final.",
+    "titulo": "Clasificador de residuos con Python",
+    "descripcion": "Usa el tablero interactivo de código por bloques para completar el script en Python (`classifier.py`) de la clase `WasteClassifier`. Arrastra y suelta los bloques de código correctos en los espacios en blanco para completar la inicialización de atributos (`self.peso`), la comparación de cadenas y el manejo de excepciones de valor (`ValueError`). Ejecuta tu script para verificar la clasificación correcta del residuo.",
     "criterios": [
-      "1. Clases definidas para Objeto y Clasificador.",
-      "2. Lógica de clasificación correcta para los 5 materiales.",
-      "3. Cálculo de porcentaje de ocupación.",
-      "4. Manejo de excepciones para entradas inválidas.",
-      "5. Reporte final generado.",
-      "6. Código con docstrings."
+      "1. Completa la asignación correcta del atributo `self.peso` en el constructor de la clase.",
+      "2. Implementa la lógica de condicionales con el material del residuo.",
+      "3. Maneja correctamente la excepción `ValueError` en la lógica de errores del programa.",
+      "4. Ejecuta exitosamente el script de clasificación en Python sin errores de sintaxis o ejecución."
     ],
-    "recursos": "Python 3.x (IDLE / Replit / VS Code)<br>Especificaciones de bandas (proporcionadas)",
-    "tiempo_estimado": "65",
+    "recursos": "Tablero interactivo de código por bloques para Python con consola de ejecución",
+    "tiempo_estimado": "30",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro/a estás de implementar clases y objetos en Python para modelar un sistema del mundo real con múltiples entidades? (1=no he aprendido POO · 5=lo implemento con confianza)",
+      "pregunta": "¿Qué tan seguro/a estás de implementar clases y objetos en Python para modelar un sistema del mundo real con múltiples atributos? (1=no he aprendido POO · 5=lo implemento con confianza)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
@@ -649,12 +637,12 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "titulo": "Desmantelamiento virtual de un Smartphone",
     "descripcion": "Explora virtualmente la estructura de un smartphone desmantelando sus 9 componentes principales. Luego, responde a las preguntas críticas sobre la función, geopolítica, sostenibilidad y ética de la cadena de suministro.",
     "criterios": [
-      "Desmontaje documentado fotográficamente.",
-      "Mínimo 8 componentes identificados con función.",
-      "Análisis de materiales y ciclo de vida."
+      "1. Desmontaje exitoso de los 9 componentes virtuales (Pantalla, Digitalizador, Batería, Placa Madre, Cámara, Parlante, Micrófono, Chasis y Tapa Trasera).",
+      "2. Comprende el funcionamiento y función técnica de cada parte.",
+      "3. Resuelve sin errores el cuestionario sobre obsolescencia programada y geopolítica de materiales raros al finalizar."
     ],
-    "recursos": "Dispositivo en desuso, juego de destornilladores de precisión, iFixit.com, PNUMA (E-waste), Google Lens.\n\n---",
-    "tiempo_estimado": "70",
+    "recursos": "Simulador interactivo en 3D de desmontaje de celular incorporado",
+    "tiempo_estimado": "40",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
       "escala": "1-5"
@@ -670,23 +658,23 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
-    "titulo": "Análisis comparativo de paradigmas de programación",
-    "descripcion": "Redacta un ensayo comparativo y crítico usando el editor de texto integrado donde compares la filosofía, ventajas e implementaciones lógicas de los paradigmas imperativo, orientado a objetos y funcional.",
+    "titulo": "Análisis comparativo de paradigmas de programación en Python",
+    "descripcion": "Usa el editor de código integrado para analizar e implementar una misma solución algorítmica (sumar los números pares de una lista) utilizando tres enfoques o paradigmas diferentes en Python: Imperativo, Orientado a Objetos (POO) y Funcional. Completa las sentencias clave en cada ejercicio y ejecuta la consola para verificar su correcta ejecución.",
     "criterios": [
-      "Proceso de resolución en 3 paradigmas con definición clara.",
-      "Mismo problema implementado en los tres.",
-      "Análisis comparativo de ventajas y limitaciones.",
-      "Casos de uso reales identificados."
+      "1. Completa la inicialización del acumulador y la condición de paridad en el paradigma Imperativo.",
+      "2. Implementa la asignación del constructor e invocación del acumulado en el paradigma Orientado a Objetos.",
+      "3. Utiliza la función integrada filter y la expresión lambda en el paradigma Funcional.",
+      "4. Ejecuta exitosamente los tres scripts sin errores de sintaxis en la consola de simulación."
     ],
-    "recursos": "Repl.it o IDEs para ejecutar los tres ejemplos, referencia (FreeCodeCamp, Real Python).\n\n---",
-    "tiempo_estimado": "75",
+    "recursos": "Editor interactivo de código IDE para Python y terminal de salida",
+    "tiempo_estimado": "35",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
-      "escala": "1-5"
+      "pregunta": "¿Qué tan seguro/a estás de poder identificar y completar código en Python implementando la misma lógica (suma de pares) bajo los paradigmas imperativo, orientado a objetos y funcional? (1=muy inseguro/a · 5=muy seguro/a)",
+      "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Qué conocimientos previos aplicarás aquí?",
-      "escala": "Texto libre"
+      "pregunta": "¿Qué tan clara tienes la diferencia en el flujo de datos y el estado al programar con funciones puras y expresiones lambda en comparación con la POO? (1=nada claro · 5=perfectamente claro)",
+      "escala": "1 – 5"
     }
   },
   {

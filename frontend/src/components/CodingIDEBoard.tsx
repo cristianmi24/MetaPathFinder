@@ -88,6 +88,131 @@ function renderCodeLine(html: string, blanks: BlankDef[], values: Record<string,
 }
 
 const CHALLENGES: Record<string, ChallengeConfig> = {
+  'RA-C1-N2': {
+    filename: 'paradigmas.py',
+    icon: '🐍',
+    exercises: [
+      {
+        title: 'Ejercicio 1: Paradigma Imperativo',
+        desc: 'Completa el código imperativo tradicional para sumar los números pares de una lista usando acumuladores y bucles.',
+        tags: ['cib-hint-syntax', 'Sintaxis', 'cib-hint-logic', 'Imperativo'],
+        blanks: [
+          { id: 'p0', placeholder: 'inicialización...', width: 80, answer: '0', hint: 'El acumulador de suma debe empezar en cero' },
+          { id: 'p1', placeholder: 'condición par...', width: 120, answer: 'num % 2 == 0', hint: 'Evalúa si el número es divisible por 2' },
+        ],
+        code: [
+          { type: 'plain', html: '<span class="cib-cm"># --- Paradigma Imperativo ---</span>' },
+          { type: 'plain', html: '<span class="cib-kw">def</span> <span class="cib-fn">sumar_pares_imperativo</span>(<span class="cib-var">numeros</span>)<span class="cib-op">:</span>' },
+          { type: 'plain', html: '    <span class="cib-var">suma</span> <span class="cib-op">=</span> __BLANK_p0__' },
+          { type: 'plain', html: '    <span class="cib-kw">for</span> <span class="cib-var">num</span> <span class="cib-kw">in</span> <span class="cib-var">numeros</span><span class="cib-op">:</span>' },
+          { type: 'plain', html: '        <span class="cib-kw">if</span> __BLANK_p1__<span class="cib-op">:</span>' },
+          { type: 'plain', html: '            <span class="cib-var">suma</span> <span class="cib-op">+=</span> <span class="cib-var">num</span>' },
+          { type: 'plain', html: '    <span class="cib-kw">return</span> <span class="cib-var">suma</span>' },
+        ],
+        validate: (vals) => {
+          const v0 = vals.p0?.trim() || '';
+          const v1 = vals.p1?.trim().replace(/\s+/g, '') || '';
+          return v0 === '0' && (v1 === 'num%2==0' || v1 === 'num%2===0');
+        },
+        run: (vals) => {
+          const v0 = vals.p0?.trim() || '';
+          const v1 = vals.p1?.trim().replace(/\s+/g, '') || '';
+          if (v0 === '0' && (v1 === 'num%2==0' || v1 === 'num%2===0')) {
+            return { ok: true, output: [
+              { type: 'info', text: '>>> python paradigmas.py' },
+              { type: 'ok', text: 'sumar_pares_imperativo([1, 2, 3, 4, 5, 6]) → 12' },
+              { type: 'ok', text: '--- Prueba exitosa (Paradigma Imperativo) ---' }
+            ]};
+          }
+          return { ok: false, output: [
+            { type: 'info', text: '>>> python paradigmas.py' },
+            { type: 'err', text: 'Error: lógica del acumulador o condición de paridad incorrecta' },
+            { type: 'err', text: '--- Proceso terminado con código 1 ---' }
+          ]};
+        }
+      },
+      {
+        title: 'Ejercicio 2: Paradigma Orientado a Objetos (POO)',
+        desc: 'Completa la clase que encapsula el estado (la lista de números) y expone métodos para filtrar y sumar pares.',
+        tags: ['cib-hint-syntax', 'Sintaxis', 'cib-hint-scope', 'Objetos'],
+        blanks: [
+          { id: 'q0', placeholder: 'constructor...', width: 220, answer: 'self.numeros = numeros', hint: 'Asigna el parámetro a una propiedad de la instancia' },
+          { id: 'q1', placeholder: 'sumar pares...', width: 140, answer: 'sum(pares)', hint: 'Utiliza la función integrada sum de Python' },
+        ],
+        code: [
+          { type: 'plain', html: '<span class="cib-cm"># --- Paradigma Orientado a Objetos ---</span>' },
+          { type: 'plain', html: '<span class="cib-kw">class</span> <span class="cib-cls">ProcesadorNumeros</span><span class="cib-op">:</span>' },
+          { type: 'plain', html: '    <span class="cib-kw">def</span> <span class="cib-fn">__init__</span>(<span class="cib-var">self</span>, <span class="cib-var">numeros</span>)<span class="cib-op">:</span>' },
+          { type: 'plain', html: '        __BLANK_q0__' },
+          { type: 'plain', html: '' },
+          { type: 'plain', html: '    <span class="cib-kw">def</span> <span class="cib-fn">obtener_pares</span>(<span class="cib-var">self</span>)<span class="cib-op">:</span>' },
+          { type: 'plain', html: '        <span class="cib-kw">return</span> [n <span class="cib-kw">for</span> n <span class="cib-kw">in</span> <span class="cib-var">self</span>.<span class="cib-var">numeros</span> <span class="cib-kw">if</span> n <span class="cib-op">%</span> <span class="cib-num">2</span> <span class="cib-op">==</span> <span class="cib-num">0</span>]' },
+          { type: 'plain', html: '' },
+          { type: 'plain', html: '    <span class="cib-kw">def</span> <span class="cib-fn">sumar</span>(<span class="cib-var">self</span>)<span class="cib-op">:</span>' },
+          { type: 'plain', html: '        <span class="cib-var">pares</span> <span class="cib-op">=</span> <span class="cib-var">self</span>.<span class="cib-fn">obtener_pares</span>()' },
+          { type: 'plain', html: '        <span class="cib-kw">return</span> __BLANK_q1__' },
+        ],
+        validate: (vals) => {
+          const v0 = vals.q0?.trim().replace(/\s+/g, '') || '';
+          const v1 = vals.q1?.trim().replace(/\s+/g, '') || '';
+          return v0 === 'self.numeros=numeros' && v1 === 'sum(pares)';
+        },
+        run: (vals) => {
+          const v0 = vals.q0?.trim().replace(/\s+/g, '') || '';
+          const v1 = vals.q1?.trim().replace(/\s+/g, '') || '';
+          if (v0 === 'self.numeros=numeros' && v1 === 'sum(pares)') {
+            return { ok: true, output: [
+              { type: 'info', text: '>>> python paradigmas.py' },
+              { type: 'ok', text: 'Instancia ProcesadorNumeros creada con [1, 2, 3, 4, 5, 6]' },
+              { type: 'ok', text: 'metodo sumar() retornado → 12' },
+              { type: 'ok', text: '--- Prueba exitosa (Paradigma POO) ---' }
+            ]};
+          }
+          return { ok: false, output: [
+            { type: 'info', text: '>>> python paradigmas.py' },
+            { type: 'err', text: 'Error: constructor self o método de suma incorrectos' },
+            { type: 'err', text: '--- Proceso terminado con código 1 ---' }
+          ]};
+        }
+      },
+      {
+        title: 'Ejercicio 3: Paradigma Funcional',
+        desc: 'Completa la implementación declarativa y funcional usando una función pura de filtrado lambda.',
+        tags: ['cib-hint-syntax', 'Sintaxis', 'cib-hint-logic', 'Funcional'],
+        blanks: [
+          { id: 'r0', placeholder: 'función filter...', width: 80, answer: 'filter', hint: 'Función integrada que filtra elementos según un predicado' },
+          { id: 'r1', placeholder: 'función anónima...', width: 220, answer: 'lambda x: x % 2 == 0', hint: 'Define la función anónima para evaluar la paridad' },
+        ],
+        code: [
+          { type: 'plain', html: '<span class="cib-cm"># --- Paradigma Funcional ---</span>' },
+          { type: 'plain', html: '<span class="cib-kw">def</span> <span class="cib-fn">sumar_pares_funcional</span>(<span class="cib-var">numeros</span>)<span class="cib-op">:</span>' },
+          { type: 'plain', html: '    <span class="cib-var">pares</span> <span class="cib-op">=</span> __BLANK_r0__(__BLANK_r1__, <span class="cib-var">numeros</span>)' },
+          { type: 'plain', html: '    <span class="cib-kw">return</span> <span class="cib-builtin">sum</span>(<span class="cib-var">pares</span>)' },
+        ],
+        validate: (vals) => {
+          const v0 = vals.r0?.trim() || '';
+          const v1 = vals.r1?.trim().replace(/\s+/g, '') || '';
+          return v0 === 'filter' && (v1 === 'lambdax:x%2==0' || v1 === 'lambdax:x%2===0');
+        },
+        run: (vals) => {
+          const v0 = vals.r0?.trim() || '';
+          const v1 = vals.r1?.trim().replace(/\s+/g, '') || '';
+          if (v0 === 'filter' && (v1 === 'lambdax:x%2==0' || v1 === 'lambdax:x%2===0')) {
+            return { ok: true, output: [
+              { type: 'info', text: '>>> python paradigmas.py' },
+              { type: 'ok', text: 'sumar_pares_funcional([1, 2, 3, 4, 5, 6]) → 12' },
+              { type: 'ok', text: '--- Prueba exitosa (Paradigma Funcional) ---' }
+            ]};
+          }
+          return { ok: false, output: [
+            { type: 'info', text: '>>> python paradigmas.py' },
+            { type: 'err', text: 'Error: función filter o expresión lambda incorrectas' },
+            { type: 'err', text: '--- Proceso terminado con código 1 ---' }
+          ]};
+        }
+      }
+    ]
+  },
   'RA-C2-N1': {
     filename: 'api_notas.py',
     icon: '🐍',

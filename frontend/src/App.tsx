@@ -14,7 +14,6 @@ import { CognitiveChallenge } from './pages/CognitiveChallenge';
 import { ChallengeCalibration } from './pages/ChallengeCalibration';
 import { MetacognitiveStrategies } from './pages/MetacognitiveStrategies';
 import { RegisteredUsers } from './pages/RegisteredUsers';
-import PreviewPhaseB from './pages/PreviewPhaseB';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCognitiveTracking } from './hooks/useCognitiveTracking';
 import { CognitiveBrain } from './components/CognitiveBrain';
@@ -134,26 +133,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (location.pathname === '/') return <>{children}</>;
 
-  if (location.pathname === '/preview-phase-b') {
-    return (
-      <div className="min-h-screen bg-background">
-        <CognitiveBrain />
-        <main className="min-h-screen">
-          <AnimatePresence mode="wait">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
-        </main>
-      </div>
-    );
-  }
-
   if (role === 'admin') return <AdminLayout>{children}</AdminLayout>;
 
   if (!user) return <AuthLayout>{children}</AuthLayout>;
@@ -181,8 +160,6 @@ export default function App() {
           <Route path="/metacognitive-strategies" element={<MetacognitiveStrategies />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<RootRedirect />} />
-          <Route path="/preview-phase-b" element={<PreviewPhaseB />} />
-
         </Routes>
       </AppLayout>
     </Router>

@@ -94,52 +94,51 @@ export default function DriveFileSorter() {
   return (
     <div>
       <style>{`
-        *{box-sizing:border-box;margin:0;padding:0}
-        .drive{background:var(--color-background-tertiary);min-height:600px}
-        .topbar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:10px 16px;display:flex;align-items:center;gap:12px}
-        .logo{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:500;color:var(--color-text-primary)}
-        .logo-icon{width:28px;height:28px;border-radius:6px;background:#E6F1FB;display:flex;align-items:center;justify-content:center}
-        .search-fake{flex:1;height:36px;background:var(--color-background-secondary);border-radius:20px;border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;padding:0 12px;gap:8px;font-size:13px;color:var(--color-text-tertiary)}
-        .avatar{width:32px;height:32px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#3C3489}
-        .sidebar{width:200px;float:left;padding:12px 8px;display:flex;flex-direction:column;gap:2px}
-        .sb-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:20px;font-size:13px;color:var(--color-text-secondary);cursor:pointer}
-        .sb-item.active{background:#E6F1FB;color:#0C447C;font-weight:500}
-        .sb-item i{font-size:17px}
-        .main{margin-left:200px;padding:16px 20px;min-height:560px}
-        .challenge-bar{background:var(--color-background-warning);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-        .cb-text{font-size:13px;color:var(--color-text-warning);flex:1}
-        .cb-score{font-size:13px;font-weight:500;color:var(--color-text-warning)}
-        .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-        .tb-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:12px;color:var(--color-text-primary);cursor:pointer;font-family:inherit;transition:background .15s}
-        .tb-btn:hover{background:var(--color-background-secondary)}
-        .tb-btn i{font-size:15px}
-        .tb-btn.primary{background:#E6F1FB;color:#0C447C;border-color:#B5D4F4}
-        .tb-btn.primary:hover{background:#B5D4F4}
-        .col-header{display:grid;grid-template-columns:2fr 1fr 1fr 80px;padding:4px 10px;font-size:11px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.04em;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:4px}
-        .file-list{display:flex;flex-direction:column;gap:2px}
-        .file-row{display:grid;grid-template-columns:2fr 1fr 1fr 80px;align-items:center;padding:7px 10px;border-radius:var(--border-radius-md);border:1.5px solid transparent;background:var(--color-background-primary);cursor:grab;transition:background .12s,border-color .12s;user-select:none}
-        .file-row:hover{background:var(--color-background-secondary)}
-        .file-row.dragging{opacity:.4}
-        .file-row.drag-over{border-color:#185FA5;background:#E6F1FB}
-        .file-row.correct{border-color:#1D9E75;background:#E1F5EE}
-        .file-row.wrong{border-color:#E24B4A;background:#FCEBEB;animation:shake .3s}
-        @keyframes shake{0%,100%{transform:translateX(0)}30%{transform:translateX(-4px)}70%{transform:translateX(4px)}}
-        .file-name{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);min-width:0}
-        .file-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .file-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
-        .file-date{font-size:12px;color:var(--color-text-secondary)}
-        .file-type{font-size:11px;color:var(--color-text-tertiary)}
-        .file-action{display:flex;justify-content:flex-end}
-        .pos-badge{width:22px;height:22px;border-radius:50%;background:var(--color-background-secondary);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary)}
-        .pos-badge.ok{background:var(--color-background-success);color:var(--color-text-success)}
-        .pos-badge.bad{background:var(--color-background-danger);color:var(--color-text-danger)}
-        .result-wrap{margin-top:16px;padding:14px 16px;border-radius:var(--border-radius-lg);font-size:14px;font-weight:500;text-align:center;display:none}
-        .result-wrap.show{display:block}
-        .result-wrap.win{background:var(--color-background-success);color:var(--color-text-success)}
-        .result-wrap.partial{background:var(--color-background-warning);color:var(--color-text-warning)}
-        .result-wrap.lose{background:var(--color-background-danger);color:var(--color-text-danger)}
-        .bottom-bar{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center}
+        .drive-sorter-scoped .drive{background:var(--color-background-tertiary);min-height:600px}
+        .drive-sorter-scoped .topbar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:10px 16px;display:flex;align-items:center;gap:12px}
+        .drive-sorter-scoped .logo{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:500;color:var(--color-text-primary)}
+        .drive-sorter-scoped .logo-icon{width:28px;height:28px;border-radius:6px;background:#E6F1FB;display:flex;align-items:center;justify-content:center}
+        .drive-sorter-scoped .search-fake{flex:1;height:36px;background:var(--color-background-secondary);border-radius:20px;border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;padding:0 12px;gap:8px;font-size:13px;color:var(--color-text-tertiary)}
+        .drive-sorter-scoped .avatar{width:32px;height:32px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#3C3489}
+        .drive-sorter-scoped .sidebar{width:200px;float:left;padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+        .drive-sorter-scoped .sb-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:20px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;margin:0}
+        .drive-sorter-scoped .sb-item.active{background:#E6F1FB;color:#0C447C;font-weight:500}
+        .drive-sorter-scoped .sb-item i{font-size:17px}
+        .drive-sorter-scoped .main{margin-left:200px;padding:16px 20px;min-height:560px}
+        .drive-sorter-scoped .challenge-bar{background:var(--color-background-warning);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .drive-sorter-scoped .cb-text{font-size:13px;color:var(--color-text-warning);flex:1}
+        .drive-sorter-scoped .cb-score{font-size:13px;font-weight:500;color:var(--color-text-warning)}
+        .drive-sorter-scoped .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+        .drive-sorter-scoped .tb-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:12px;color:var(--color-text-primary);cursor:pointer;font-family:inherit;transition:background .15s}
+        .drive-sorter-scoped .tb-btn:hover{background:var(--color-background-secondary)}
+        .drive-sorter-scoped .tb-btn i{font-size:15px}
+        .drive-sorter-scoped .tb-btn.primary{background:#E6F1FB;color:#0C447C;border-color:#B5D4F4}
+        .drive-sorter-scoped .tb-btn.primary:hover{background:#B5D4F4}
+        .drive-sorter-scoped .col-header{display:grid;grid-template-columns:2fr 1fr 1fr 80px;padding:4px 10px;font-size:11px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.04em;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:4px}
+        .drive-sorter-scoped .file-list{display:flex;flex-direction:column;gap:2px}
+        .drive-sorter-scoped .file-row{display:grid;grid-template-columns:2fr 1fr 1fr 80px;align-items:center;padding:7px 10px;border-radius:var(--border-radius-md);border:1.5px solid transparent;background:var(--color-background-primary);cursor:grab;transition:background .12s,border-color .12s;user-select:none;margin:0}
+        .drive-sorter-scoped .file-row:hover{background:var(--color-background-secondary)}
+        .drive-sorter-scoped .file-row.dragging{opacity:.4}
+        .drive-sorter-scoped .file-row.drag-over{border-color:#185FA5;background:#E6F1FB}
+        .drive-sorter-scoped .file-row.correct{border-color:#1D9E75;background:#E1F5EE}
+        .drive-sorter-scoped .file-row.wrong{border-color:#E24B4A;background:#FCEBEB;animation:shake .3s}
+        .drive-sorter-scoped .file-name{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);min-width:0}
+        .drive-sorter-scoped .file-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .drive-sorter-scoped .file-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+        .drive-sorter-scoped .file-date{font-size:12px;color:var(--color-text-secondary)}
+        .drive-sorter-scoped .file-type{font-size:11px;color:var(--color-text-tertiary)}
+        .drive-sorter-scoped .file-action{display:flex;justify-content:flex-end}
+        .drive-sorter-scoped .pos-badge{width:22px;height:22px;border-radius:50%;background:var(--color-background-secondary);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary)}
+        .drive-sorter-scoped .pos-badge.ok{background:var(--color-background-success);color:var(--color-text-success)}
+        .drive-sorter-scoped .pos-badge.bad{background:var(--color-background-danger);color:var(--color-text-danger)}
+        .drive-sorter-scoped .result-wrap{margin-top:16px;padding:14px 16px;border-radius:var(--border-radius-lg);font-size:14px;font-weight:500;text-align:center;display:none}
+        .drive-sorter-scoped .result-wrap.show{display:block}
+        .drive-sorter-scoped .result-wrap.win{background:var(--color-background-success);color:var(--color-text-success)}
+        .drive-sorter-scoped .result-wrap.partial{background:var(--color-background-warning);color:var(--color-text-warning)}
+        .drive-sorter-scoped .result-wrap.lose{background:var(--color-background-danger);color:var(--color-text-danger)}
+        .drive-sorter-scoped .bottom-bar{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center}
       `}</style>
+      <div className="drive-sorter-scoped">
 
       <div className="drive">
         <div className="topbar">
@@ -230,6 +229,7 @@ export default function DriveFileSorter() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

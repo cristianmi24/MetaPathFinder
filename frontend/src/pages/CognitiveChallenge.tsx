@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
@@ -12,6 +12,24 @@ import { CanvasBoard } from '../components/CanvasBoard';
 import { SpreadsheetBoard } from '../components/SpreadsheetBoard';
 import { PhoneDismantlingBoard } from '../components/PhoneDismantlingBoard';
 import { CodingIDEBoard } from '../components/CodingIDEBoard';
+import { SqlBlockBoard } from '../components/SqlBlockBoard';
+import { ArduinoBlockBoard } from '../components/ArduinoBlockBoard';
+import { CodeBlockBoard } from '../components/CodeBlockBoard';
+
+// Import interactive custom components
+import TimelineGame from '../components/TimelineGame';
+import MatchImageTerms from '../components/MatchImageTerms';
+import MatchTechSituations from '../components/MatchTechSituations';
+import DriveFileSorter from '../components/DriveFileSorter';
+import AttendanceSimulator from '../components/AttendanceSimulator';
+import DigitalAccessQuiz from '../components/DigitalAccessQuiz';
+import SocialMediaQuiz from '../components/SocialMediaQuiz';
+import { SmartphoneAnatomyQuiz } from '../components/SmartphoneAnatomyQuiz';
+import { ComputingEvolutionQuiz } from '../components/ComputingEvolutionQuiz';
+import { ProspectiveTechEssay } from '../components/ProspectiveTechEssay';
+import MiniExcelBoard from '../components/MiniExcelBoard';
+import { DigitalIdentityBoard } from '../components/DigitalIdentityBoard';
+
 import './CognitiveChallenge.css';
 
 export function CognitiveChallenge() {
@@ -38,6 +56,48 @@ export function CognitiveChallenge() {
       "RA-C4-N1": "text", "RA-C4-N2": "upload", "RA-C4-N3": "upload"
     };
     return mappings[id] || 'code';
+  };
+
+  const componentMap: Record<string, React.ReactNode> = {
+    // Nivel Básico (RB)
+    'RB-C1-N1': <TimelineGame />,
+    'RB-C1-N2': <MatchImageTerms />,
+    'RB-C1-N3': <MatchTechSituations />,
+    'RB-C2-N1': <DriveFileSorter />,
+    'RB-C2-N2': <DragAndDropBoard challengeId="RB-C2-N2" onValidation={() => {}} />,
+    'RB-C2-N3': <DragAndDropBoard challengeId="RB-C2-N3" onValidation={() => {}} />,
+    'RB-C3-N1': <CanvasBoard challengeId="RB-C3-N1" onValidation={() => {}} />,
+    'RB-C3-N2': <AttendanceSimulator />,
+    'RB-C3-N3': <CanvasBoard challengeId="RB-C3-N3" onValidation={() => {}} />,
+    'RB-C4-N1': <DigitalAccessQuiz />,
+    'RB-C4-N2': <SocialMediaQuiz />,
+    'RB-C4-N3': <EssayBoard challengeId="RB-C4-N3" onValidation={() => {}} />,
+    // Nivel Medio (RM)
+    'RM-C1-N1': <SmartphoneAnatomyQuiz />,
+    'RM-C1-N2': <ComputingEvolutionQuiz />,
+    'RM-C1-N3': <ProspectiveTechEssay challengeId="RM-C1-N3" onValidation={() => {}} />,
+    'RM-C2-N1': <MiniExcelBoard challengeId="RM-C2-N1" onValidation={() => {}} />,
+    'RM-C2-N2': <DigitalIdentityBoard challengeId="RM-C2-N2" onValidation={() => {}} />,
+    'RM-C2-N3': <SqlBlockBoard challengeId="RM-C2-N3" onValidation={() => {}} />,
+    'RM-C3-N1': <ArduinoBlockBoard challengeId="RM-C3-N1" onValidation={() => {}} />,
+    'RM-C3-N2': <CodeBlockBoard challengeId="RM-C3-N2" onValidation={() => {}} />,
+    'RM-C3-N3': <CodeBlockBoard challengeId="RM-C3-N3" onValidation={() => {}} />,
+    'RM-C4-N1': <EssayBoard challengeId="RM-C4-N1" onValidation={() => {}} />,
+    'RM-C4-N2': <EssayBoard challengeId="RM-C4-N2" onValidation={() => {}} />,
+    'RM-C4-N3': <EssayBoard challengeId="RM-C4-N3" onValidation={() => {}} />,
+    // Nivel Avanzado (RA)
+    'RA-C1-N1': <PhoneDismantlingBoard challengeId="RA-C1-N1" onValidation={() => {}} />,
+    'RA-C1-N2': <CodingIDEBoard challengeId="RA-C1-N2" onValidation={() => {}} />,
+    'RA-C1-N3': <EssayBoard challengeId="RA-C1-N3" onValidation={() => {}} />,
+    'RA-C2-N1': <CodingIDEBoard challengeId="RA-C2-N1" onValidation={() => {}} />,
+    'RA-C2-N2': <CodingIDEBoard challengeId="RA-C2-N2" onValidation={() => {}} />,
+    'RA-C2-N3': <CodingIDEBoard challengeId="RA-C2-N3" onValidation={() => {}} />,
+    'RA-C3-N1': <UploadBoard challengeId="RA-C3-N1" onValidation={() => {}} />,
+    'RA-C3-N2': <CodingIDEBoard challengeId="RA-C3-N2" onValidation={() => {}} />,
+    'RA-C3-N3': <CodingIDEBoard challengeId="RA-C3-N3" onValidation={() => {}} />,
+    'RA-C4-N1': <EssayBoard challengeId="RA-C4-N1" onValidation={() => {}} />,
+    'RA-C4-N2': <UploadBoard challengeId="RA-C4-N2" onValidation={() => {}} />,
+    'RA-C4-N3': <UploadBoard challengeId="RA-C4-N3" onValidation={() => {}} />,
   };
 
   const challenge: DynamicChallenge = location.state?.challenge || {
@@ -261,7 +321,22 @@ export function CognitiveChallenge() {
 
         {/* Tablero Dinámico (Multimodal) */}
         <div className="fb-editor-container">
-          {getBoardType(challenge.id) === 'drag_drop' ? (
+          {componentMap[challenge.id] ? (
+            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+              {React.cloneElement(componentMap[challenge.id] as any, {
+                challengeId: challenge.id,
+                onValidation: (success: boolean) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> ¡Reto interactivo completado con éxito!' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }
+              })}
+            </div>
+          ) : getBoardType(challenge.id) === 'drag_drop' ? (
             <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
               <DragAndDropBoard 
                 challengeId={challenge.id} 

@@ -204,40 +204,38 @@ export default function MatchTechSituations() {
   };
 
   return (
-    <div>
+    <div className="match-tech-scoped">
       <style>{`
-        *{box-sizing:border-box;margin:0;padding:0}
-        .page{padding:1.2rem 1rem 2.5rem;background:var(--color-surface);color:var(--color-on-surface)}
-        .hero{text-align:center;margin-bottom:1.4rem}
-        .hero h1{font-size:21px;font-weight:500}
-        .hero p{font-size:13px;color:var(--color-on-surface-variant);margin-top:4px;line-height:1.5}
-        .layout{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;margin-bottom:1.4rem}
-        .situation-grid{display:grid;gap:16px}
-        .situation-card{border:1px solid var(--color-outline-variant);border-radius:16px;background:var(--color-surface-container);padding:16px;min-height:160px;display:flex;flex-direction:column;justify-content:space-between}
-        .situation-card h3{font-size:14px;color:var(--color-on-surface);margin-bottom:8px}
-        .situation-card p{font-size:12px;color:var(--color-on-surface-variant);line-height:1.4;margin-bottom:12px}
-        .slot-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-        .slot{padding:10px;border-radius:12px;border:1px dashed var(--color-outline-variant);min-height:48px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--color-on-surface-variant);background:var(--color-surface);transition:border-color .2s,background .2s}
-        .slot.filled{border-style:solid;background:var(--color-surface-container-high)}
-        .slot.drag-over{border-color:var(--color-primary);background:var(--color-surface-container)}
-        .slot span{font-size:12px;line-height:1.3}
-        .cards-panel{display:flex;flex-direction:column;gap:12px}
-        .cards-title{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--color-on-surface-variant);letter-spacing:.08em}
-        .card-list{display:grid;grid-template-columns:1fr;gap:10px}
-        .tech-card{border-radius:16px;border:2px solid var(--color-outline-variant);background:var(--color-surface-container);padding:12px;cursor:pointer;transition:border-color .2s,transform .15s}
-        .tech-card:hover{transform:translateY(-1px)}
-        .tech-card.selected{border-color:var(--color-primary)}
-        .tech-card.filled{opacity:.45;cursor:not-allowed}
-        .tech-card .type-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;color:var(--color-on-surface-variant)}
-        .tech-card .text{font-size:13px;color:var(--color-on-surface)}
-        .status-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
-        .status-banner{flex:1;padding:12px 14px;border-radius:14px;background:var(--color-surface-container);color:var(--color-on-surface);font-size:13px}
-        .actions{display:flex;gap:10px;flex-wrap:wrap}
-        .btn{padding:10px 18px;border-radius:14px;border:1px solid var(--color-outline-variant);background:transparent;color:var(--color-on-surface);cursor:pointer}
-        .btn.primary{background:var(--color-primary-container);border-color:var(--color-primary-container);color:var(--color-on-primary-container)}
-        .btn.secondary{background:transparent}
+        .match-tech-scoped .page{padding:1.2rem 1rem 2.5rem;background:var(--color-surface);color:var(--color-on-surface)}
+        .match-tech-scoped .hero{text-align:center;margin-bottom:1.4rem}
+        .match-tech-scoped .hero h1{font-size:21px;font-weight:500;margin:0}
+        .match-tech-scoped .hero p{font-size:13px;color:var(--color-on-surface-variant);margin-top:4px;line-height:1.5}
+        .match-tech-scoped .layout{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;margin-bottom:1.4rem}
+        .match-tech-scoped .situation-grid{display:grid;gap:16px}
+        .match-tech-scoped .situation-card{border:1px solid var(--color-outline-variant);border-radius:16px;background:var(--color-surface-container);padding:16px;min-height:160px;display:flex;flex-direction:column;justify-content:space-between;margin:0}
+        .match-tech-scoped .situation-card h3{font-size:14px;color:var(--color-on-surface);margin-bottom:8px}
+        .match-tech-scoped .situation-card p{font-size:12px;color:var(--color-on-surface-variant);line-height:1.4;margin-bottom:12px}
+        .match-tech-scoped .slot-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .match-tech-scoped .slot{padding:10px;border-radius:12px;border:1px dashed var(--color-outline-variant);min-height:48px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--color-on-surface-variant);background:var(--color-surface);transition:border-color .2s,background .2s}
+        .match-tech-scoped .slot.filled{border-style:solid;background:var(--color-surface-container-high)}
+        .match-tech-scoped .slot.drag-over{border-color:var(--color-primary);background:var(--color-surface-container)}
+        .match-tech-scoped .slot span{font-size:12px;line-height:1.3}
+        .match-tech-scoped .cards-panel{display:flex;flex-direction:column;gap:12px}
+        .match-tech-scoped .cards-title{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--color-on-surface-variant);letter-spacing:.08em}
+        .match-tech-scoped .card-list{display:grid;grid-template-columns:1fr;gap:10px}
+        .match-tech-scoped .tech-card{border-radius:16px;border:2px solid var(--color-outline-variant);background:var(--color-surface-container);padding:12px;cursor:pointer;transition:border-color .2s,transform .15s;margin:0}
+        .match-tech-scoped .tech-card:hover{transform:translateY(-1px)}
+        .match-tech-scoped .tech-card.selected{border-color:var(--color-primary)}
+        .match-tech-scoped .tech-card.filled{opacity:.45;cursor:not-allowed}
+        .match-tech-scoped .tech-card .type-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;color:var(--color-on-surface-variant)}
+        .match-tech-scoped .tech-card .text{font-size:13px;color:var(--color-on-surface)}
+        .match-tech-scoped .status-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+        .match-tech-scoped .status-banner{flex:1;padding:12px 14px;border-radius:14px;background:var(--color-surface-container);color:var(--color-on-surface);font-size:13px}
+        .match-tech-scoped .actions{display:flex;gap:10px;flex-wrap:wrap}
+        .match-tech-scoped .btn{padding:10px 18px;border-radius:14px;border:1px solid var(--color-outline-variant);background:transparent;color:var(--color-on-surface);cursor:pointer}
+        .match-tech-scoped .btn.primary{background:var(--color-primary-container);border-color:var(--color-primary-container);color:var(--color-on-primary-container)}
+        .match-tech-scoped .btn.secondary{background:transparent}
       `}</style>
-
       <div className="page">
         <div className="hero">
           <h1>🔗 Relaciona tecnologías antiguas y modernas</h1>

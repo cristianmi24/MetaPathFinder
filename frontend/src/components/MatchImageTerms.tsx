@@ -189,52 +189,34 @@ export default function MatchImageTerms() {
   }, [matchedIds, tries]);
 
   return (
-    <div>
+    <div className="match-image-scoped">
       <style>{`
-        *{box-sizing:border-box;margin:0;padding:0}
-        .page{padding:1.2rem 1rem 2.5rem;background:var(--color-surface);color:var(--color-on-surface)}
-        .hero{text-align:center;margin-bottom:1.4rem}
-        .hero h1{font-size:21px;font-weight:500}
-        .hero p{font-size:13px;color:var(--color-on-surface-variant);margin-top:4px;line-height:1.5}
-        .score-row{display:flex;gap:10px;justify-content:center;margin-bottom:1.4rem;flex-wrap:wrap}
-        .score-box{background:var(--color-surface-container-low);border-radius:16px;padding:8px 18px;text-align:center;border:1px solid var(--color-outline-variant)}
-        .score-box .lbl{font-size:11px;color:var(--color-on-surface-variant)}
-        .score-box .val{font-size:20px;font-weight:500;color:var(--color-on-surface)}
-        .game-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:1.5rem}
-        .col-title{font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--color-on-surface-variant);text-transform:uppercase;margin-bottom:.6rem;text-align:center}
-        .img-col,.term-col{display:flex;flex-direction:column;gap:10px}
-        .img-card{border-radius:16px;border:2px solid var(--color-outline-variant);background:var(--color-surface-container);overflow:hidden;cursor:pointer;transition:border-color .18s,transform .15s,background .15s;position:relative;min-height:190px}
-        .img-card:hover{transform:translateY(-2px);background:var(--color-surface-container-high)}
-        .img-card.selected{border-color:var(--color-primary);border-width:2.5px}
-        .img-card.matched{border-color:var(--color-secondary);border-width:2px;cursor:default;pointer-events:none}
-        .img-card.wrong{border-color:var(--color-error);animation:shake .35s}
-        .img-card img{width:100%;height:96px;object-fit:cover;display:block;background:var(--color-surface)}
-        .img-card .cat-tag{position:absolute;top:6px;left:6px;font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px}
-        .img-card .img-label{font-size:12px;font-weight:500;color:var(--color-on-surface);padding:8px 10px;line-height:1.3}
-        .term-card{border-radius:16px;border:2px solid var(--color-outline-variant);background:var(--color-surface-container);padding:12px;cursor:pointer;transition:border-color .18s,transform .15s,background .15s;min-height:190px;display:flex;flex-direction:column;justify-content:center}
-        .term-card:hover{transform:translateY(-2px);background:var(--color-surface-container-high)}
-        .term-card.selected{border-color:var(--color-primary);border-width:2.5px}
-        .term-card.matched{border-color:var(--color-secondary);border-width:2px;cursor:default;pointer-events:none;background:var(--color-secondary-container)}
-        .term-card.wrong{border-color:var(--color-error);animation:shake .35s}
-        .term-card .term-name{font-size:13px;font-weight:500;color:var(--color-on-surface);margin-bottom:6px}
-        .term-card .term-benefit{font-size:11px;color:var(--color-on-surface-variant);line-height:1.4}
-        .term-card.matched .term-name{color:var(--color-secondary)}
-        .term-card.matched .term-benefit{color:var(--color-secondary)}
-        @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-        .matched-badge{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--color-secondary-container);color:var(--color-secondary);font-size:13px;display:flex;align-items:center;justify-content:center}
-        .btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-        .btn-main{padding:10px 22px;border:0.5px solid var(--color-outline-variant);border-radius:16px;background:transparent;color:var(--color-on-surface);font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px}
-        .btn-main:hover{background:var(--color-surface-container-low)}
-        .result-banner{margin-bottom:1.2rem;padding:12px 16px;border-radius:16px;font-size:14px;font-weight:500;text-align:center;display:none}
-        .result-banner.show{display:block}
-        .result-banner.win{background:var(--color-surface);color:var(--color-secondary)}
-        .result-banner.partial{background:var(--color-warning-container);color:var(--color-warning)}
-        .hint{text-align:center;font-size:12px;color:var(--color-on-surface-variant);margin-bottom:1rem}
+.match-image-scoped .page{padding:1.2rem 1rem 2.5rem;background:var(--color-surface);color:var(--color-on-surface)}
+.match-image-scoped .hero{text-align:center;margin-bottom:1.4rem}
+.match-image-scoped .hero h1{font-size:21px;font-weight:500;margin:0}
+.match-image-scoped .hero p{font-size:13px;color:var(--color-on-surface-variant);margin-top:4px;line-height:1.5}
+.match-image-scoped .score-row{display:flex;gap:10px;justify-content:center;margin-bottom:1.4rem;flex-wrap:wrap}
+.match-image-scoped .score-pill{background:var(--color-surface-container);border:1px solid var(--color-outline-variant);border-radius:12px;padding:6px 14px;font-size:13px;font-weight:500;color:var(--color-on-surface-variant)}
+.match-image-scoped .score-pill b{color:var(--color-on-surface)}
+.match-image-scoped .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:1.4rem}
+.match-image-scoped .col{background:var(--color-surface-container-low);border:2px dashed var(--color-outline-variant);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.match-image-scoped .col-title{font-size:11px;font-weight:500;color:var(--color-on-surface-variant);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;text-align:center}
+.match-image-scoped .card{background:var(--color-surface);border:1.5px solid var(--color-outline-variant);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;text-align:center;user-select:none;margin:0}
+.match-image-scoped .card:hover{border-color:var(--color-primary);transform:translateY(-2px);box-shadow:0 8px 16px rgba(0,0,0,.05)}
+.match-image-scoped .card.selected{border-color:var(--color-primary);background:var(--color-secondary-container);color:var(--color-on-secondary-container);transform:scale(1.02);box-shadow:0 0 0 3px rgba(122,215,198,.3)}
+.match-image-scoped .card.matched{border-color:var(--color-secondary);background:var(--color-secondary-container);opacity:.6;cursor:default;transform:none;box-shadow:none}
+.match-image-scoped .card img{width:60px;height:60px;object-fit:cover;border-radius:6px;margin-bottom:8px}
+.match-image-scoped .card-text{font-size:13px;font-weight:500;line-height:1.4}
+.match-image-scoped .actions{display:flex;justify-content:center;margin-bottom:1rem}
+.match-image-scoped .btn{padding:9px 18px;border:1px solid var(--color-outline-variant);background:transparent;color:var(--color-on-surface-variant);border-radius:8px;font-size:13px;cursor:pointer;transition:all .2s}
+.match-image-scoped .btn:hover{background:var(--color-surface-container);color:var(--color-on-surface)}
+.match-image-scoped .feedback{text-align:center;font-size:14px;font-weight:500;padding:12px 16px;border-radius:8px;display:none;margin-bottom:1rem}
+.match-image-scoped .feedback.show{display:block}
+.match-image-scoped .feedback.win{background:var(--color-secondary-container);color:var(--color-secondary)}
+.match-image-scoped .feedback.lose{background:var(--color-error-container);color:var(--color-error)}
       `}</style>
 
       <div className="page">
-        <h2 className="sr-only">Juego: une cada imagen de infraestructura con el término correcto y su beneficio ciudadano</h2>
-
         <div className="hero">
           <h1>🏙️ Une la infraestructura</h1>
           <p>Toca una imagen y luego el término que le corresponde.<br />¿Sabes cómo mejora la vida de las personas?</p>

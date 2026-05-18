@@ -150,45 +150,46 @@ export default function TimelineGame(){
 
   return (
     <div>
-      <style>{`*{box-sizing:border-box;margin:0;padding:0}
-.page{padding:1.2rem 1rem 2rem;background:var(--color-surface);color:var(--color-on-surface)}
-.hero{text-align:center;margin-bottom:1.2rem}
-.hero h1{font-size:21px;font-weight:500}
-.hero p{font-size:13px;color:var(--color-on-surface-variant);margin-top:3px}
-.section-label{font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--color-on-surface-variant);text-transform:uppercase;margin-bottom:.6rem}
-.pool{display:flex;flex-wrap:wrap;gap:10px;min-height:120px;padding:12px;border:2px dashed var(--color-outline-variant);border-radius:12px;background:var(--color-surface-container-low);margin-bottom:1.4rem;transition:border-color .2s}
-.pool.drag-over{border-color:var(--color-primary)}
-.card{width:120px;min-height:152px;cursor:grab;border-radius:10px;border:1px solid var(--color-outline-variant);background:var(--color-surface-container);overflow:hidden;transition:transform .15s,box-shadow .15s;user-select:none}
-.card:hover{transform:scale(1.04);box-shadow:0 12px 24px rgba(0,0,0,.06)}
-.card.dragging{opacity:.4;transform:scale(.97)}
-.card img{width:100%;height:76px;object-fit:cover;display:block;background:var(--color-surface)}
-.card-foot{padding:8px 8px}
-.card-name{font-size:12px;font-weight:500;color:var(--color-on-surface);line-height:1.3}
-.card-year{font-size:11px;color:var(--color-on-surface-variant);margin-top:4px}
-.tl-wrap{position:relative}
-.tl-axis{display:flex;align-items:center;margin-bottom:.5rem;gap:0}
-.tl-arrow{height:4px;flex:1;background:var(--color-outline-variant);border-radius:2px;position:relative}
-.tl-arrow::after{content:'';position:absolute;right:-6px;top:-4px;border:6px solid transparent;border-left:10px solid var(--color-outline-variant)}
-.tl-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--color-on-surface-variant);margin-bottom:.7rem;padding:0 2px}
-.tl-slots{display:flex;gap:8px;flex-wrap:wrap;min-height:130px;padding:10px;border:2px dashed var(--color-outline-variant);border-radius:12px;background:var(--color-surface-container-low);transition:border-color .2s}
-.tl-slots.drag-over{border-color:var(--color-secondary)}
-.slot{width:120px;min-height:152px;border:1.5px dashed var(--color-outline-variant);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--color-on-surface-variant);position:relative;transition:border-color .2s,background .2s}
-.slot.has-card{border-style:solid;border-color:var(--color-outline)}
-.slot.drag-over{border-color:var(--color-secondary);background:rgba(122,215,198,.08)}
-.check-row{display:flex;gap:10px;margin-top:1rem;align-items:center;flex-wrap:wrap}
-.check-btn{padding:9px 20px;border:0.5px solid var(--color-outline-variant);border-radius:8px;background:transparent;color:var(--color-on-surface);font-size:14px;cursor:pointer}
-.reset-btn{padding:9px 16px;border:0.5px solid var(--color-outline-variant);border-radius:8px;background:transparent;color:var(--color-on-surface-variant);font-size:13px;cursor:pointer}
-.result-bar{margin-top:.9rem;padding:10px 14px;border-radius:8px;font-size:14px;font-weight:500;display:none}
-.result-bar.show{display:block}
-.result-bar.win{background:var(--color-surface);color:var(--color-secondary)}
-.result-bar.partial{background:var(--color-surface-container-high);color:var(--color-warning)}
-.result-bar.lose{background:var(--color-error-container);color:var(--color-error)}
-.tick{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:500}
-.tick.ok{background:var(--color-secondary-container);color:var(--color-secondary)}
-.tick.bad{background:var(--color-error-container);color:var(--color-error)}
+      <style>{`
+.timeline-game-scoped .page{padding:1.2rem 1rem 2rem;background:var(--color-surface);color:var(--color-on-surface)}
+.timeline-game-scoped .hero{text-align:center;margin-bottom:1.2rem}
+.timeline-game-scoped .hero h1{font-size:21px;font-weight:500;margin:0}
+.timeline-game-scoped .hero p{font-size:13px;color:var(--color-on-surface-variant);margin-top:3px}
+.timeline-game-scoped .section-label{font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--color-on-surface-variant);text-transform:uppercase;margin-bottom:.6rem}
+.timeline-game-scoped .pool{display:flex;flex-wrap:wrap;gap:10px;min-height:120px;padding:12px;border:2px dashed var(--color-outline-variant);border-radius:12px;background:var(--color-surface-container-low);margin-bottom:1.4rem;transition:border-color .2s}
+.timeline-game-scoped .pool.drag-over{border-color:var(--color-primary)}
+.timeline-game-scoped .card{width:120px;min-height:152px;cursor:grab;border-radius:10px;border:1px solid var(--color-outline-variant);background:var(--color-surface-container);overflow:hidden;transition:transform .15s,box-shadow .15s;user-select:none;margin:0}
+.timeline-game-scoped .card:hover{transform:scale(1.04);box-shadow:0 12px 24px rgba(0,0,0,.06)}
+.timeline-game-scoped .card.dragging{opacity:.4;transform:scale(.97)}
+.timeline-game-scoped .card img{width:100%;height:76px;object-fit:cover;display:block;background:var(--color-surface)}
+.timeline-game-scoped .card-foot{padding:8px 8px}
+.timeline-game-scoped .card-name{font-size:12px;font-weight:500;color:var(--color-on-surface);line-height:1.3}
+.timeline-game-scoped .card-year{font-size:11px;color:var(--color-on-surface-variant);margin-top:4px}
+.timeline-game-scoped .tl-wrap{position:relative}
+.timeline-game-scoped .tl-axis{display:flex;align-items:center;margin-bottom:.5rem;gap:0}
+.timeline-game-scoped .tl-arrow{height:4px;flex:1;background:var(--color-outline-variant);border-radius:2px;position:relative}
+.timeline-game-scoped .tl-arrow::after{content:'';position:absolute;right:-6px;top:-4px;border:6px solid transparent;border-left:10px solid var(--color-outline-variant)}
+.timeline-game-scoped .tl-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--color-on-surface-variant);margin-bottom:.7rem;padding:0 2px}
+.timeline-game-scoped .tl-slots{display:flex;gap:8px;flex-wrap:wrap;min-height:130px;padding:10px;border:2px dashed var(--color-outline-variant);border-radius:12px;background:var(--color-surface-container-low);transition:border-color .2s}
+.timeline-game-scoped .tl-slots.drag-over{border-color:var(--color-secondary)}
+.timeline-game-scoped .slot{width:120px;min-height:152px;border:1.5px dashed var(--color-outline-variant);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--color-on-surface-variant);position:relative;transition:border-color .2s,background .2s}
+.timeline-game-scoped .slot.has-card{border-style:solid;border-color:var(--color-outline)}
+.timeline-game-scoped .slot.drag-over{border-color:var(--color-secondary);background:rgba(122,215,198,.08)}
+.timeline-game-scoped .check-row{display:flex;gap:10px;margin-top:1rem;align-items:center;flex-wrap:wrap}
+.timeline-game-scoped .check-btn{padding:9px 20px;border:0.5px solid var(--color-outline-variant);border-radius:8px;background:transparent;color:var(--color-on-surface);font-size:14px;cursor:pointer}
+.timeline-game-scoped .reset-btn{padding:9px 16px;border:0.5px solid var(--color-outline-variant);border-radius:8px;background:transparent;color:var(--color-on-surface-variant);font-size:13px;cursor:pointer}
+.timeline-game-scoped .result-bar{margin-top:.9rem;padding:10px 14px;border-radius:8px;font-size:14px;font-weight:500;display:none}
+.timeline-game-scoped .result-bar.show{display:block}
+.timeline-game-scoped .result-bar.win{background:var(--color-surface);color:var(--color-secondary)}
+.timeline-game-scoped .result-bar.partial{background:var(--color-surface-container-high);color:var(--color-warning)}
+.timeline-game-scoped .result-bar.lose{background:var(--color-error-container);color:var(--color-error)}
+.timeline-game-scoped .tick{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:500;margin:0}
+.timeline-game-scoped .tick.ok{background:var(--color-secondary-container);color:var(--color-secondary)}
+.timeline-game-scoped .tick.bad{background:var(--color-error-container);color:var(--color-error)}
 `}</style>
 
-      <div className="page">
+      <div className="timeline-game-scoped">
+        <div className="page">
         <div className="hero">
           <h1>⏳ Ordena la historia</h1>
           <p>Arrastra cada tarjeta a la línea del tiempo — del más antiguo al más reciente</p>
@@ -210,6 +211,7 @@ export default function TimelineGame(){
         </div>
 
         <div className="result-bar" id="result-bar"></div>
+      </div>
       </div>
     </div>
   );

@@ -1,9 +1,3 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 .cbb-root {
   font-family: var(--font-sans);
   background: var(--fb-bg, #0d1117);
