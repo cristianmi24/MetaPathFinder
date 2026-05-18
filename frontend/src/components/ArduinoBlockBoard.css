@@ -1,0 +1,113 @@
+.ard-root {
+  --ard-bg: #1e1e2e; --ard-panel: #252538; --ard-text: #cdd6f4;
+  --ard-blue: #00979d; --ard-surface: #181825; --ard-border: #313244;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--ard-bg); color: var(--ard-text);
+  width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;
+  padding: 16px; overflow: auto;
+}
+.ard-root h1 { color: var(--ard-blue); margin-bottom: 5px; font-size: 1.3rem; }
+.ard-root p.description { color: #a6adc8; text-align: center; max-width: 700px; margin-bottom: 16px; font-size: 0.85rem; }
+
+.ard-message {
+  padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.9rem;
+  margin-bottom: 12px; text-align: center; width: 100%; max-width: 1200px;
+}
+.ard-message.ok { background: #1a3a2a; color: #a6e3a1; border: 1px solid #4caf50; }
+.ard-message.err { background: #3a1a1a; color: #f38ba8; border: 1px solid #ff4d4d; }
+
+.ard-workspace {
+  display: flex; gap: 16px; width: 100%; max-width: 1200px; flex: 1; min-height: 0;
+}
+.ard-panel {
+  background: var(--ard-panel); border-radius: 12px; padding: 15px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden;
+}
+.ard-panel-title {
+  font-size: 1.1rem; font-weight: bold; border-bottom: 2px solid var(--ard-border);
+  padding-bottom: 8px; margin-top: 0; color: var(--ard-blue); margin-bottom: 10px;
+}
+.ard-banco {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+  padding: 10px; background: var(--ard-surface); border-radius: 8px;
+}
+.ard-panel-circuito { flex: 1; justify-content: space-between; }
+
+.ard-block {
+  padding: 10px 14px; border-radius: 6px; color: white;
+  font-family: monospace; font-size: 0.82rem; user-select: none;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.2); background: #45475a;
+}
+.ard-clickable { cursor: pointer; transition: transform 0.15s, opacity 0.15s; }
+.ard-clickable:hover { transform: translateY(-2px); opacity: 0.9; }
+.ard-disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+.ard-plus-sign { font-weight: bold; margin-right: 4px; color: #a6e3a1; }
+
+.ard-zone-hint { color: #585b70; font-size: 0.8rem; text-align: center; padding: 12px; font-style: italic; }
+
+.ard-workspace-zone {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+  padding: 10px; background: #11111b; border: 2px dashed #45475a; border-radius: 8px;
+  min-height: 120px;
+}
+.ard-ws-row {
+  display: flex; align-items: center; gap: 6px;
+}
+.ard-idx {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--ard-blue);
+  color: white; font-size: 0.75rem; font-weight: bold;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ard-ws-block { flex: 1; }
+.ard-ws-controls { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+.ard-arrow-btn, .ard-remove-btn {
+  background: #45475a; color: white; border: none; border-radius: 4px;
+  width: 24px; height: 22px; font-size: 0.75rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.ard-arrow-btn:hover { background: #585b70; }
+.ard-arrow-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.ard-remove-btn { background: #990000; }
+.ard-remove-btn:hover { background: #cc0000; }
+
+.ard-ejecutar-btn {
+  margin-top: 12px; padding: 12px 20px; border: none; border-radius: 8px;
+  font-size: 1rem; font-weight: bold; color: white;
+  background: #45475a; cursor: not-allowed; transition: all 0.3s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.ard-ejecutar-btn.ready { background: var(--ard-blue); cursor: pointer; }
+.ard-ejecutar-btn.ready:hover { background: #00b3b8; }
+
+.ard-empty-msg { color: #585b70; text-align: center; padding: 20px; font-style: italic; }
+
+.ard-hardware { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: auto 0; }
+.ard-component { padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 0.85rem; }
+.ard-arduino { background: #005f60; border: 3px solid var(--ard-blue); width: 160px; color: white; }
+.ard-sensor { background: #45475a; border: 2px solid #bac2de; width: 80%; }
+.ard-leds { display: flex; gap: 15px; }
+.ard-led { width: 80px; color: white; opacity: 0.4; text-shadow: 1px 1px 2px black; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 0.85rem; }
+.ard-led-red { background: #990000; border: 2px solid #ff4d4d; }
+.ard-led-green { background: #006600; border: 2px solid #4dff4d; }
+.ard-led-red.active { opacity: 1; background: #ff0000; box-shadow: 0 0 15px #ff0000; }
+.ard-led-green.active { opacity: 1; background: #00ff00; box-shadow: 0 0 15px #00ff00; }
+
+.ard-slider { width: 100%; margin-top: 5px; accent-color: var(--ard-blue); }
+
+.ard-serial {
+  background: #11111b; border-radius: 6px; height: 100px; padding: 8px;
+  font-family: monospace; overflow-y: auto; color: #a6e3a1; font-size: 0.8rem;
+  border: 1px solid var(--ard-border); margin-top: 5px;
+}
+.ard-btn {
+  margin-top: 12px; background: var(--ard-border); color: white; border: none; padding: 10px 16px;
+  font-size: 0.9rem; font-weight: bold; border-radius: 8px; cursor: not-allowed; width: 100%; transition: all .3s;
+}
+.ard-btn.ready { background: var(--ard-blue); cursor: pointer; }
+.ard-btn.ready:hover { background: #00b3b8; }
+.ard-btn.stop { background: #f38ba8; cursor: pointer; }
+.ard-btn.stop:hover { background: #e06c88; }
+
+.ard-title-section { margin: 5px 0; color: #a6adc8; font-size: 0.85rem; font-weight: 600; }
