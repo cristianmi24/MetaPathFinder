@@ -164,3 +164,45 @@
     display: none;
   }
 }
+
+.fb-jol-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(35, 134, 54, 0.1);
+  border: 0.5px solid rgba(35, 134, 54, 0.3);
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #238636;
+  flex-shrink: 0;
+}
+
+.fb-timer-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: #f2cc60;
+  flex-shrink: 0;
+}
+
+.fb-timer-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f2cc60;
+  animation: blink 1.2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}

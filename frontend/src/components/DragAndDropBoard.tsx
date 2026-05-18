@@ -41,7 +41,7 @@ const getChallengeData = (id: string) => {
     "RB-C1-N3": { correctOrder: ["Elegir un problema cotidiano", "Identificar una tecnología antigua y una moderna", "Comparar eficiencia, costo e impacto", "Concluir cuál es mejor argumentando", "Elaborar la tabla comparativa final"] },
     "RB-C2-N3": { correctOrder: ["SUMA todos los gastos previstos", "SUMA los ingresos posibles", "RESTA gastos de ingresos para calcular el saldo", "VERIFICA que el saldo no supere $150.000 COP", "CREA un gráfico de barras de los gastos"] },
     "RB-C3-N3": { correctOrder: ["Registrar estudiante y libro solicitado", "Verificar disponibilidad del libro", "Registrar préstamo si está disponible", "Registrar devolución y calcular días de retraso", "Generar reporte de libros más prestados"] },
-    "RB-C4-N3": { correctOrder: ["Identificar un problema real de la comunidad", "Proponer tecnología pertinente para solucionarlo", "Estimar los recursos necesarios", "Analizar impactos positivos, negativos y éticos", "Presentar documento de 2 páginas"] },
+    "RB-C4-N3": { correctOrder: ["Identificar un problema real de la comunidad", "Proponer tecnología pertinente para solucionarlo", "Estimar los recursos necesarios", "Analizar impactos positivos, negativos y éticos", "Presentar propuesta en texto corto"] },
 
     // Medios N1
     "RM-C1-N1": { correctOrder: ["Identificar los componentes internos", "Investigar la función de cada uno", "Averiguar cuándo fue inventado", "Dibujar un diagrama anotado"] },

@@ -13,6 +13,7 @@ export function Sidebar() {
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboards', path: '/admin', roles: ['admin'] },
     { icon: Users, label: 'Usuarios Registrados', path: '/registered-users', roles: ['admin'] },
+    { icon: Compass, label: 'Actividades', path: '/activities', roles: ['admin'] },
     { icon: User, label: 'Mi Perfil', path: '/profile', roles: ['student'] },
     { icon: GraduationCap, label: 'Tutorial', path: '/tutorial', roles: ['student'] },
     { icon: BarChart3, label: 'Analíticas', path: '/analytics', roles: ['student'] },

@@ -302,13 +302,13 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
     "titulo": "Propuesta de solución tecnológica para un problema de tu comunidad",
-    "descripcion": "Identifica un problema real de tu comunidad (ej. manejo de residuos, agua, movilidad, seguridad) y diseña una propuesta de solución tecnológica viable considerando: (a) descripción del problema con evidencia, (b) tecnología propuesta y por qué es pertinente, (c) recursos necesarios, (d) posibles impactos positivos y negativos en la comunidad, y (e) consideraciones éticas. Presenta en un documento de 2 páginas con imágenes o diagramas.",
+    "descripcion": "Identifica un problema real de tu comunidad (ej. manejo de residuos, agua, movilidad, seguridad) y escribe una propuesta corta de solución tecnológica considerando el problema, la solución pertinente y su impacto. Redáctalo como un texto corto (mínimo 40 palabras) en el editor.",
     "criterios": [
-      "1. Problema real documentado con evidencia.",
-      "2. Tecnología propuesta pertinente y justificada.",
-      "3. Análisis de impactos positivos y negativos.",
-      "4. Consideraciones éticas explícitas.",
-      "5. Documento de 2 págs. con imágenes/diagramas."
+      "1. Problema real identificado.",
+      "2. Tecnología propuesta pertinente.",
+      "3. Análisis de impactos comunitarios.",
+      "4. Consideración ética básica.",
+      "5. Redacción de propuesta en texto corto."
     ],
     "recursos": "Procesador de texto · fuentes de información local<br>Formato de propuesta (proporcionado)",
     "tiempo_estimado": "50",
@@ -380,13 +380,13 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
     "titulo": "Prospectiva tecnológica: ¿cómo será la educación en 2040?",
-    "descripcion": "Basándote en tendencias tecnológicas actuales (IA generativa, realidad aumentada, computación en la nube, biometría, blockchain educativo), elabora un escenario prospectivo de cómo podría ser una clase de tecnología e informática en el año 2040 en Colombia. Argumenta cada tecnología incluida: ¿por qué crees que estará disponible en Colombia para ese año?, ¿qué problemas resolverá?, ¿qué nuevas inequidades podría generar? Presenta en formato ensayo (600 palabras) o video de 3 minutos.",
+    "descripcion": "Basándote en tendencias tecnológicas actuales (IA generativa, realidad aumentada, computación en la nube, biometría, blockchain educativo), elabora un escenario prospectivo de cómo podría ser una clase de tecnología e informática en el año 2040 en Colombia. Redáctalo como un texto corto (mínimo 50 palabras) en el editor.",
     "criterios": [
-      "1. Mínimo 4 tecnologías prospectadas con fundamento.",
+      "1. Tecnologías prospectadas con fundamento.",
       "2. Argumentación de disponibilidad en Colombia.",
-      "3. Análisis de impactos positivos y de inequidad.",
+      "3. Análisis de impactos y de inequidad.",
       "4. Coherencia interna del escenario.",
-      "5. Formato ensayo o video completo."
+      "5. Redacción de ensayo corto en el editor."
     ],
     "recursos": "Fuentes prospectivas: WEF Future of Jobs · UNESCO 2040 · CEPAL Colombia digital<br>Herramienta de video (opcional)",
     "tiempo_estimado": "60",
@@ -556,13 +556,13 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
     "titulo": "Auditoría de huella digital personal",
-    "descripcion": "Realiza una auditoría completa de tu presencia digital: (1) lista todos los servicios y redes donde tienes cuenta, (2) revisa los permisos que has concedido a apps (cámara, micrófono, ubicación, contactos), (3) analiza qué datos podrían estar siendo recopilados sobre ti y con qué fin, (4) aplica al menos 5 medidas de seguridad (contraseña fuerte, 2FA, configuración de privacidad) y documenta el antes y después. Entrega un informe de 1.5 páginas.",
+    "descripcion": "Realiza una auditoría completa de tu presencia digital: (1) lista todos los servicios y redes donde tienes cuenta, (2) revisa los permisos que has concedido a apps (cámara, micrófono, ubicación, contactos), (3) analiza qué datos podrían estar siendo recopilados sobre ti y con qué fin, (4) aplica al menos 3 medidas de seguridad (contraseña fuerte, 2FA, configuración de privacidad) y documenta el antes y después. Entrega un informe en texto corto (mínimo 50 palabras).",
     "criterios": [
       "1. Inventario completo de cuentas y permisos.",
       "2. Análisis de datos recopilados por categoría.",
-      "3. Mínimo 5 medidas de seguridad aplicadas.",
+      "3. Mínimo 3 medidas de seguridad aplicadas.",
       "4. Documentación del antes y después.",
-      "5. Informe coherente con recomendaciones."
+      "5. Informe en formato de texto corto en el editor."
     ],
     "recursos": "Herramienta: Google My Activity · privacy.google.com<br>Guía de seguridad digital (proporcionada)",
     "tiempo_estimado": "50",
@@ -582,13 +582,13 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
     "titulo": "Debate: ¿debe el Estado colombiano regular la IA?",
-    "descripcion": "Prepara una postura argumentada (a favor o en contra de la regulación estatal de la IA en Colombia) con mínimo 4 argumentos respaldados por evidencia. Debe incluir: definición de qué tipo de regulación propones o rechazas, ejemplos de regulación en otros países (UE AI Act, EEUU, China), análisis del contexto colombiano (MinTIC, Conpes digital), y consideración del contraargumento más fuerte. Presenta en debate grupal o ensayo de 700 palabras.",
+    "descripcion": "Prepara una postura argumentada (a favor o en contra de la regulación estatal de la IA en Colombia) con argumentos respaldados por evidencia. Debe incluir: definición de qué tipo de regulación propones o rechazas, ejemplos de regulación en otros países (UE AI Act, EEUU, China), y análisis del contexto colombiano. Redáctalo como un texto corto (mínimo 50 palabras) en el editor.",
     "criterios": [
       "1. Postura clara y definida.",
-      "2. Mínimo 4 argumentos con evidencia.",
+      "2. Argumentos con evidencia.",
       "3. Referencia a regulaciones reales (EU, EEUU o China).",
       "4. Análisis del contexto colombiano.",
-      "5. Contraargumento abordado honestamente."
+      "5. Redacción de texto corto en el editor."
     ],
     "recursos": "EU AI Act summary · OCDE AI Policy · MinTIC Colombia<br>Formato de debate (proporcionado)",
     "tiempo_estimado": "55",
@@ -608,14 +608,13 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
     "titulo": "Diseña una política de uso de IA en tu institución",
-    "descripcion": "Tu colegio quiere adoptar herramientas de IA (ChatGPT, Copilot, Gemini) en el aula pero no tiene una política clara. Diseña una política institucional de 2 páginas que incluya: propósito y alcance, usos permitidos y prohibidos (con justificación ética), derechos de los estudiantes (privacidad, autoría), responsabilidades del docente, consecuencias del incumplimiento y un mecanismo de revisión anual. Inspírate en políticas reales de universidades o colegios.",
+    "descripcion": "Tu colegio quiere adoptar herramientas de IA (ChatGPT, Copilot, Gemini) en el aula pero no tiene una política clara. Diseña una política institucional corta que incluya: propósito y alcance, usos permitidos y prohibidos (con justificación ética), derechos de los estudiantes (privacidad, autoría) y consecuencias del incumplimiento. Redáctalo como un texto corto (mínimo 50 palabras) en el editor.",
     "criterios": [
-      "1. Política completa con 6 secciones mínimas.",
+      "1. Propósito de política institucional.",
       "2. Justificación ética de prohibiciones.",
-      "3. Derechos y responsabilidades diferenciados.",
-      "4. Mecanismo de revisión incluido.",
-      "5. Lenguaje institucional apropiado.",
-      "6. Referencias a políticas reales existentes."
+      "3. Derechos y responsabilidades escolares.",
+      "4. Consecuencias del incumplimiento claras.",
+      "5. Redacción de política en texto corto en el editor."
     ],
     "recursos": "Políticas de referencia: UNESCO AI in Education · Stanford HAI · U. Nacional Colombia<br>Formato institucional (proporcionado)",
     "tiempo_estimado": "65",
@@ -684,12 +683,13 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
     "titulo": "Ensayo crítico sobre patentes de tecnología emergente",
-    "descripcion": "Realiza un análisis sintético estructurado en el editor de texto integrado sobre una patente de tecnología emergente, enfocándote en el impacto de dichas patentes en el contexto social y económico colombiano.",
+    "descripcion": "Realiza un análisis sintético estructurado en el editor de texto integrado sobre una patente de tecnología emergente, enfocándote en el impacto de dichas patentes en el contexto social y económico colombiano. Redáctalo como un texto corto (mínimo 50 palabras) en el editor.",
     "criterios": [
-      "Patente identificada y vinculada.",
-      "Análisis técnico de la invención.",
-      "Relación con conocimientos previos.",
-      "Impacto en Colombia argumentado."
+      "1. Patente identificada y vinculada.",
+      "2. Análisis técnico de la invención.",
+      "3. Relación con conocimientos previos.",
+      "4. Impacto en Colombia argumentado.",
+      "5. Redacción de análisis en texto corto."
     ],
     "recursos": "USPTO.gov, WIPO.int, SIC Colombia (patentes nacionales).\n\n---",
     "tiempo_estimado": "80",
@@ -783,22 +783,22 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Solución de problemas",
     "codigo_men": "C3",
-    "titulo": "Sistema IoT de monitoreo de la huerta escolar",
-    "descripcion": "Simula o programa tu circuito Arduino de monitoreo de la huerta externamente de forma libre. Luego, sube la captura de pantalla o el archivo fuente de tu código a través del panel de entregas para su validación en la plataforma.",
+    "titulo": "Sistema de monitoreo para huerta escolar con Arduino",
+    "descripcion": "Construye un sistema de monitoreo inteligente para la huerta escolar en Arduino. Sigue la guía interactiva paso a paso para analizar los conceptos clave, verificar las conexiones del circuito, completar el código fuente corrigiendo problemas de variables e indentación, y finalmente simular el comportamiento en tiempo real de los sensores, actuadores y el registro de datos CSV.",
     "criterios": [
-      "Lectura correcta de humedad y temperatura.",
-      "Lógica de activación de actuadores (LED).",
-      "Empleo de estado en pantalla/serial.",
-      "Registro CSV de datos."
+      "Esquema del circuito Arduino y pines correspondientes.",
+      "Conversión analógica del sensor de humedad (map).",
+      "Lógica de encendido y apagado de bomba (digitalWrite).",
+      "Guardado de lecturas en formato CSV con millis()."
     ],
-    "recursos": "Tinkercad Circuits / Arduino (físico) + sensores, Wokwi, Librerías: DHT.h, LiquidCrystal (LCD).\n\n---",
+    "recursos": "Guía interactiva de Arduino C++, diagramas de circuitos de MetaPathFinder, simulación de sensores integrada.\n\n---",
     "tiempo_estimado": "80",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
+      "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado paso a paso?",
       "escala": "1-5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Qué conocimientos previos aplicarás aquí?",
+      "pregunta": "¿Qué conocimientos previos sobre Arduino, entradas analógicas y formato CSV aplicarás aquí?",
       "escala": "Texto libre"
     }
   },
@@ -858,21 +858,22 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Ensayo de análisis de sesgo algorítmico",
-    "descripcion": "Redacta un escrito analítico y reflexivo sobre los sesgos en las redes sociales e IAs que usas cotidianamente (ej. TikTok, Instagram, ChatGPT) y formula recomendaciones éticas usando el editor de texto integrado.",
+    "titulo": "Evaluación interactiva: sesgo algorítmico y grupos vulnerables",
+    "descripcion": "Lee el texto de investigación sobre sesgos algorítmicos en sistemas cotidianos (ej. COMPAS, reconocimiento facial, recomendación en TikTok, PageRank de Google) y responde a las 4 preguntas de selección múltiple tipo ICFES para demostrar tu capacidad de razonamiento e inferencia crítica.",
     "criterios": [
-      "Definición fundamentada de sesgo algorítmico.",
-      "Dos herramientas analizadas con rigor.",
-      "Evidencia real citada de artículos confiables."
+      "1. Comprender la causa estructural del sesgo algorítmico en datos históricos.",
+      "2. Identificar el impacto metodológico de algoritmos opacos en minorías.",
+      "3. Analizar la insuficiencia de la autorregulación corporativa.",
+      "4. Deducir las consecuencias de la doble exclusión digital rural."
     ],
-    "recursos": "Fuentes: Algorithmic Justice League, AI Now Institute, El País Tecnología.\n\n---",
+    "recursos": "Fuentes de lectura crítica: Safiya Noble, Buolamwini & Gebru, ProPublica, The Markup, AI Now Institute.",
     "tiempo_estimado": "70",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
+      "pregunta": "¿Qué tan seguro te sientes de resolver esta evaluación de sesgo algorítmico?",
       "escala": "1-5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Qué conocimientos previos aplicarás aquí?",
+      "pregunta": "¿Qué conocimientos previos de ética y tecnología aplicarás aquí?",
       "escala": "Texto libre"
     }
   },
@@ -882,22 +883,22 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Startup tecnológica con impacto social: pitch deck",
-    "descripcion": "Estructura y soporta la idea de tu startup de impacto social en un documento gráfico (como diapositivas de Canva o un PDF) y súbelo a través del panel de entregas de la plataforma.",
+    "titulo": "Evaluación interactiva: startups de impacto social en Colombia",
+    "descripcion": "Lee el texto sobre emprendimiento e innovación social con base tecnológica en Colombia. Luego responde a las 4 preguntas tipo ICFES sobre estructuración de propuestas de valor viables, unit economics, blindaje de misión legal (Sistema B) y métricas de escala de impacto.",
     "criterios": [
-      "Problema colombiano real y relevante.",
-      "Propuesta técnica viable y argumentada.",
-      "Modelo de negocio social coherente.",
-      "Calidad del pitch deck."
+      "1. Identificar propuestas de valor social viables sin depender de beneficencia.",
+      "2. Comprender el encaje solución-impacto en unit economics escalables.",
+      "3. Analizar estrategias legales como la certificación B para mitigar la deriva de misión.",
+      "4. Deducir el cálculo del mercado objetivo (SOM) en contextos vulnerables."
     ],
-    "recursos": "Canva / Google Slides / Plantilla Airbnb pitch deck / Impulsa Colombia / Apps.co.\n\n---",
+    "recursos": "Fuentes de lectura crítica: CONPES 3975 de Colombia, Hubs de Innovación Social en Medellín, Guías de Sistema B.",
     "tiempo_estimado": "80",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
+      "pregunta": "¿Qué tan seguro te sientes de resolver esta evaluación de innovación social?",
       "escala": "1-5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Qué conocimientos previos aplicarás aquí?",
+      "pregunta": "¿Qué conocimientos previos de negocios y sostenibilidad aplicarás aquí?",
       "escala": "Texto libre"
     }
   },
@@ -907,22 +908,22 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Impacto tecnológico en la comunidad",
-    "descripcion": "Registra los hallazgos de tu investigación de campo sobre el impacto de la tecnología en tu comunidad en un informe simplificado y cárgalo en formato PDF o imagen a través del panel de entregas.",
+    "titulo": "Evaluación interactiva: investigación cualitativa e impacto comunitario",
+    "descripcion": "Lee el texto guía sobre metodología de investigación de campo cualitativa y triangulación de hallazgos. Responde a las 4 preguntas de selección múltiple sobre diseño de entrevistas neutrales, saturación teórica de muestras, rigor en la triangulación de datos y ética del consentimiento.",
     "criterios": [
-      "Pregunta de investigación clara.",
-      "Muestra de población y entrevista válida (5 preguntas).",
-      "Entrevistas realizadas y documentadas.",
-      "Análisis de patrones y triangulación."
+      "1. Detectar e invalidar preguntas inducidas en instrumentos de entrevista.",
+      "2. Comprender el principio de saturación teórica cualitativa de campo.",
+      "3. Analizar el rigor en la triangulación de fuentes de datos contradictorias.",
+      "4. Aplicar los principios de anonimato y ética en testimonios vulnerables."
     ],
-    "recursos": "Grabadora de voz / Notas escritas, Google Scholar, Redalyc, Scielo, Mendeley.",
+    "recursos": "Fuentes de lectura crítica: Metodología de la Investigación Social cualitativa, Principios de Consentimiento Informado.",
     "tiempo_estimado": "100",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
+      "pregunta": "¿Qué tan seguro te sientes de resolver esta evaluación de investigación de campo?",
       "escala": "1-5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Qué conocimientos previos aplicarás aquí?",
+      "pregunta": "¿Qué conocimientos previos de metodologías cualitativas aplicarás aquí?",
       "escala": "Texto libre"
     }
   }

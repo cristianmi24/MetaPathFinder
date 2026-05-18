@@ -14,6 +14,7 @@ import { CognitiveChallenge } from './pages/CognitiveChallenge';
 import { ChallengeCalibration } from './pages/ChallengeCalibration';
 import { MetacognitiveStrategies } from './pages/MetacognitiveStrategies';
 import { RegisteredUsers } from './pages/RegisteredUsers';
+import { Activities } from './pages/Activities';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCognitiveTracking } from './hooks/useCognitiveTracking';
 import { CognitiveBrain } from './components/CognitiveBrain';
@@ -150,6 +151,7 @@ export default function App() {
           <Route path="/admin" element={<Dashboard />} />
           <Route path="/profile" element={<StudentProfile />} />
           <Route path="/registered-users" element={<RegisteredUsers />} />
+          <Route path="/activities" element={<Activities />} />
           <Route path="/experiments" element={<Experiments />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/tutorial" element={<Tutorial />} />

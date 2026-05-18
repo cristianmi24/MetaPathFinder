@@ -10,9 +10,19 @@ interface EvaluationTrackerProps {
   currentPhase: EvaluationPhase;
   profileLabel?: string;
   profileType?: 'overconf' | 'underconf' | 'calibrated';
+  showTimerAndJol?: boolean;
+  seconds?: number;
+  jolDisplay?: string;
 }
 
-export function EvaluationTracker({ currentPhase, profileLabel, profileType }: EvaluationTrackerProps) {
+export function EvaluationTracker({ 
+  currentPhase, 
+  profileLabel, 
+  profileType,
+  showTimerAndJol = false,
+  seconds = 0,
+  jolDisplay
+}: EvaluationTrackerProps) {
   const phases = [
     { id: 'A', label: 'Fase A', description: 'Pre-test' },
     { id: 'B', label: 'Fase B', description: 'Ejecución' },
@@ -72,6 +82,23 @@ export function EvaluationTracker({ currentPhase, profileLabel, profileType }: E
         <div className="em-perfil-chip calibrated">
           <Trophy className="w-3.5 h-3.5" />
           <span>Evaluación Finalizada</span>
+        </div>
+      )}
+
+      {showTimerAndJol && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {jolDisplay && (
+            <div className="fb-jol-chip">
+              <i className="ti ti-brain" aria-hidden="true" style={{ fontSize: '13px' }}></i>
+              {jolDisplay}
+            </div>
+          )}
+          <div className="fb-timer-chip">
+            <span className="fb-timer-dot"></span>
+            <span>
+              {Math.floor(seconds / 60).toString().padStart(2, '0')}:{(seconds % 60).toString().padStart(2, '0')}
+            </span>
+          </div>
         </div>
       )}
     </div>

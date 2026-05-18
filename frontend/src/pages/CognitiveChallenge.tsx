@@ -7,14 +7,13 @@ import { DynamicChallenge } from '../data/dynamicChallengeBank';
 import { EvaluationTracker } from '../components/EvaluationTracker';
 import { DragAndDropBoard } from '../components/DragAndDropBoard';
 import { EssayBoard } from '../components/EssayBoard';
-import { UploadBoard } from '../components/UploadBoard';
 import { CanvasBoard } from '../components/CanvasBoard';
-import { SpreadsheetBoard } from '../components/SpreadsheetBoard';
 import { PhoneDismantlingBoard } from '../components/PhoneDismantlingBoard';
 import { CodingIDEBoard } from '../components/CodingIDEBoard';
 import { SqlBlockBoard } from '../components/SqlBlockBoard';
 import { ArduinoBlockBoard } from '../components/ArduinoBlockBoard';
 import { CodeBlockBoard } from '../components/CodeBlockBoard';
+import { AdvancedIcfesBoard } from '../components/AdvancedIcfesBoard';
 
 // Import interactive custom components
 import TimelineGame from '../components/TimelineGame';
@@ -29,6 +28,7 @@ import { ComputingEvolutionQuiz } from '../components/ComputingEvolutionQuiz';
 import { ProspectiveTechEssay } from '../components/ProspectiveTechEssay';
 import MiniExcelBoard from '../components/MiniExcelBoard';
 import { DigitalIdentityBoard } from '../components/DigitalIdentityBoard';
+import { ArduinoHuertaBoard } from '../components/ArduinoHuertaBoard';
 
 import './CognitiveChallenge.css';
 
@@ -52,7 +52,7 @@ export function CognitiveChallenge() {
       // Avanzado
       "RA-C1-N1": "phone", "RA-C1-N2": "text", "RA-C1-N3": "text", 
       "RA-C2-N1": "ide", "RA-C2-N2": "ide", "RA-C2-N3": "ide",
-      "RA-C3-N1": "upload", "RA-C3-N2": "ide", "RA-C3-N3": "ide", 
+      "RA-C3-N1": "ide", "RA-C3-N2": "ide", "RA-C3-N3": "ide", 
       "RA-C4-N1": "text", "RA-C4-N2": "upload", "RA-C4-N3": "upload"
     };
     return mappings[id] || 'code';
@@ -92,12 +92,12 @@ export function CognitiveChallenge() {
     'RA-C2-N1': <CodingIDEBoard challengeId="RA-C2-N1" onValidation={() => {}} />,
     'RA-C2-N2': <CodingIDEBoard challengeId="RA-C2-N2" onValidation={() => {}} />,
     'RA-C2-N3': <CodingIDEBoard challengeId="RA-C2-N3" onValidation={() => {}} />,
-    'RA-C3-N1': <UploadBoard challengeId="RA-C3-N1" onValidation={() => {}} />,
+    'RA-C3-N1': <ArduinoHuertaBoard challengeId="RA-C3-N1" onValidation={() => {}} />,
     'RA-C3-N2': <CodingIDEBoard challengeId="RA-C3-N2" onValidation={() => {}} />,
     'RA-C3-N3': <CodingIDEBoard challengeId="RA-C3-N3" onValidation={() => {}} />,
-    'RA-C4-N1': <EssayBoard challengeId="RA-C4-N1" onValidation={() => {}} />,
-    'RA-C4-N2': <UploadBoard challengeId="RA-C4-N2" onValidation={() => {}} />,
-    'RA-C4-N3': <UploadBoard challengeId="RA-C4-N3" onValidation={() => {}} />,
+    'RA-C4-N1': <AdvancedIcfesBoard challengeId="RA-C4-N1" onValidation={() => {}} />,
+    'RA-C4-N2': <AdvancedIcfesBoard challengeId="RA-C4-N2" onValidation={() => {}} />,
+    'RA-C4-N3': <AdvancedIcfesBoard challengeId="RA-C4-N3" onValidation={() => {}} />,
   };
 
   const challenge: DynamicChallenge = location.state?.challenge || {
@@ -269,66 +269,95 @@ export function CognitiveChallenge() {
     navigate('/calibration', { state: payload });
   };
 
+  const getJolDisplay = () => {
+    const values = Object.values(initialJolAnswers).filter(v => typeof v === 'number') as number[];
+    if (values.length > 0) {
+      const val = values[0];
+      return `JOL inicial: ${val * 2}/10`;
+    }
+    return 'JOL inicial: 8/10';
+  };
+
+  const getDynamicAlert = () => {
+    if (pauseSecs > 15) {
+      return {
+        icon: "ti ti-alert-triangle",
+        text: "Alta latencia detectada. Posible bloqueo conceptual. Intenta usar las pistas de andamiaje."
+      };
+    }
+    if (errCount >= 2) {
+      return {
+        icon: "ti ti-bug",
+        text: "Múltiples errores detectados. Revisa los criterios de aceptación y las pistas."
+      };
+    }
+    if (editCount > 30 && !boardSuccess) {
+      return {
+        icon: "ti ti-info-circle",
+        text: "Alta densidad de edición. Te recomendamos repasar los criterios de evaluación."
+      };
+    }
+    return {
+      icon: "ti ti-activity",
+      text: "Capturando métricas de ejecución. Tu proceso de calibración cognitiva se registra en tiempo real."
+    };
+  };
+
+  const isChallengeDone = boardSuccess || consoleMessages.some(m => m.type === 'ok');
+  const alertInfo = getDynamicAlert();
+
   return (
     <div className={`fb-root ${theme} clean-ui`}>
-      {/* Header Minimalista */}
-      <EvaluationTracker currentPhase="B" />
-      
-      {/* Header Minimalista (Adaptado para convivir con el Tracker) */}
-      <div className="fb-header-clean" style={{ marginTop: '50px', background: 'transparent', borderBottom: 'none' }}>
-        <div className="fb-header-left">
-          <div className="fb-header-info">
-            <span className="fb-level-tag">{challenge.nivel} · {challenge.sub_nivel} | {challenge.componente}</span>
-            <h1 className="fb-task-name">{challenge.titulo}</h1>
-          </div>
-        </div>
-        <div className="fb-header-right">
-          <div className="fb-timer-minimal">
-            <i className="ti ti-clock"></i>
-            {Math.floor(seconds / 60).toString().padStart(2, '0')}:{(seconds % 60).toString().padStart(2, '0')}
-          </div>
-          <button className="fb-btn-finish" onClick={handleSubmit}>
-            Terminar Reto <i className="ti ti-arrow-right"></i>
-          </button>
-        </div>
-      </div>
+      <h2 style={{ position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }}>
+        Meta-Pathfinder Fase B: Área de trabajo del estudiante. Editor de código con métricas metacognitivas en tiempo real.
+      </h2>
 
-      <div className="fb-main-container">
-        {/* Panel de Instrucciones Colapsable o Fijo Estilizado */}
-        <div className="fb-side-panel instructions">
-          <div className="fb-panel-label">Instrucciones</div>
-          <div className="fb-content-scroll">
-            <p className="fb-instruction-text">{challenge.descripcion}</p>
-            <div className="fb-criteria-box">
-              <span className="fb-box-label">Criterios de evaluación</span>
-              <ul style={{ paddingLeft: '20px', margin: '10px 0' }}>
-                  {challenge.criterios.map((c: string, i: number) => (
-                    <li key={i}>{c}</li>
-                  ))}
-                </ul>
-              </div>
-            
-            <AnimatePresence>
-              {showHint && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="fb-hint-minimal">
-                  <i className="ti ti-bulb"></i>
-                  <span>{(challenge as any).pista || "Recuerda leer atentamente las instrucciones antes de enviar tu solución."}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
+      {/* Header Premium */}
+      <EvaluationTracker 
+        currentPhase="B" 
+        showTimerAndJol={true}
+        seconds={seconds}
+        jolDisplay={getJolDisplay()}
+      />
+
+      <div className="fb-layout">
+        {/* Lateral Izquierdo: Reto y Criterios */}
+        <div className="fb-sidebar-l">
+          <div className="fb-panel-title">
+            <i className="ti ti-target" aria-hidden="true" style={{ fontSize: '13px' }}></i>
+            Reto activo
+          </div>
+
+          <div className="fb-reto-card">
+            <div className="fb-reto-tag">MEN · {challenge.nivel} · {challenge.sub_nivel}</div>
+            <div className="fb-reto-title">{challenge.titulo}</div>
+            <div className="fb-reto-desc">{challenge.descripcion}</div>
+          </div>
+
+          <div className="fb-criteria">
+            <div className="fb-criteria-title">Criterios de evaluación</div>
+            {challenge.criterios.map((c: string, i: number) => {
+              const done = isChallengeDone || (consoleMessages.some(m => m.type === 'ok') && i === 0);
+              return (
+                <div key={i} className={`fb-criterion ${done ? 'done' : ''}`}>
+                  <span className="fb-criterion-dot"></span>
+                  {c}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Tablero Dinámico (Multimodal) */}
-        <div className="fb-editor-container">
+        {/* Zona Central: Tablero o Editor */}
+        <div className="fb-editor-zone">
           {componentMap[challenge.id] ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
               {React.cloneElement(componentMap[challenge.id] as any, {
                 challengeId: challenge.id,
                 onValidation: (success: boolean) => {
                   setBoardSuccess(success);
                   if (success) {
-                    setConsoleMessages([{ type: 'ok', text: '> ¡Reto interactivo completado con éxito!' }]);
+                    setConsoleMessages([{ type: 'ok', text: '> ¡Reto interactivo completado con éxito! Puedes avanzar.' }]);
                     setErrCount(0);
                   } else {
                     setErrCount(prev => prev + 1);
@@ -337,7 +366,7 @@ export function CognitiveChallenge() {
               })}
             </div>
           ) : getBoardType(challenge.id) === 'drag_drop' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
               <DragAndDropBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
@@ -353,7 +382,7 @@ export function CognitiveChallenge() {
               />
             </div>
           ) : getBoardType(challenge.id) === 'text' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
               <EssayBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
@@ -361,17 +390,8 @@ export function CognitiveChallenge() {
                 }} 
               />
             </div>
-          ) : getBoardType(challenge.id) === 'upload' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
-              <UploadBoard 
-                challengeId={challenge.id} 
-                onValidation={(success) => {
-                  setBoardSuccess(success);
-                }} 
-              />
-            </div>
           ) : getBoardType(challenge.id) === 'canvas' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
               <CanvasBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
@@ -379,17 +399,8 @@ export function CognitiveChallenge() {
                 }} 
               />
             </div>
-          ) : getBoardType(challenge.id) === 'spreadsheet' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
-              <SpreadsheetBoard 
-                challengeId={challenge.id} 
-                onValidation={(success) => {
-                  setBoardSuccess(success);
-                }} 
-              />
-            </div>
           ) : getBoardType(challenge.id) === 'phone' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
               <PhoneDismantlingBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
@@ -398,7 +409,7 @@ export function CognitiveChallenge() {
               />
             </div>
           ) : getBoardType(challenge.id) === 'ide' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
               <CodingIDEBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
@@ -408,58 +419,167 @@ export function CognitiveChallenge() {
             </div>
           ) : (
             <>
-              <div className="fb-editor-toolbar">
-                <div className="fb-tabs-minimal">
-                  <button className={`fb-tab-btn ${activeTab === 'editor' ? 'active' : ''}`} onClick={() => setActiveTab('editor')}>
-                    <i className="ti ti-code"></i> Editor
-                  </button>
-                  {true && (
-                    <button className={`fb-tab-btn ${activeTab === 'preview' ? 'active' : ''}`} onClick={() => setActiveTab('preview')}>
-                      <i className="ti ti-eye"></i> Vista Previa
-                    </button>
-                  )}
+              <div className="fb-editor-tabs">
+                <div className="fb-tab active">
+                  <i className="ti ti-brand-python" aria-hidden="true" style={{ fontSize: '13px' }}></i>
+                  solucion.py
+                  <span className="fb-tab-dot" title="Sin guardar"></span>
                 </div>
-                <button className="fb-run-btn-clean" onClick={handleRun}>
-                  <i className="ti ti-player-play"></i> Ejecutar
+                <div style={{ marginLeft: 'auto', padding: '0 14px', display: 'flex', alignItems: 'center' }}>
+                  <span className="fb-live-badge">
+                    <span className="fb-timer-dot" style={{ width: '5px', height: '5px' }}></span>
+                    Capturando métricas
+                  </span>
+                </div>
+              </div>
+
+              <div className="fb-editor-area">
+                <textarea
+                  className="fb-editor-field"
+                  value={code}
+                  onChange={(e) => { setCode(e.target.value); setEditCount(c => c+1); lastEditTime.current = Date.now(); }}
+                  spellCheck={false}
+                  placeholder="# Desarrolla tu código aquí..."
+                />
+              </div>
+
+              <div className="fb-editor-footer">
+                <div className="fb-status-items">
+                  <span className="fb-status-item">
+                    <i className="ti ti-circle-dot" aria-hidden="true" style={{ fontSize: '12px', color: '#238636' }}></i>
+                    Python 3.11
+                  </span>
+                  <span className="fb-status-item">
+                    <i className="ti ti-pencil" aria-hidden="true" style={{ fontSize: '12px' }}></i>
+                    Ediciones: <span style={{ color: 'var(--fb-text)', marginLeft: '3px' }}>{editCount}</span>
+                  </span>
+                  <span className="fb-status-item">
+                    <i className="ti ti-clock" aria-hidden="true" style={{ fontSize: '12px' }}></i>
+                    Pausa: <span style={{ color: 'var(--fb-warn)', marginLeft: '3px' }}>{pauseSecs}s</span>
+                  </span>
+                </div>
+                <button className="fb-run-btn" onClick={handleRun}>
+                  <i className="ti ti-player-play" aria-hidden="true" style={{ fontSize: '13px' }}></i>
+                  Ejecutar
                 </button>
               </div>
 
-              <div className="fb-workspace">
-                {activeTab === 'preview' ? (
-                  <iframe ref={iframeRef} title="preview" className="fb-preview-frame-clean" />
-                ) : false ? (
-                  <div className="fb-terminal-clean">
-                    <div className="fb-term-scroll">
-                      <div className="fb-term-line sys">{">"} Git Terminal Ready</div>
-                      <div className="fb-term-line in">$ git branch</div>
-                      <div className="fb-term-line ok">* main</div>
-                    </div>
-                    <div className="fb-term-input-line">
-                      <span className="fb-term-cursor">$</span>
-                      <input type="text" className="fb-term-field" placeholder="Escribe un comando..." />
-                    </div>
+              <div className="fb-console">
+                <div className="fb-console-line fb-console-muted">— Salida de Consola —</div>
+                {consoleMessages.map((m, i) => (
+                  <div key={i} className={`fb-console-line fb-console-${m.type}`}>
+                    {m.text}
                   </div>
-                ) : (
-                  <textarea
-                    className="fb-editor-field"
-                    value={code}
-                    onChange={(e) => { setCode(e.target.value); setEditCount(c => c+1); lastEditTime.current = Date.now(); }}
-                    spellCheck={false}
-                  />
-                )}
-              </div>
-
-              {/* Consola Integrada (Solo para Medio/Avanzado) */}
-              <div className="fb-console-clean">
-                <div className="fb-console-title">Salida de Consola</div>
-                <div className="fb-console-lines">
-                  {consoleMessages.map((m, i) => (
-                    <div key={i} className={`fb-console-line ${m.type}`}>{m.text}</div>
-                  ))}
-                </div>
+                ))}
               </div>
             </>
           )}
+        </div>
+
+        {/* Lateral Derecho: Métricas y Progreso */}
+        <div className="fb-sidebar-r">
+          <div className="fb-panel-title">
+            <i className="ti ti-chart-bar" aria-hidden="true" style={{ fontSize: '13px' }}></i>
+            Métricas de proceso
+            <span className="fb-live-badge" style={{ marginLeft: 'auto', marginRight: '0' }}>live</span>
+          </div>
+
+          <div className="fb-metric-block">
+            <div className="fb-metric-label">Latencia cognitiva</div>
+            <div className="fb-metric-val">
+              {pauseSecs} <span className="fb-metric-unit">seg pausa</span>
+            </div>
+            <div className="fb-metric-bar">
+              <div 
+                className="fb-metric-fill" 
+                style={{ 
+                  width: `${Math.min((pauseSecs / 30) * 100, 100)}%`, 
+                  background: pauseSecs > 15 ? '#ff7b72' : pauseSecs > 5 ? '#f2cc60' : '#238636'
+                }}
+              ></div>
+            </div>
+          </div>
+
+          <div className="fb-metric-block">
+            <div className="fb-metric-label">Densidad de edición</div>
+            <div className="fb-metric-val">
+              {editCount} <span className="fb-metric-unit">cambios</span>
+            </div>
+            <div className="fb-metric-bar">
+              <div 
+                className="fb-metric-fill" 
+                style={{ 
+                  width: `${Math.min((editCount / 50) * 100, 100)}%`, 
+                  background: '#388bfd' 
+                }}
+              ></div>
+            </div>
+          </div>
+
+          <div className="fb-metric-block">
+            <div className="fb-metric-label">Tasa de error</div>
+            <div className="fb-metric-val">
+              {errCount} <span className="fb-metric-unit">/ {totalRuns} runs</span>
+            </div>
+            <div className="fb-metric-bar">
+              <div 
+                className="fb-metric-fill" 
+                style={{ 
+                  width: `${totalRuns > 0 ? Math.min((errCount / totalRuns) * 100, 100) : 0}%`, 
+                  background: '#ff7b72' 
+                }}
+              ></div>
+            </div>
+          </div>
+
+          <div className="fb-alert">
+            <i className={alertInfo.icon} aria-hidden="true" style={{ fontSize: '13px', color: 'var(--fb-warn)', marginTop: '2px' }}></i>
+            <span>{alertInfo.text}</span>
+          </div>
+
+          <div className="fb-andamiaje">
+            <div className="fb-andamiaje-title">Andamiaje disponible</div>
+            <div className="fb-hint-item" onClick={() => setShowHint(prev => !prev)}>
+              <i className="ti ti-bulb" aria-hidden="true" style={{ color: 'var(--fb-blue)' }}></i>
+              {showHint ? "Ocultar pista de ayuda" : "Pista 1: Activar ayuda"}
+            </div>
+            <div className={`fb-hint-item ${errCount < 2 && !showHint ? 'locked' : ''}`} onClick={() => errCount >= 2 && setShowHint(true)}>
+              <i className={`ti ${errCount >= 2 ? 'ti-bulb' : 'ti-lock'}`} aria-hidden="true" style={{ color: errCount >= 2 ? 'var(--fb-blue)' : 'inherit' }}></i>
+              Pista 2: Explicación de rúbrica
+            </div>
+          </div>
+
+          <div className="fb-checkpoint">
+            <div className="fb-checkpoint-title">
+              <i className="ti ti-list-check" aria-hidden="true" style={{ fontSize: '12px' }}></i>
+              Progreso del reto
+            </div>
+            {challenge.criterios.map((c: string, i: number) => {
+              const done = isChallengeDone || (consoleMessages.some(m => m.type === 'ok') && i === 0);
+              return (
+                <div key={i} className="fb-checkpoint-item">
+                  <i className={`ti fb-check-icon ${done ? 'ti-circle-check done' : 'ti-circle pending'}`} aria-hidden="true"></i>
+                  <span style={{ fontSize: '11px', color: done ? '#238636' : 'var(--fb-text-muted)' }}>
+                    {c.replace(/^\d+\.\s*/, '')}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="fb-submit-zone">
+            <button 
+              className={`fb-btn-submit ${isChallengeDone ? 'ready' : ''}`} 
+              id="submitBtn" 
+              onClick={handleSubmit}
+            >
+              <i className="ti ti-send" aria-hidden="true" style={{ fontSize: '13px' }}></i>
+              Enviar solución → Fase C
+            </button>
+            <div style={{ fontSize: '10px', fontFamily: 'IBM Plex Mono, monospace', color: 'var(--fb-text-secondary)', textAlign: 'center', marginTop: '6px' }}>
+              {isChallengeDone ? "¡Reto superado con éxito!" : "Completa la actividad para activar"}
+            </div>
+          </div>
         </div>
       </div>
     </div>
