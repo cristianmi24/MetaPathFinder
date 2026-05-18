@@ -135,6 +135,26 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   // En / no aplicar ningún layout, solo el canvas + Home
   if (location.pathname === '/') return <>{children}</>;
 
+  if (location.pathname === '/preview-phase-b') {
+    return (
+      <div className="min-h-screen bg-background">
+        <CognitiveBrain />
+        <main className="min-h-screen">
+          <AnimatePresence mode="wait">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+    );
+  }
+
   if (role === 'admin') return <AdminLayout>{children}</AdminLayout>;
 
   if (!user) return <AuthLayout>{children}</AuthLayout>;

@@ -10,6 +10,8 @@ import { EssayBoard } from '../components/EssayBoard';
 import { UploadBoard } from '../components/UploadBoard';
 import { CanvasBoard } from '../components/CanvasBoard';
 import { SpreadsheetBoard } from '../components/SpreadsheetBoard';
+import { PhoneDismantlingBoard } from '../components/PhoneDismantlingBoard';
+import { CodingIDEBoard } from '../components/CodingIDEBoard';
 import './CognitiveChallenge.css';
 
 export function CognitiveChallenge() {
@@ -18,8 +20,8 @@ export function CognitiveChallenge() {
   const { theme } = useTheme();
   const { addEvent, currentLevel } = useCognitiveStore();
 
-  const getBoardType = (id: string): 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' => {
-    const mappings: Record<string, 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet'> = {
+  const getBoardType = (id: string): 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone' | 'ide' => {
+    const mappings: Record<string, 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone' | 'ide'> = {
       // Básico
       "RB-C1-N1": "drag_drop", "RB-C2-N1": "drag_drop", "RB-C3-N1": "canvas", "RB-C4-N1": "canvas",
       "RB-C1-N2": "upload", "RB-C2-N2": "upload", "RB-C3-N2": "code", "RB-C4-N2": "text",
@@ -30,9 +32,9 @@ export function CognitiveChallenge() {
       "RM-C3-N1": "upload", "RM-C3-N2": "code", "RM-C3-N3": "code", 
       "RM-C4-N1": "text", "RM-C4-N2": "text", "RM-C4-N3": "text",
       // Avanzado
-      "RA-C1-N1": "upload", "RA-C1-N2": "text", "RA-C1-N3": "text", 
-      "RA-C2-N1": "code", "RA-C2-N2": "upload", "RA-C2-N3": "code",
-      "RA-C3-N1": "upload", "RA-C3-N2": "upload", "RA-C3-N3": "upload", 
+      "RA-C1-N1": "phone", "RA-C1-N2": "text", "RA-C1-N3": "text", 
+      "RA-C2-N1": "ide", "RA-C2-N2": "ide", "RA-C2-N3": "ide",
+      "RA-C3-N1": "upload", "RA-C3-N2": "ide", "RA-C3-N3": "ide", 
       "RA-C4-N1": "text", "RA-C4-N2": "upload", "RA-C4-N3": "upload"
     };
     return mappings[id] || 'code';
@@ -305,6 +307,24 @@ export function CognitiveChallenge() {
           ) : getBoardType(challenge.id) === 'spreadsheet' ? (
             <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
               <SpreadsheetBoard 
+                challengeId={challenge.id} 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                }} 
+              />
+            </div>
+          ) : getBoardType(challenge.id) === 'phone' ? (
+            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+              <PhoneDismantlingBoard 
+                challengeId={challenge.id} 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                }} 
+              />
+            </div>
+          ) : getBoardType(challenge.id) === 'ide' ? (
+            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+              <CodingIDEBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
                   setBoardSuccess(success);

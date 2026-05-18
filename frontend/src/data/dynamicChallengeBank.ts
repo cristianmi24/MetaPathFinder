@@ -646,8 +646,8 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
-    "titulo": "Arqueología tecnológica: desarme y documento",
-    "descripcion": "Con un dispositivo electrónico en desuso (preferiblemente un celular o computador portátil viejo), desmóntalo con cuidado y documenta fotográficamente cada componente interno. Identifica el fabricante, función y fecha aproximada de cada pieza. Analiza de qué materiales (cobre, silicio, litio, plástico, etc.) están hechos y cuáles representan el mayor costo básico, lo que qué pasaría si no existiera cada componente en el mercado formal. Produce un informe técnico de 3 páginas con fotografías.",
+    "titulo": "Desmantelamiento virtual de un Smartphone",
+    "descripcion": "Explora virtualmente la estructura de un smartphone desmantelando sus 9 componentes principales. Luego, responde a las preguntas críticas sobre la función, geopolítica, sostenibilidad y ética de la cadena de suministro.",
     "criterios": [
       "Desmontaje documentado fotográficamente.",
       "Mínimo 8 componentes identificados con función.",
@@ -670,8 +670,8 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
-    "titulo": "Modelo comparativo de paradigmas de programación",
-    "descripcion": "Investiga y compara tres paradigmas de programación: imperativo (Python), funcional (Haskell/JS) y orientado a objetos (Java/Python). Para cada uno, define el paradigma y su filosofía central, resuelve el mismo problema de lógica en cada paradigma (ej. filtrar una lista de números pares), analiza ventajas, limitaciones y casos de uso ideales. Concluye: ¿qué paradigma se adapta mejor para qué tipo de tareas?",
+    "titulo": "Análisis comparativo de paradigmas de programación",
+    "descripcion": "Redacta un ensayo comparativo y crítico usando el editor de texto integrado donde compares la filosofía, ventajas e implementaciones lógicas de los paradigmas imperativo, orientado a objetos y funcional.",
     "criterios": [
       "Proceso de resolución en 3 paradigmas con definición clara.",
       "Mismo problema implementado en los tres.",
@@ -695,8 +695,8 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
-    "titulo": "Análisis crítico de una patente tecnológica",
-    "descripcion": "Selecciona una patente tecnológica reciente (2018-2024) relacionada con IA, biotecnología o energías renovables del repositorio USPTO o WIPO. Analiza: (a) qué problema resuelve y cuál es la innovación central, (b) qué conocimientos previos se construyeron para el desarrollo de la invención, (c) qué implicaciones tiene para la sociedad colombiana, (d) si crees que debería ser de dominio público o seguir patentada (argumento ético-económico), y (e) qué barreras tecnológicas impiden su aplicación en Colombia hoy. Ensayo de 800 palabras.",
+    "titulo": "Ensayo crítico sobre patentes de tecnología emergente",
+    "descripcion": "Realiza un análisis sintético estructurado en el editor de texto integrado sobre una patente de tecnología emergente, enfocándote en el impacto de dichas patentes en el contexto social y económico colombiano.",
     "criterios": [
       "Patente identificada y vinculada.",
       "Análisis técnico de la invención.",
@@ -721,7 +721,7 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
     "titulo": "API REST para el sistema de notas del colegio",
-    "descripcion": "Implementa en Python (Flask o FastAPI) una API REST básica para gestionar un sistema de notas escolares. La API debe permitir: crear un estudiante (POST), consultar todos los estudiantes (GET), obtener las notas de un estudiante por ID (GET), agregar una nota a un estudiante (POST) y calcular el promedio (GET). Usa una estructura de datos en memoria (listas o diccionarios). Prueba con Postman o CURL y entrega la documentación de la API.",
+    "descripcion": "Completa el código Flask en el entorno de desarrollo simulado, rellenando los métodos GET y POST, y asegurando la lógica correcta de manejo de errores 404 en las búsquedas por ID.",
     "criterios": [
       "5 endpoints funcionales (CRUD).",
       "Respuestas JSON correctas.",
@@ -745,8 +745,8 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
-    "titulo": "Dashboard interactivo de datos abiertos colombianos",
-    "descripcion": "Usa estos abiertos del gobierno colombiano (datos.gov.co) sobre educación, salud o transporte. Con Python (Pandas + Plotly Dash o Power BI), crea un dashboard interactivo que incluya al menos 3 visualizaciones diferentes (mapa, gráfico de barras, línea de tiempo). Filtros dinámicos por departamento o año, y una métrica calculada (ej. % crecimiento). El dashboard debe contar una historia con los datos.",
+    "titulo": "Dashboard interactivo de matrícula escolar",
+    "descripcion": "Completa el script interactivo de Pandas y Plotly Express rellenando la carga del archivo CSV, programando estadísticas descriptivas, configurando los ejes del gráfico y aplicando filtros booleanos por año.",
     "criterios": [
       "Datos reales de datos.gov.co usados.",
       "Mínimo 3 tipos de gráficos interactivos.",
@@ -771,7 +771,7 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
     "titulo": "Chatbot de orientación vocacional para el colegio",
-    "descripcion": "Diseña e implementa un chatbot de orientación vocacional para estudiantes de grado 10° usando Python. El bot debe tener un flujo de conversación estructurado (árbol de decisiones), hacer al menos 8 preguntas al usuario sobre sus intereses y habilidades, y finalmente generar una recomendación de 3 carreras con justificación, proporcionar información de universidades colombianas relevantes y guardar la sesión en un archivo JSON. Interfaz mínima: consola de Python.",
+    "descripcion": "Completa el flujo de decisiones estructurado del chatbot vocacional, asegurando guardar la sesión en formato JSON y capturando adecuadamente las entradas interactivas del usuario en la consola simulada.",
     "criterios": [
       "Flujo de conversación completo y lógico.",
       "Mínimo 8 preguntas con variables.",
@@ -796,7 +796,7 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Solución de problemas",
     "codigo_men": "C3",
     "titulo": "Sistema IoT de monitoreo de la huerta escolar",
-    "descripcion": "La huerta escolar necesita monitoreo automatizado. En Tinkercad o con hardware real (Arduino + sensores), diseña un sistema que mida: humedad del suelo (sensor capacitivo o analógico), temperatura y humedad ambiental (DHT11). El sistema debe: (a) activar un LED si la humedad baja del 40%, (b) mostrar el estado en una pantalla LCD 16x2 o monitor serial, y (c) registrar lecturas cada 5 minutos en formato CSV. Entrega: diagrama del circuito, código comentado y prueba de funcionamiento.",
+    "descripcion": "Simula o programa tu circuito Arduino de monitoreo de la huerta externamente de forma libre. Luego, sube la captura de pantalla o el archivo fuente de tu código a través del panel de entregas para su validación en la plataforma.",
     "criterios": [
       "Lectura correcta de humedad y temperatura.",
       "Lógica de activación de actuadores (LED).",
@@ -821,7 +821,7 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Solución de problemas",
     "codigo_men": "C3",
     "titulo": "Modelo de Machine Learning para predecir deserción escolar",
-    "descripcion": "Usando un dataset simulado de 500 estudiantes (proporcionado) con variables: nota promedio, inasistencia (%), estrato socioeconómico, horas de estudio y acceso a internet, entrena un modelo que prediga el riesgo de deserción (alto/medio/bajo). El reporte en Python (Jupyter Notebook) debe incluir: análisis exploratorio de datos (EDA), limpieza de datos, entrenamiento (usando un algoritmo de árbol de decisión o regresión logística), evaluación de métricas (accuracy, precision) y sugerencia de 3 acciones preventivas basadas en resultados.",
+    "descripcion": "Completa el pipeline de Machine Learning en Python implementando el preprocesamiento con Pandas, la división train_test_split, el entrenamiento de un clasificador de árbol de decisión y la obtención de métricas de precisión con scikit-learn.",
     "criterios": [
       "EDA completo con visualizaciones.",
       "Preprocesamiento correcto de variables.",
@@ -845,8 +845,8 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Solución de problemas",
     "codigo_men": "C3",
-    "titulo": "Aplicación móvil de primeros auxilios con geolocalización",
-    "descripcion": "Diseña e implementa con MIT App Inventor 2 o Thunkable una app móvil que en situaciones de emergencia muestre protocolos de primeros auxilios por voz e imágenes (ej. RCP, atragantamiento, ataque cardíaco), permita llamar al número de emergencias (123 Colombia) con un botón de emergencia, use la geolocalización para mostrar el hospital más cercano (Google Maps integrado), funcione sin conexión a internet para los protocolos, y envíe un mensaje de texto automático a un contacto de emergencia. Entrega: APK instalable + documentación del diseño.",
+    "titulo": "Lógica de App de primeros auxilios",
+    "descripcion": "Completa la lógica de programación por bloques estructurada en formato de texto (app_inventor.txt) en la consola simulada, configurando la navegación entre pantallas, el sensor GPS y el disparador de llamadas de emergencia.",
     "criterios": [
       "Mínimo 4 protocolos de primeros auxilios.",
       "Botón de llamada de emergencia (llamada real).",
@@ -870,8 +870,8 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Análisis de sesgo algorítmico en herramientas que usas",
-    "descripcion": "Investiga qué es el sesgo algorítmico y cómo puede afectar a grupos vulnerables. Luego, selecciona dos herramientas digitales que uses (ej. TikTok, Instagram, ChatGPT, sistema de búsqueda de empleo o recomendación) y analiza qué algoritmos las mueven, qué sesgos potenciales podrían tener (género, raza, clase social, geografía), qué evidencia existe de ese sesgo (busca estudios o artículos), y qué acciones podrías sugerir a la empresa para corregirlo. Ensayo de 700 palabras con citas.",
+    "titulo": "Ensayo de análisis de sesgo algorítmico",
+    "descripcion": "Redacta un escrito analítico y reflexivo sobre los sesgos en las redes sociales e IAs que usas cotidianamente (ej. TikTok, Instagram, ChatGPT) y formula recomendaciones éticas usando el editor de texto integrado.",
     "criterios": [
       "Definición fundamentada de sesgo algorítmico.",
       "Dos herramientas analizadas con rigor.",
@@ -895,7 +895,7 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
     "titulo": "Startup tecnológica con impacto social: pitch deck",
-    "descripcion": "Diseña una startup tecnológica que resuelva un problema social real en Colombia (ej. acceso a tecnología, telemedicina rural, e-learning en zonas apartadas, gestión de residuos urbanos, inclusión financiera o IA para el bien social). Crea un pitch deck de 10 diapositivas siguiendo la estructura: Problema, solución, modelo de negocio, mercado objetivo, tecnología usada, impacto social esperado, equipo, hoja de ruta y necesidades de inversión. La propuesta debe ser viable técnica y económicamente.",
+    "descripcion": "Estructura y soporta la idea de tu startup de impacto social en un documento gráfico (como diapositivas de Canva o un PDF) y súbelo a través del panel de entregas de la plataforma.",
     "criterios": [
       "Problema colombiano real y relevante.",
       "Propuesta técnica viable y argumentada.",
@@ -919,8 +919,8 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Investigación-acción: impacto de una tecnología en tu comunidad",
-    "descripcion": "Conduce una mini-investigación de campo sobre el impacto real de una tecnología específica (ej. WhatsApp, redes sociales, cajeros automáticos, IA) en un grupo social específico de tu comunidad. Pasos: (1) define la pregunta de investigación, (2) realiza 5 entrevistas semiestructuradas, (3) entrevista a 5 personas de diferentes perfiles (edades, géneros, roles), (4) transcribe y analiza las respuestas buscando patrones, (5) triangula con 3 fuentes académicas externas. Entrega: informe de 4 páginas con evidencias de las entrevistas y análisis de hallazgos.",
+    "titulo": "Impacto tecnológico en la comunidad",
+    "descripcion": "Registra los hallazgos de tu investigación de campo sobre el impacto de la tecnología en tu comunidad en un informe simplificado y cárgalo en formato PDF o imagen a través del panel de entregas.",
     "criterios": [
       "Pregunta de investigación clara.",
       "Muestra de población y entrevista válida (5 preguntas).",
