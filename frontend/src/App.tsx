@@ -132,7 +132,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const user = useCognitiveStore((s) => s.user);
   useCognitiveTracking(true);
 
-  // En / no aplicar ningún layout, solo el canvas + Home
   if (location.pathname === '/') return <>{children}</>;
 
   if (location.pathname === '/preview-phase-b') {
@@ -181,8 +180,9 @@ export default function App() {
           <Route path="/calibration" element={<ChallengeCalibration />} />
           <Route path="/metacognitive-strategies" element={<MetacognitiveStrategies />} />
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/preview-phase-b" element={<PreviewPhaseB />} />
           <Route path="*" element={<RootRedirect />} />
+          <Route path="/preview-phase-b" element={<PreviewPhaseB />} />
+
         </Routes>
       </AppLayout>
     </Router>
