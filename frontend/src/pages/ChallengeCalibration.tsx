@@ -47,20 +47,26 @@ export function ChallengeCalibration() {
   const { currentLevel, setCurrentLevel, setCurrentChallengeId, addEvent, user, events, consolidateSession } = useCognitiveStore();
   
   const metrics = useMemo(() => {
-    if (location.state) return location.state;
+    const rawMetrics = location.state || [...events].reverse().find(e => e.type === 'CHALLENGE_COMPLETED')?.metadata || {};
     
-    // Si no hay state (ej. refresh), buscamos el último evento de reto completado
-    const lastChallengeEvent = [...events].reverse().find(e => e.type === 'CHALLENGE_COMPLETED');
-    if (lastChallengeEvent) return lastChallengeEvent.metadata;
-
     return {
-      challengeId: '0.0',
-      level: 1,
-      jolAnswers: {},
-      jolTimes: {},
-      estimatedTime: 5,
-      технические_метрики: { score: 0, runs: 0, hints: 0, edits: 0 },
-      biometricas: { clicks: 0, mouse_distance: 0, total_time: 0 },
+      challengeId: rawMetrics.challengeId || '0.0',
+      level: rawMetrics.level || 1,
+      jolAnswers: rawMetrics.jolAnswers || {},
+      jolTimes: rawMetrics.jolTimes || {},
+      estimatedTime: rawMetrics.estimatedTime || 5,
+      технические_метрики: {
+        score: rawMetrics.технические_метрики?.score ?? 0,
+        runs: rawMetrics.технические_метрики?.runs ?? 0,
+        hints: rawMetrics.технические_метрики?.hints ?? 0,
+        edits: rawMetrics.технические_метрики?.edits ?? 0,
+        final_code: rawMetrics.технические_метрики?.final_code ?? '',
+      },
+      biometricas: {
+        clicks: rawMetrics.biometricas?.clicks ?? 0,
+        mouse_distance: rawMetrics.biometricas?.mouse_distance ?? 0,
+        total_time: rawMetrics.biometricas?.total_time ?? 0,
+      },
     };
   }, [location.state, events]);
 
@@ -199,13 +205,13 @@ export function ChallengeCalibration() {
             </div>
             <div className="fc-stat-card">
               <div className="fc-stat-label">Tiempo Real</div>
-              <div className="fc-stat-val text-gray-200">{Math.round(metrics.biometricas.total_time / 60)} <span className="fc-stat-unit">min</span></div>
-              <div className="fc-stat-delta text-red-400">+{Math.max(0, Math.round(metrics.biometricas.total_time / 60) - metrics.estimatedTime)} min sobre estimado</div>
+              <div className="fc-stat-val text-gray-200">{Math.round((metrics.biometricas?.total_time || 0) / 60)} <span className="fc-stat-unit">min</span></div>
+              <div className="fc-stat-delta text-red-400">+{Math.max(0, Math.round((metrics.biometricas?.total_time || 0) / 60) - (metrics.estimatedTime || 5))} min sobre estimado</div>
             </div>
             <div className="fc-stat-card">
               <div className="fc-stat-label">Runs / Errores</div>
-              <div className="fc-stat-val text-red-400">{metrics.технические_метрики.runs} <span className="fc-stat-unit">intentos</span></div>
-              <div className="fc-stat-delta text-gray-500">{metrics.технические_метрики.hints} pistas usadas</div>
+              <div className="fc-stat-val text-red-400">{metrics.технические_метрики?.runs ?? 0} <span className="fc-stat-unit">intentos</span></div>
+              <div className="fc-stat-delta text-gray-500">{metrics.технические_метрики?.hints ?? 0} pistas usadas</div>
             </div>
           </div>
 
@@ -296,11 +302,11 @@ export function ChallengeCalibration() {
             </div>
             <div className="fc-vector-row">
               <span className="fc-vector-key">clicks</span>
-              <span className="fc-vector-val">{metrics.biometricas.clicks}</span>
+              <span className="fc-vector-val">{metrics.biometricas?.clicks ?? 0}</span>
             </div>
             <div className="fc-vector-row">
               <span className="fc-vector-key">ediciones</span>
-              <span className="fc-vector-val">{metrics.технические_метрики.edits}</span>
+              <span className="fc-vector-val">{metrics.технические_метрики?.edits ?? 0}</span>
             </div>
           </div>
 

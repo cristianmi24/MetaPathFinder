@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 
-export default function TimelineGame(){
+export default function TimelineGame({ onValidation }: { onValidation?: (success: boolean) => void }) {
+  const onValidationRef = React.useRef(onValidation);
+  onValidationRef.current = onValidation;
   useEffect(()=>{
     const ITEMS = [
       {id:1, name:"Rueda", year:"3300 a.C.", order:1, img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Wooden_wheel.jpg/320px-Wooden_wheel.jpg"},
@@ -122,9 +124,9 @@ export default function TimelineGame(){
         if(item && item.order===i+1){correct++; tick.classList.add("ok"); tick.textContent="✓";} else {tick.classList.add("bad"); tick.textContent="✗"}
         el.appendChild(tick);
       });
-      if(correct===8){bar.className="result-bar show win"; bar.textContent = "🎉 ¡Perfecto! Ordenaste todos los artefactos correctamente. ¡Eres un genio de la historia!"}
-      else if(correct>=5){bar.className="result-bar show partial"; bar.textContent = "🌟 ¡Casi! Tienes "+correct+" de 8 en el lugar correcto. ¡Inténtalo de nuevo!"}
-      else {bar.className="result-bar show lose"; bar.textContent = "😅 Solo "+correct+" correctos. ¡No te rindas, vuelve a intentarlo!"}
+      if(correct===8){bar.className="result-bar show win"; bar.textContent = "🎉 ¡Perfecto! Ordenaste todos los artefactos correctamente. ¡Eres un genio de la historia!"; onValidationRef.current?.(true)}
+      else if(correct>=5){bar.className="result-bar show partial"; bar.textContent = "🌟 ¡Casi! Tienes "+correct+" de 8 en el lugar correcto. ¡Inténtalo de nuevo!"; onValidationRef.current?.(false)}
+      else {bar.className="result-bar show lose"; bar.textContent = "😅 Solo "+correct+" correctos. ¡No te rindas, vuelve a intentarlo!"; onValidationRef.current?.(false)}
     }
 
     function resetGame(){
@@ -151,8 +153,8 @@ export default function TimelineGame(){
   return (
     <div>
       <style>{`*{box-sizing:border-box;margin:0;padding:0}
-.page{padding:1.2rem 1rem 2rem;background:var(--color-surface);color:var(--color-on-surface)}
-.hero{text-align:center;margin-bottom:1.2rem}
+.page{padding:1.2rem 24px 2rem;background:transparent;color:var(--color-on-surface)}
+.hero{text-align:center;margin-bottom:1.2rem;padding: 0 12px;}
 .hero h1{font-size:21px;font-weight:500}
 .hero p{font-size:13px;color:var(--color-on-surface-variant);margin-top:3px}
 .section-label{font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--color-on-surface-variant);text-transform:uppercase;margin-bottom:.6rem}

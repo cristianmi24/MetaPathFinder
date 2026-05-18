@@ -10,6 +10,21 @@ import { EssayBoard } from '../components/EssayBoard';
 import { UploadBoard } from '../components/UploadBoard';
 import { CanvasBoard } from '../components/CanvasBoard';
 import { SpreadsheetBoard } from '../components/SpreadsheetBoard';
+import TimelineGame from '../components/TimelineGame';
+import MatchImageTerms from '../components/MatchImageTerms';
+import MatchTechSituations from '../components/MatchTechSituations';
+import DriveFileSorter from '../components/DriveFileSorter';
+import AttendanceSimulator from '../components/AttendanceSimulator';
+import DigitalAccessQuiz from '../components/DigitalAccessQuiz';
+import SocialMediaQuiz from '../components/SocialMediaQuiz';
+import { SmartphoneAnatomyQuiz } from '../components/SmartphoneAnatomyQuiz';
+import { ComputingEvolutionQuiz } from '../components/ComputingEvolutionQuiz';
+import { ProspectiveTechEssay } from '../components/ProspectiveTechEssay';
+import { SqlBlockBoard } from '../components/SqlBlockBoard';
+import { ArduinoBlockBoard } from '../components/ArduinoBlockBoard';
+import { CodeBlockBoard } from '../components/CodeBlockBoard';
+import { PhoneDismantlingBoard } from '../components/PhoneDismantlingBoard';
+import { CodingIDEBoard } from '../components/CodingIDEBoard';
 import './CognitiveChallenge.css';
 
 export function CognitiveChallenge() {
@@ -18,19 +33,19 @@ export function CognitiveChallenge() {
   const { theme } = useTheme();
   const { addEvent, currentLevel } = useCognitiveStore();
 
-  const getBoardType = (id: string): 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' => {
-    const mappings: Record<string, 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet'> = {
-      // Básico
-      "RB-C1-N1": "drag_drop", "RB-C2-N1": "drag_drop", "RB-C3-N1": "canvas", "RB-C4-N1": "canvas",
-      "RB-C1-N2": "upload", "RB-C2-N2": "upload", "RB-C3-N2": "code", "RB-C4-N2": "text",
-      "RB-C1-N3": "text", "RB-C2-N3": "spreadsheet", "RB-C3-N3": "canvas", "RB-C4-N3": "text",
+  const getBoardType = (id: string): 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone_dismantle' => {
+    const mappings: Record<string, 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone_dismantle'> = {
+      // BÃ¡sico
+      "RB-C1-N1": "drag_drop", "RB-C2-N1": "drag_drop", "RB-C3-N1": "drag_drop", "RB-C4-N1": "drag_drop",
+      "RB-C1-N2": "upload", "RB-C2-N2": "upload", "RB-C3-N2": "code", "RB-C4-N2": "drag_drop",
+      "RB-C1-N3": "text", "RB-C2-N3": "spreadsheet", "RB-C3-N3": "drag_drop", "RB-C4-N3": "drag_drop",
       // Medio
       "RM-C1-N1": "canvas", "RM-C1-N2": "text", "RM-C1-N3": "text", 
       "RM-C2-N1": "spreadsheet", "RM-C2-N2": "canvas", "RM-C2-N3": "spreadsheet", 
       "RM-C3-N1": "upload", "RM-C3-N2": "code", "RM-C3-N3": "code", 
       "RM-C4-N1": "text", "RM-C4-N2": "text", "RM-C4-N3": "text",
       // Avanzado
-      "RA-C1-N1": "upload", "RA-C1-N2": "text", "RA-C1-N3": "text", 
+      "RA-C1-N1": "phone_dismantle", "RA-C1-N2": "text", "RA-C1-N3": "text", 
       "RA-C2-N1": "code", "RA-C2-N2": "upload", "RA-C2-N3": "code",
       "RA-C3-N1": "upload", "RA-C3-N2": "upload", "RA-C3-N3": "upload", 
       "RA-C4-N1": "text", "RA-C4-N2": "upload", "RA-C4-N3": "upload"
@@ -40,7 +55,7 @@ export function CognitiveChallenge() {
 
   const challenge: DynamicChallenge = location.state?.challenge || {
     id: "0",
-    nivel: "Básico",
+    nivel: "BÃ¡sico",
     sub_nivel: "N1",
     componente: "Ninguno",
     codigo_men: "0",
@@ -81,15 +96,15 @@ export function CognitiveChallenge() {
   useEffect(() => {
     const getInitialCode = (id: string): string => {
       switch (id) {
-        case '1.1': return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .card {\n      border: 1px solid #ccc;\n      padding: 20px;\n      text-align: left;\n    }\n  </style>\n</head>\n<body>\n  <div class="card">\n    <h1>Mi Tarjeta</h1>\n    <p>Estudiante de Tecnología</p>\n    <img src="" alt="Foto">\n  </div>\n</body>\n</html>`;
+        case '1.1': return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .card {\n      border: 1px solid #ccc;\n      padding: 20px;\n      text-align: left;\n    }\n  </style>\n</head>\n<body>\n  <div class="card">\n    <h1>Mi Tarjeta</h1>\n    <p>Estudiante de TecnologÃ­a</p>\n    <img src="" alt="Foto">\n  </div>\n</body>\n</html>`;
         case '1.2': return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    ul {\n      list-style: none;\n      padding: 0;\n      display: block;\n    }\n    li { margin: 0 15px; }\n  </style>\n</head>\n<body>\n  <ul>\n    <li><a href="#">Inicio</a></li>\n    <li><a href="#">Cursos</a></li>\n    <li><a href="#">Perfil</a></li>\n  </ul>\n</body>\n</html>`;
         case '1.3': return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .container { display: flex; gap: 20px; }\n    .col { flex: 1; background: #eee; padding: 10px; }\n  </style>\n</head>\n<body>\n  <div class="container">\n    <div class="col">Noticia 1</div>\n    <div class="col">Noticia 2</div>\n    <div class="col">Noticia 3</div>\n  </div>\n</body>\n</html>`;
         case '2.1': return `let contador = 0;\nconst btn = document.querySelector("#miBoton");\nbtn?.addEventListener("click", () => {\n  contador++;\n  document.getElementById("display").innerText = contador;\n});`;
         case '2.2': return `function verificarEdad(edad) {\n  const res = document.getElementById("resultado");\n  if (condition) {\n    \n  } else {\n    \n  }\n}`;
         case '3.1': return `function generarColor() {\n  const r = Math.floor(Math.random() * 10);\n  const g = Math.floor(Math.random() * 10);\n  const b = Math.floor(Math.random() * 10);\n  return \`rgb(\${r},\${g},\${b})\`;\n}`;
         case '3.2': return `function agregarTarea() {\n  const input = document.getElementById("task");\n  const lista = document.getElementById("lista");\n}`;
-        case '3.3': return `async function buscarUsuario(nombre) {\n  try {\n    \n  } catch (err) {\n    console.error("Error en la petición");\n  }\n}`;
-        default: return `// Desarrolla tu solución aquí...`;
+        case '3.3': return `async function buscarUsuario(nombre) {\n  try {\n    \n  } catch (err) {\n    console.error("Error en la peticiÃ³n");\n  }\n}`;
+        default: return `// Desarrolla tu soluciÃ³n aquÃ­...`;
       }
     };
     setCode(getInitialCode(challenge.id));
@@ -135,7 +150,7 @@ export function CognitiveChallenge() {
     const newRuns = totalRuns + 1;
     setTotalRuns(newRuns);
     
-    // Sistema de Validación por Reto
+    // Sistema de ValidaciÃ³n por Reto
     let isSuccess = false;
     const cleanCode = code.replace(/\s/g, '');
 
@@ -143,7 +158,7 @@ export function CognitiveChallenge() {
       case '1.1': // Tarjeta: busca center y src
         isSuccess = code.includes('text-align: center') && (code.includes('src="http') || code.includes("src='http"));
         break;
-      case '1.2': // Menú: busca display:flex
+      case '1.2': // MenÃº: busca display:flex
         isSuccess = code.includes('display: flex') || code.includes('display:flex');
         break;
       case '1.3': // Media Query
@@ -164,15 +179,16 @@ export function CognitiveChallenge() {
       case '3.3': // Fetch: busca fetch, await, try, catch
         isSuccess = code.includes('fetch') && code.includes('await') && (code.includes('try') || code.includes('then'));
         break;
+
       default:
-        isSuccess = code.length > 30; // Validación genérica para otros
+        isSuccess = code.length > 30; // ValidaciÃ³n genÃ©rica para otros
     }
 
     if (isSuccess) {
-      setConsoleMessages(prev => [...prev, { type: 'ok', text: `> Reto completado con éxito. Puedes terminar la fase.` }]);
+      setConsoleMessages(prev => [...prev, { type: 'ok', text: `> Reto completado con Ã©xito. Puedes terminar la fase.` }]);
       setErrCount(0);
     } else {
-      setConsoleMessages(prev => [...prev, { type: 'err', text: `> Error: Validación fallida (Intento ${newRuns}). Revisa tu lógica.` }]);
+      setConsoleMessages(prev => [...prev, { type: 'err', text: `> Error: ValidaciÃ³n fallida (Intento ${newRuns}). Revisa tu lÃ³gica.` }]);
       setErrCount(prev => prev + 1);
       if (newRuns >= 2) setShowHint(true);
     }
@@ -202,7 +218,7 @@ export function CognitiveChallenge() {
       }
     };
 
-    console.log('🚀 Enviando métricas reales a Fase C:', payload);
+    console.log('🚀 Enviando metricas reales a Fase C:', payload);
     addEvent('CHALLENGE_COMPLETED', payload);
     navigate('/calibration', { state: payload });
   };
@@ -216,7 +232,7 @@ export function CognitiveChallenge() {
       <div className="fb-header-clean" style={{ marginTop: '50px', background: 'transparent', borderBottom: 'none' }}>
         <div className="fb-header-left">
           <div className="fb-header-info">
-            <span className="fb-level-tag">{challenge.nivel} · {challenge.sub_nivel} | {challenge.componente}</span>
+            <span className="fb-level-tag">{challenge.nivel} Â· {challenge.sub_nivel} | {challenge.componente}</span>
             <h1 className="fb-task-name">{challenge.titulo}</h1>
           </div>
         </div>
@@ -225,48 +241,260 @@ export function CognitiveChallenge() {
             <i className="ti ti-clock"></i>
             {Math.floor(seconds / 60).toString().padStart(2, '0')}:{(seconds % 60).toString().padStart(2, '0')}
           </div>
-          <button className="fb-btn-finish" onClick={handleSubmit}>
-            Terminar Reto <i className="ti ti-arrow-right"></i>
-          </button>
         </div>
       </div>
 
       <div className="fb-main-container">
-        {/* Panel de Instrucciones Colapsable o Fijo Estilizado */}
-        <div className="fb-side-panel instructions">
-          <div className="fb-panel-label">Instrucciones</div>
-          <div className="fb-content-scroll">
-            <p className="fb-instruction-text">{challenge.descripcion}</p>
-            <div className="fb-criteria-box">
-              <span className="fb-box-label">Criterios de evaluación</span>
-              <ul style={{ paddingLeft: '20px', margin: '10px 0' }}>
-                  {challenge.criterios.map((c: string, i: number) => (
-                    <li key={i}>{c}</li>
-                  ))}
-                </ul>
-              </div>
-            
-            <AnimatePresence>
-              {showHint && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="fb-hint-minimal">
-                  <i className="ti ti-bulb"></i>
-                  <span>{(challenge as any).pista || "Recuerda leer atentamente las instrucciones antes de enviar tu solución."}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {/* Left Sidebar */}
+        <div className="fb-sidebar-l">
+          <div className="fb-panel-title">
+            <i className="ti ti-target" style={{fontSize:13}}></i>
+            Reto activo
           </div>
+
+          <div className="fb-reto-card">
+            <div className="fb-reto-tag">{challenge.nivel} &middot; {challenge.componente}</div>
+            <div className="fb-reto-title">{challenge.titulo}</div>
+            <div className="fb-reto-desc">{challenge.descripcion}</div>
+          </div>
+
+          <div className="fb-criteria">
+            <div className="fb-criteria-title">Criterios de evaluaci&oacute;n</div>
+            {challenge.criterios.map((c: string, i: number) => (
+              <div key={i} className={`fb-criterion ${boardSuccess ? 'done' : ''}`}>
+                <span className="fb-criterion-dot"></span>
+                {c}
+              </div>
+            ))}
+          </div>
+
+          <AnimatePresence>
+            {showHint && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="fb-hint-minimal" style={{margin:'8px 12px'}}>
+                <i className="ti ti-bulb"></i>
+                <span>{(challenge as any).pista || "Revisa los recursos disponibles para completar el reto."}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Tablero Dinámico (Multimodal) */}
+        {/* Tablero DinÃ¡mico (Multimodal) */}
         <div className="fb-editor-container">
-          {getBoardType(challenge.id) === 'drag_drop' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+          {challenge.id === 'RB-C1-N1' ? (
+            <div className="fb-board-cell">
+              <TimelineGame />
+            </div>
+          ) : challenge.id === 'RB-C1-N2' ? (
+            <div className="fb-board-cell">
+              <MatchImageTerms />
+            </div>
+          ) : challenge.id === 'RB-C1-N3' ? (
+            <div className="fb-board-cell">
+              <MatchTechSituations />
+            </div>
+          ) : challenge.id === 'RB-C2-N1' ? (
+            <div className="fb-board-cell">
+              <DriveFileSorter />
+            </div>
+          ) : challenge.id === 'RB-C2-N2' ? (
+            <div className="fb-board-cell">
+              <DragAndDropBoard 
+                challengeId="RB-C2-N2" 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡Reto completado con Ã©xito!' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : challenge.id === 'RB-C2-N3' ? (
+            <div className="fb-board-cell">
+              <DragAndDropBoard 
+                challengeId="RB-C2-N3" 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡Reto completado con Ã©xito!' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : challenge.id === 'RB-C4-N1' ? (
+            <div className="fb-board-cell">
+              <DigitalAccessQuiz 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡Reto completado con Ã©xito!' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : challenge.id === 'RB-C4-N2' ? (
+            <div className="fb-board-cell">
+              <SocialMediaQuiz 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡Reto completado con Ã©xito!' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : challenge.id === 'RB-C3-N1' ? (
+            <div className="fb-board-cell">
               <DragAndDropBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
                   setBoardSuccess(success);
                   if (success) {
-                    setConsoleMessages([{ type: 'ok', text: '> ¡Orden correcto! Reto completado con éxito.' }]);
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡Orden correcto! Reto completado con Ã©xito.' }]);
+                    setErrCount(0);
+                  } else {
+                    setConsoleMessages([{ type: 'sys', text: '> Entorno preparado.' }]);
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : challenge.id === 'RB-C3-N2' ? (
+            <div className="fb-board-cell">
+              <AttendanceSimulator 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡Reto completado con Ã©xito!' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : challenge.id === 'RM-C1-N1' ? (
+            <div className="fb-board-cell">
+              <SmartphoneAnatomyQuiz 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡Reto completado con Ã©xito!' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : challenge.id === 'RM-C1-N2' ? (
+            <div className="fb-board-cell">
+              <ComputingEvolutionQuiz 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡Reto completado con Ã©xito!' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : challenge.id === 'RM-C1-N3' ? (
+            <div className="fb-board-cell">
+              <ProspectiveTechEssay 
+                challengeId="RM-C1-N3" 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡Reto completado con Ã©xito!' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : challenge.id === 'RM-C2-N3' ? (
+            <div className="fb-board-cell">
+              <SqlBlockBoard 
+                challengeId="RM-C2-N3" 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡Consulta ejecutada con Ã©xito!' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : challenge.id === 'RM-C3-N1' ? (
+            <div className="fb-board-cell">
+              <ArduinoBlockBoard 
+                challengeId="RM-C3-N1" 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡CÃ³digo Arduino correcto! SimulaciÃ³n lista.' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : (challenge.id === 'RM-C3-N2' || challenge.id === 'RM-C3-N3') ? (
+            <div className="fb-board-cell">
+              <CodeBlockBoard 
+                id={challenge.id} 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> ¡Código correcto! Reto completado.' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
+          ) : ['RA-C2-N1', 'RA-C2-N2', 'RA-C2-N3', 'RA-C3-N2', 'RA-C3-N3'].includes(challenge.id) ? (
+            <div className="fb-board-cell">
+              <CodingIDEBoard
+                challengeId={challenge.id}
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Evaluación completada con éxito.' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }}
+              />
+            </div>
+          ) : getBoardType(challenge.id) === 'drag_drop' ? (
+            <div className="fb-board-cell">
+              <DragAndDropBoard 
+                challengeId={challenge.id} 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Â¡Orden correcto! Reto completado con Ã©xito.' }]);
                     setErrCount(0);
                   } else {
                     setConsoleMessages([{ type: 'sys', text: '> Entorno preparado.' }]);
@@ -276,7 +504,7 @@ export function CognitiveChallenge() {
               />
             </div>
           ) : getBoardType(challenge.id) === 'text' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+            <div className="fb-board-cell">
               <EssayBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
@@ -284,8 +512,23 @@ export function CognitiveChallenge() {
                 }} 
               />
             </div>
+          ) : getBoardType(challenge.id) === 'phone_dismantle' ? (
+            <div className="fb-board-cell">
+              <PhoneDismantlingBoard 
+                challengeId={challenge.id} 
+                onValidation={(success) => {
+                  setBoardSuccess(success);
+                  if (success) {
+                    setConsoleMessages([{ type: 'ok', text: '> Evaluacion completada con exito.' }]);
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
+                }} 
+              />
+            </div>
           ) : getBoardType(challenge.id) === 'upload' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+            <div className="fb-board-cell">
               <UploadBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
@@ -294,7 +537,7 @@ export function CognitiveChallenge() {
               />
             </div>
           ) : getBoardType(challenge.id) === 'canvas' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+            <div className="fb-board-cell">
               <CanvasBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
@@ -303,7 +546,7 @@ export function CognitiveChallenge() {
               />
             </div>
           ) : getBoardType(challenge.id) === 'spreadsheet' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-surface-container-lowest border-t border-outline-variant/20 rounded-b-[2rem]">
+            <div className="fb-board-cell">
               <SpreadsheetBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
@@ -366,7 +609,107 @@ export function CognitiveChallenge() {
             </>
           )}
         </div>
+
+        {/* Right Sidebar */}
+        <div className="fb-sidebar-r">
+          <div className="fb-panel-title">
+            <i className="ti ti-chart-bar" style={{fontSize:13}}></i>
+            M&eacute;tricas de proceso
+            <span className="fb-live-badge" style={{marginLeft:'auto',marginRight:0}}>live</span>
+          </div>
+
+          <div className="fb-metric-block">
+            <div className="fb-metric-label">Latencia cognitiva</div>
+            <div className="fb-metric-val">
+              {pauseSecs} <span className="fb-metric-unit">seg pausa</span>
+            </div>
+            <div className="fb-metric-bar">
+              <div className="fb-metric-fill" style={{
+                width: Math.min((pauseSecs / 30) * 100, 100) + '%',
+                background: pauseSecs > 10 ? '#ff7b72' : pauseSecs > 5 ? '#f2cc60' : '#238636'
+              }}></div>
+            </div>
+          </div>
+
+          <div className="fb-metric-block">
+            <div className="fb-metric-label">Densidad de edici&oacute;n</div>
+            <div className="fb-metric-val">
+              {editCount} <span className="fb-metric-unit">cambios</span>
+            </div>
+            <div className="fb-metric-bar">
+              <div className="fb-metric-fill" style={{
+                width: Math.min((editCount / 50) * 100, 100) + '%',
+                background: editCount > 35 ? '#ff7b72' : '#388bfd'
+              }}></div>
+            </div>
+          </div>
+
+          <div className="fb-metric-block">
+            <div className="fb-metric-label">Tasa de error</div>
+            <div className="fb-metric-val">
+              {errCount} <span className="fb-metric-unit">/ {totalRuns || 1} runs</span>
+            </div>
+            <div className="fb-metric-bar">
+              <div className="fb-metric-fill" style={{
+                width: Math.min(totalRuns > 0 ? (errCount / totalRuns) * 100 : 0, 100) + '%',
+                background: '#ff7b72'
+              }}></div>
+            </div>
+          </div>
+
+          {errCount >= 2 && !boardSuccess && (
+            <div className="fb-alert">
+              <i className="ti ti-alert-triangle"></i>
+              <span>Alta latencia detectada. Posible bloqueo conceptual.</span>
+            </div>
+          )}
+
+          <div className="fb-andamiaje">
+            <div className="fb-andamiaje-title">Andamiaje disponible</div>
+            <div className="fb-hint-item" onClick={() => setShowHint(true)}>
+              <i className="ti ti-bulb"></i>
+              Pista 1: revisa los recursos
+            </div>
+            <div className={`fb-hint-item ${errCount < 2 ? 'locked' : ''}`}>
+              <i className={`ti ${errCount < 2 ? 'ti-lock' : 'ti-bulb'}`}></i>
+              Pista 2: verifica la sintaxis
+            </div>
+          </div>
+
+          <div className="fb-checkpoint">
+            <div className="fb-checkpoint-title">
+              <i className="ti ti-list-check" style={{fontSize:12}}></i>
+              Progreso del reto
+            </div>
+            <div className="fb-checkpoint-item">
+              <i className={`ti ${boardSuccess ? 'ti-circle-check' : 'ti-circle'} fb-check-icon`} style={{color: boardSuccess ? '#238636' : '#3d444d'}}></i>
+              <span style={{fontSize:11, color: boardSuccess ? '#238636' : '#8b949e'}}>C&oacute;digo completado</span>
+            </div>
+            <div className="fb-checkpoint-item">
+              <i className={`ti ${totalRuns > 0 && errCount === 0 ? 'ti-circle-check' : 'ti-circle'} fb-check-icon`} style={{color: totalRuns > 0 && errCount === 0 ? '#238636' : '#3d444d'}}></i>
+              <span style={{fontSize:11, color: totalRuns > 0 && errCount === 0 ? '#238636' : '#8b949e'}}>Ejecuci&oacute;n exitosa</span>
+            </div>
+            <div className="fb-checkpoint-item">
+              <i className={`ti ${boardSuccess ? 'ti-circle-check' : 'ti-circle'} fb-check-icon`} style={{color: boardSuccess ? '#238636' : '#3d444d'}}></i>
+              <span style={{fontSize:11, color: boardSuccess ? '#238636' : '#8b949e'}}>Criterios cumplidos</span>
+            </div>
+          </div>
+
+          <div className="fb-submit-zone">
+            <button
+              className={`fb-btn-submit ${boardSuccess ? 'ready' : ''}`}
+              onClick={handleSubmit}
+            >
+              <i className="ti ti-send" style={{fontSize:13}}></i>
+              Enviar soluci&oacute;n &rarr; Fase C
+            </button>
+            <div style={{fontSize:10,fontFamily:'\"IBM Plex Mono\",monospace',color:'#3d444d',textAlign:'center',marginTop:6}}>
+              {boardSuccess ? 'Listo para enviar' : 'Completa todos los criterios'}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+

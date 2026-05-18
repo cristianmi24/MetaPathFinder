@@ -65,12 +65,9 @@ export function StudentProfile() {
 
   if (!user) {
     return (
-      <div className={cn(
-        "h-screen w-full flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300",
-        theme === 'light' ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-white'
-      )}>
+      <div className="w-full flex items-center justify-center transition-colors duration-300 px-4 sm:px-6">
         <div className={cn(
-          "w-full max-w-md space-y-8 bento-card p-10 backdrop-blur-2xl border shadow-2xl relative overflow-hidden",
+          "w-full max-w-md space-y-8 bento-card p-6 sm:p-10 backdrop-blur-2xl border shadow-2xl relative overflow-hidden",
           theme === 'light'
             ? 'bg-white/90 border-white/20 text-slate-900'
             : 'bg-slate-950/95 border-slate-700/70 text-white'
@@ -299,8 +296,8 @@ export function StudentProfile() {
   }
 
   return (
-    <div className="space-y-10 max-w-5xl mx-auto py-10">
-      <div className="flex flex-col md:flex-row gap-8 items-center md:items-start bento-card p-10 bg-white shadow-xl border border-primary/5">
+    <div className="space-y-10 max-w-5xl mx-auto px-4 sm:px-6">
+      <div className="flex flex-col md:flex-row gap-8 items-center md:items-start bento-card p-6 md:p-10 bg-white shadow-xl border border-primary/5">
         <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-surface shadow-2xl shrink-0 bg-primary/10 flex items-center justify-center">
           <img 
             src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name + ' ' + user.lastName)}&background=random&color=fff&bold=true&size=200`} 
@@ -345,18 +342,18 @@ export function StudentProfile() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bento-card p-8 bg-surface-container-low border border-outline-variant/30 flex flex-col justify-center items-center text-center">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <div className="bento-card p-6 sm:p-8 bg-surface-container-low border border-outline-variant/30 flex flex-col justify-center items-center text-center">
           <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-2">Calibración Actual</p>
-          <p className="text-5xl font-black text-on-surface">{Math.round(calibration * 100)}%</p>
+          <p className="text-4xl sm:text-5xl font-black text-on-surface">{Math.round(calibration * 100)}%</p>
         </div>
-        <div className="bento-card p-8 bg-surface-container-low border border-outline-variant/30 flex flex-col justify-center items-center text-center">
+        <div className="bento-card p-6 sm:p-8 bg-surface-container-low border border-outline-variant/30 flex flex-col justify-center items-center text-center">
           <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Carga Cognitiva</p>
-          <p className="text-5xl font-black text-on-surface">{Math.round(cognitiveLoad * 100)}%</p>
+          <p className="text-4xl sm:text-5xl font-black text-on-surface">{Math.round(cognitiveLoad * 100)}%</p>
         </div>
-        <div className="bento-card p-8 bg-surface-container-low border border-outline-variant/30 flex flex-col justify-center items-center text-center">
+        <div className="bento-card p-6 sm:p-8 bg-surface-container-low border border-outline-variant/30 flex flex-col justify-center items-center text-center">
           <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-2">Transferencia</p>
-          <p className="text-5xl font-black text-on-surface">{Math.round(useCognitiveStore.getState().transferReadiness * 100)}%</p>
+          <p className="text-4xl sm:text-5xl font-black text-on-surface">{Math.round(useCognitiveStore.getState().transferReadiness * 100)}%</p>
         </div>
       </div>
 

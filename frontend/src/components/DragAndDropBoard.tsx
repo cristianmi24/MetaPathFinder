@@ -41,7 +41,7 @@ const getChallengeData = (id: string) => {
     "RB-C1-N3": { correctOrder: ["Elegir un problema cotidiano", "Identificar una tecnología antigua y una moderna", "Comparar eficiencia, costo e impacto", "Concluir cuál es mejor argumentando", "Elaborar la tabla comparativa final"] },
     "RB-C2-N3": { correctOrder: ["SUMA todos los gastos previstos", "SUMA los ingresos posibles", "RESTA gastos de ingresos para calcular el saldo", "VERIFICA que el saldo no supere $150.000 COP", "CREA un gráfico de barras de los gastos"] },
     "RB-C3-N3": { correctOrder: ["Registrar estudiante y libro solicitado", "Verificar disponibilidad del libro", "Registrar préstamo si está disponible", "Registrar devolución y calcular días de retraso", "Generar reporte de libros más prestados"] },
-    "RB-C4-N3": { correctOrder: ["Identificar un problema real de la comunidad", "Proponer tecnología pertinente para solucionarlo", "Estimar los recursos necesarios", "Analizar impactos positivos, negativos y éticos", "Presentar documento de 2 páginas"] },
+    "RB-C4-N3": { correctOrder: ["Realizar censo de adultos mayores que necesitan ayuda con el celular", "Conseguir estudiantes voluntarios para ser tutores digitales", "Diseñar un manual impreso con letras e imágenes muy grandes", "Organizar talleres prácticos semanales en el salón comunal", "Evaluar pidiendo que envíen un mensaje solos por WhatsApp"] },
 
     // Medios N1
     "RM-C1-N1": { correctOrder: ["Identificar los componentes internos", "Investigar la función de cada uno", "Averiguar cuándo fue inventado", "Dibujar un diagrama anotado"] },
@@ -118,17 +118,15 @@ export function DragAndDropBoard({ challengeId, onValidation }: DragAndDropBoard
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      setItems((items) => {
-        const oldIndex = items.indexOf(active.id as string);
-        const newIndex = items.indexOf(over.id as string);
-        const newItems = arrayMove(items, oldIndex, newIndex);
-        
-        const success = JSON.stringify(newItems) === JSON.stringify(correctOrder);
-        setIsCorrect(success);
-        onValidation(success);
-        
-        return newItems;
-      });
+      const oldIndex = items.indexOf(active.id as string);
+      const newIndex = items.indexOf(over.id as string);
+      const newItems = arrayMove(items, oldIndex, newIndex);
+      
+      const success = JSON.stringify(newItems) === JSON.stringify(correctOrder);
+      
+      setItems(newItems);
+      setIsCorrect(success);
+      onValidation(success);
     } else {
       // Validate even if dropped in same place to re-trigger if needed
       const success = JSON.stringify(items) === JSON.stringify(correctOrder);
@@ -138,7 +136,7 @@ export function DragAndDropBoard({ challengeId, onValidation }: DragAndDropBoard
   };
 
   return (
-    <div className="p-8 max-w-xl mx-auto w-full flex flex-col justify-center h-full">
+    <div className="p-8 max-w-2xl mx-auto w-full flex flex-col justify-center h-full">
       <div className="mb-8 text-center">
         <h4 className="text-xl font-black text-on-surface mb-2">Ordena los bloques lógicos</h4>
         <p className="text-sm text-on-surface-variant">

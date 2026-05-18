@@ -103,7 +103,7 @@ function shuffle<T>(array: T[]) {
   return copy;
 }
 
-export default function MatchImageTerms() {
+export default function MatchImageTerms({ onValidation }: { onValidation?: (success: boolean) => void }) {
   const [imgOrder, setImgOrder] = useState<MatchItem[]>(() => shuffle(ITEMS));
   const [termOrder, setTermOrder] = useState<MatchItem[]>(() => shuffle(ITEMS));
   const [selectedImgId, setSelectedImgId] = useState<string | null>(null);
@@ -174,11 +174,13 @@ export default function MatchImageTerms() {
   const showResult = (nextMatchedIds: Set<string>, nextTries: number) => {
     if (nextMatchedIds.size === ITEMS.length) {
       setBanner({ text: '¡Perfecto! Conectaste todo sin errores. Eres un experto en infraestructura ciudadana!', type: 'win' });
+      onValidation?.(true);
       return;
     }
     if (nextTries >= maxTries) {
       setBanner({ text: `Se acabaron los intentos. Lograste ${nextMatchedIds.size} de ${ITEMS.length}.`, type: 'lose' });
       setHint('Juego terminado. Presiona Jugar de nuevo para volver a intentar.');
+      onValidation?.(false);
     }
   };
 
@@ -192,8 +194,8 @@ export default function MatchImageTerms() {
     <div>
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
-        .page{padding:1.2rem 1rem 2.5rem;background:var(--color-surface);color:var(--color-on-surface)}
-        .hero{text-align:center;margin-bottom:1.4rem}
+        .page{padding:1.2rem 24px 2.5rem;background:transparent;color:var(--color-on-surface)}
+        .hero{text-align:center;margin-bottom:1.4rem;padding: 0 12px;}
         .hero h1{font-size:21px;font-weight:500}
         .hero p{font-size:13px;color:var(--color-on-surface-variant);margin-top:4px;line-height:1.5}
         .score-row{display:flex;gap:10px;justify-content:center;margin-bottom:1.4rem;flex-wrap:wrap}

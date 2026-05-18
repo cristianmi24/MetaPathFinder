@@ -177,23 +177,22 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Solución de problemas",
     "codigo_men": "C3",
     "titulo": "Instrucciones para hacer un sándwich (algoritmo cotidiano)",
-    "descripcion": "El pensamiento algorítmico comienza con actividades cotidianas. Escribe un algoritmo detallado paso a paso para preparar un sándwich de jamón y queso, como si se lo explicaras a un robot que no sabe nada de cocina. Usa estructura de pasos numerados, incluye condiciones (si no hay pan, entonces…) y considera al menos un ciclo repetitivo (repite hasta que…). Luego dibuja el diagrama de flujo correspondiente.",
+    "descripcion": "El pensamiento algorítmico comienza con actividades cotidianas. Ordena los pasos lógicos arrastrando los bloques para preparar un sándwich de jamón y queso, como si se lo explicaras a un robot que no sabe nada de cocina. Revisa bien la secuencia para que tenga sentido.",
     "criterios": [
-      "1. Algoritmo secuencial y completo.",
-      "2. Al menos 1 condición (if/else).",
-      "3. Al menos 1 ciclo (while/for).",
-      "4. Diagrama de flujo con símbolos correctos.",
-      "5. No hay ambigüedad en los pasos."
+      "1. Ordena los pasos correctamente en la secuencia lógica.",
+      "2. Usa arrastrar y soltar para posicionar los bloques.",
+      "3. Verifica que el orden sea funcional y no tenga errores.",
+      "4. Reflexiona sobre la importancia del orden en un algoritmo."
     ],
-    "recursos": "Papel cuadriculado para diagrama de flujo<br>Símbolos de diagrama de flujo (referencia proporcionada)",
-    "tiempo_estimado": "25",
+    "recursos": "Tablero interactivo de arrastrar y soltar",
+    "tiempo_estimado": "10",
     "jol_esp_1": {
-      "pregunta": "¿Sabes qué es un algoritmo y puedes escribir uno paso a paso para una tarea cotidiana? (1=no sé qué es · 5=sí, puedo escribirlo sin ayuda)",
+      "pregunta": "¿Qué tan fácil te resulta identificar el orden lógico de una tarea cotidiana para enseñársela a un robot? (1=Muy difícil · 5=Muy fácil)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Conoces los símbolos básicos de un diagrama de flujo (inicio, proceso, decisión, fin)? (1=no los conozco · 4=los uso correctamente)",
-      "escala": "1 – 4"
+      "pregunta": "¿Comprendes la importancia de que un algoritmo tenga pasos ordenados de principio a fin sin saltarse nada?",
+      "escala": "1=Muy poco · 5=Mucho"
     }
   },
   {
@@ -202,24 +201,23 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Solución de problemas",
     "codigo_men": "C3",
-    "titulo": "Automatiza la lista de asistencia con código básico",
-    "descripcion": "Tu curso tiene 30 estudiantes. Diseña (en pseudocódigo o en Scratch/Python básico) un programa que: lea una lista de nombres, pregunte para cada nombre si asistió (sí/no), cuente el total de presentes y ausentes, y muestre el porcentaje de asistencia. El programa debe manejar el caso en que se ingrese una respuesta diferente a “sí” o “no” (validación de entrada).",
+    "titulo": "Simulador de asistencia: ordena los bloques",
+    "descripcion": "En este simulador tipo Scratch, tienes los bloques desordenados de un programa que pasa lista de asistencia automáticamente. Tu objetivo es arrastrarlos al orden correcto de principio a fin y luego ejecutar el programa. ¡Cuidado! Solo tienes 1 intento para hacerlo funcionar correctamente.",
     "criterios": [
-      "1. Programa lee lista de nombres.",
-      "2. Bucle para recorrer todos los estudiantes.",
-      "3. Contador de presentes y ausentes.",
-      "4. Cálculo y muestra del porcentaje.",
-      "5. Validación de entrada incorrecta."
+      "1. Ordena todos los bloques en una secuencia lógica (de Inicio a Fin).",
+      "2. Identifica correctamente la inicialización, el ciclo y la validación.",
+      "3. Ejecuta el programa y verifica que se haya pasado lista correctamente.",
+      "4. Completa el reto en el primer y único intento disponible."
     ],
-    "recursos": "Scratch / Python (IDLE) / pseudocódigo en papel<br>Lista de 30 nombres (proporcionada)",
-    "tiempo_estimado": "40",
+    "recursos": "Simulador de bloques interactivo",
+    "tiempo_estimado": "15",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro/a estás de implementar un bucle (for o while) en un lenguaje de programación o pseudocódigo para recorrer una lista? (1=no sé qué es un bucle · 5=lo implemento sin dificultad)",
+      "pregunta": "¿Qué tan seguro/a estás de poder ordenar visualmente la lógica de un bucle (repetir) usando bloques? (1=muy inseguro · 5=muy seguro)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes diseñar la validación de entradas incorrectas en un programa (qué pasa si el usuario escribe algo que no se esperaba)? (1=nunca lo he pensado · 5=lo incluyo siempre)",
-      "escala": "1 – 5"
+      "pregunta": "¿Comprendes la importancia de inicializar datos (como cargar una lista) antes de ejecutar un ciclo repetitivo?",
+      "escala": "1=No lo entiendo · 5=Lo entiendo perfectamente"
     }
   },
   {
@@ -228,24 +226,23 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Solución de problemas",
     "codigo_men": "C3",
-    "titulo": "Diseña el sistema de préstamo de libros de la biblioteca",
-    "descripcion": "La biblioteca de tu colegio quiere digitalizar su sistema de préstamo. Diseña (sin código, usando diagrama de flujo y pseudocódigo) un sistema que: registre estudiantes y libros, permita prestar un libro (verifica disponibilidad), registre la devolución (calcula días de retraso si los hay) y genere un reporte de los libros más prestados. Considera qué datos necesitas guardar y cómo los organizarías.",
+    "titulo": "Ordena el flujo del sistema de préstamo de libros",
+    "descripcion": "La biblioteca de tu colegio quiere digitalizar su sistema de préstamo. Ordena los pasos del diagrama de flujo de este sistema utilizando arrastrar y soltar. Asegúrate de colocar en secuencia lógica desde el registro del estudiante y el libro hasta la generación del reporte final.",
     "criterios": [
-      "1. Diagrama de flujo completo del proceso.",
-      "2. Identificación de datos necesarios (entidades).",
-      "3. Lógica de préstamo y devolución correcta.",
-      "4. Cálculo de días de retraso.",
-      "5. Propuesta de reporte de uso."
+      "1. Identifica el orden lógico del proceso de la biblioteca.",
+      "2. Ordena los pasos secuencialmente desde el inicio hasta el fin.",
+      "3. Usa la herramienta de arrastrar y soltar correctamente.",
+      "4. Valida que el flujo permita prestar y devolver libros."
     ],
-    "recursos": "Papel o herramienta de diagramas (draw.io)<br>Referencia de símbolos de flujo",
-    "tiempo_estimado": "45",
+    "recursos": "Tablero interactivo de arrastrar y soltar",
+    "tiempo_estimado": "15",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan capaz eres de descomponer un sistema complejo (como una biblioteca) en sus partes, datos y procesos, antes de escribir código? (1=no sé por dónde empezar · 5=lo hago sistemáticamente)",
+      "pregunta": "¿Qué tan seguro te sientes ordenando los pasos de un sistema complejo (como una biblioteca) usando bloques lógicos? (1=Muy inseguro · 5=Muy seguro)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes identificar qué datos necesita guardar un sistema digital para funcionar correctamente (entidades, campos, relaciones)? (1=no lo entiendo · 5=lo diseño con facilidad)",
-      "escala": "1 – 5"
+      "pregunta": "¿Entiendes por qué verificar la disponibilidad del libro debe ir antes de registrar el préstamo?",
+      "escala": "1=No lo entiendo · 5=Lo entiendo perfectamente"
     }
   },
   {
@@ -254,23 +251,23 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "¿Quién tiene acceso a la tecnología en Colombia?",
-    "descripcion": "Investiga (con al menos 2 fuentes) el porcentaje de hogares colombianos con acceso a internet en zonas urbanas y rurales. Crea una infografía sencilla (1 página) que muestre: los datos encontrados, una comparación entre zonas, y tu reflexión personal sobre qué consecuencias tiene esta brecha digital para los estudiantes rurales. Usa datos del DANE o del Ministerio TIC.",
+    "titulo": "Análisis Digital: Conectividad en el Hogar",
+    "descripcion": "Lee atentamente los dos artículos sobre la realidad de la conexión a internet en el país y el concepto de 'exclusión digital'. Luego, responde a la trivia de comprensión directa para evaluar tu entendimiento de la brecha digital y sus posibles soluciones.",
     "criterios": [
-      "1. Datos reales y citados (mínimo 2 fuentes).",
-      "2. Comparación urbana vs. rural visible.",
-      "3. Infografía visualmente clara.",
-      "4. Reflexión personal argumentada (mín. 3 oraciones)."
+      "1. Lee y comprende los artículos presentados.",
+      "2. Responde correctamente a las preguntas de la trivia.",
+      "3. Identifica datos clave y soluciones viables.",
+      "4. Reflexiona sobre el concepto de exclusión digital."
     ],
-    "recursos": "Canva / Google Slides / papel<br>Datos: dane.gov.co · mintic.gov.co",
-    "tiempo_estimado": "30",
+    "recursos": "Cuestionario de lectura interactivo",
+    "tiempo_estimado": "10",
     "jol_esp_1": {
-      "pregunta": "¿Qué tanto sabes sobre la brecha digital en Colombia (diferencias de acceso a internet entre zonas y grupos sociales)? (1=nada · 5=bastante)",
+      "pregunta": "¿Qué tan seguro/a te sientes de poder identificar los datos más importantes en un artículo sobre tecnología y sociedad? (1=muy inseguro · 5=muy seguro)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes analizar datos estadísticos simples (porcentajes, comparaciones) y convertirlos en una reflexión argumentada? (1=no puedo · 5=lo hago con facilidad)",
-      "escala": "1 – 5"
+      "pregunta": "¿Comprendes claramente el concepto de 'exclusión digital' y cómo afecta a las oportunidades educativas y laborales?",
+      "escala": "1=No lo entiendo · 5=Lo entiendo perfectamente"
     }
   },
   {
@@ -279,24 +276,23 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Las redes sociales y mi bienestar: análisis crítico",
-    "descripcion": "Registra durante 3 días el tiempo que pasas en redes sociales y cómo te sientes antes y después de usarlas (ansiedad, alegría, comparación social, etc.). Luego analiza: ¿existe relación entre el tiempo de uso y tu estado emocional? Presenta tus hallazgos en un informe de una página con datos propios + al menos 1 referencia científica sobre el impacto de redes sociales en adolescentes. Propón 2 recomendaciones para un uso saludable.",
+    "titulo": "Análisis Digital: Redes Sociales y Bienestar",
+    "descripcion": "Lee atentamente los artículos sobre las consecuencias del uso prolongado de las redes sociales y su impacto emocional. Luego, responde a la trivia de comprensión directa para analizar críticamente la relación entre el tiempo en pantalla y tu bienestar, identificando estrategias para un uso saludable.",
     "criterios": [
-      "1. Registro de datos propios de 3 días.",
-      "2. Análisis de correlación tiempo–emoción.",
-      "3. Al menos 1 fuente científica citada.",
-      "4. 2 recomendaciones fundamentadas.",
-      "5. Informe cohesivo de 1 página."
+      "1. Lee y comprende los artículos presentados.",
+      "2. Responde correctamente a las preguntas de la trivia.",
+      "3. Identifica los efectos de la exclusión o sobreexposición digital.",
+      "4. Reconoce estrategias para un uso más saludable."
     ],
-    "recursos": "Plantilla de registro (proporcionada)<br>Fuentes: artículos de salud digital (OMS, APA)",
-    "tiempo_estimado": "35",
+    "recursos": "Cuestionario de lectura interactivo",
+    "tiempo_estimado": "10",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan bien puedes analizar el impacto de las redes sociales en tu bienestar emocional usando datos propios y fuentes externas? (1=nunca lo he pensado · 5=lo analizo críticamente)",
+      "pregunta": "¿Qué tan seguro/a te sientes analizando críticamente el impacto emocional que tiene la tecnología en tu vida diaria? (1=muy inseguro · 5=muy seguro)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Conoces investigaciones o estudios sobre el impacto psicológico de las redes sociales en adolescentes? (1=no conozco ninguno · 5=conozco varios y puedo citarlos)",
-      "escala": "1 – 5"
+      "pregunta": "¿Comprendes la importancia de establecer límites de tiempo y uso consciente en las redes sociales?",
+      "escala": "1=No lo entiendo · 5=Lo entiendo perfectamente"
     }
   },
   {
@@ -305,24 +301,23 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Propuesta de solución tecnológica para un problema de tu comunidad",
-    "descripcion": "Identifica un problema real de tu comunidad (ej. manejo de residuos, agua, movilidad, seguridad) y diseña una propuesta de solución tecnológica viable considerando: (a) descripción del problema con evidencia, (b) tecnología propuesta y por qué es pertinente, (c) recursos necesarios, (d) posibles impactos positivos y negativos en la comunidad, y (e) consideraciones éticas. Presenta en un documento de 2 páginas con imágenes o diagramas.",
+    "titulo": "Plan de acción: Alfabetización Digital en la Comunidad",
+    "descripcion": "En tu barrio hay un problema crítico de alfabetización digital: muchos adultos mayores no saben usar un teléfono inteligente para comunicarse o pedir citas médicas. Tu reto es organizar un plan de acción para solucionar este problema. Ordena los pasos arrastrando los bloques en una secuencia lógica de inicio a fin.",
     "criterios": [
-      "1. Problema real documentado con evidencia.",
-      "2. Tecnología propuesta pertinente y justificada.",
-      "3. Análisis de impactos positivos y negativos.",
-      "4. Consideraciones éticas explícitas.",
-      "5. Documento de 2 págs. con imágenes/diagramas."
+      "1. Comprende la situación problema de alfabetización digital.",
+      "2. Ordena lógicamente los pasos desde el censo hasta la evaluación.",
+      "3. Demuestra capacidad para estructurar un plan de acción comunitario.",
+      "4. Completa el reto usando la interfaz de arrastrar y soltar."
     ],
-    "recursos": "Procesador de texto · fuentes de información local<br>Formato de propuesta (proporcionado)",
-    "tiempo_estimado": "50",
+    "recursos": "Tablero interactivo de arrastrar y soltar",
+    "tiempo_estimado": "10",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan capaz eres de diseñar una propuesta tecnológica que considere tanto impactos positivos como negativos y factores éticos? (1=no sé cómo · 5=lo hago con argumentos sólidos)",
+      "pregunta": "¿Qué tan fácil te resulta estructurar un plan paso a paso para enseñar habilidades digitales a otras personas? (1=Muy difícil · 5=Muy fácil)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes identificar dilemas éticos relacionados con el uso de tecnología en contextos sociales colombianos? (1=no los identifico · 5=los analizo profundamente)",
-      "escala": "1 – 5"
+      "pregunta": "¿Entiendes por qué es necesario conocer primero a tu población (censo) antes de organizar los talleres?",
+      "escala": "1=No lo entiendo · 5=Lo entiendo perfectamente"
     }
   },
   {
@@ -331,24 +326,23 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
-    "titulo": "Anatomía de un smartphone: disección tecnológica",
-    "descripcion": "Sin desarmar físicamente un celular, investiga y documenta todos los sistemas tecnológicos que lo componen: procesador, memoria, sensores (acelerómetro, GPS, cámara), batería, pantalla táctil y módulos de comunicación. Para cada componente: explica su función, el principio científico que lo hace funcionar, cuándo fue inventado y cómo ha evolucionado. Presenta en un diagrama anotado + texto de apoyo.",
+    "titulo": "Anatomía de un smartphone: Partes del Celular",
+    "descripcion": "En este módulo interactivo, aprenderás sobre cada componente interno de un smartphone moderno (Batería, Pantalla, Procesador, RAM, Antena, Cámara, Altavoz). Repasa sus funciones principales y datos curiosos, y luego pon a prueba tu comprensión con una breve evaluación para completar el reto.",
     "criterios": [
-      "1. Mínimo 8 componentes identificados.",
-      "2. Función y principio científico por componente.",
-      "3. Línea de evolución para al menos 3 componentes.",
-      "4. Diagrama anotado legible.",
-      "5. Fuentes citadas correctamente."
+      "1. Explora y comprende los 7 componentes del smartphone.",
+      "2. Identifica la función de la batería, pantalla y procesador.",
+      "3. Relaciona el rol de la RAM y las antenas.",
+      "4. Responde correctamente la evaluación final."
     ],
-    "recursos": "Diagrama en papel o digital (draw.io / Canva)<br>Fuentes: IEEE Spectrum · Wikipedia técnica · documentación oficial",
-    "tiempo_estimado": "45",
+    "recursos": "Módulo de evaluación interactiva",
+    "tiempo_estimado": "5",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan profundamente conoces los componentes internos de un smartphone y los principios científicos detrás de cada uno? (1=solo sé que existe · 5=explico su funcionamiento técnico)",
+      "pregunta": "¿Qué tan seguro/a te sientes de identificar la función de cada componente interno de un celular? (1=muy inseguro · 5=muy seguro)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes investigar y sintetizar información técnica de múltiples fuentes en un diagrama anotado coherente? (1=nunca lo he hecho · 5=lo hago eficientemente)",
-      "escala": "1 – 5"
+      "pregunta": "¿Comprendes la diferencia de funciones entre la memoria RAM y el procesador de un dispositivo móvil?",
+      "escala": "1=No lo entiendo · 5=Lo entiendo perfectamente"
     }
   },
   {
@@ -384,16 +378,16 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
     "titulo": "Prospectiva tecnológica: ¿cómo será la educación en 2040?",
-    "descripcion": "Basándote en tendencias tecnológicas actuales (IA generativa, realidad aumentada, computación en la nube, biometría, blockchain educativo), elabora un escenario prospectivo de cómo podría ser una clase de tecnología e informática en el año 2040 en Colombia. Argumenta cada tecnología incluida: ¿por qué crees que estará disponible en Colombia para ese año?, ¿qué problemas resolverá?, ¿qué nuevas inequidades podría generar? Presenta en formato ensayo (600 palabras) o video de 3 minutos.",
+    "descripcion": "Basándote en tendencias tecnológicas actuales (IA generativa, realidad aumentada, computación en la nube, biometría, blockchain educativo), escribe un artículo corto con estructura de introducción, desarrollo y conclusión sobre cómo podría ser una clase de tecnología e informática en el año 2040 en Colombia. Debes mencionar al menos 4 tecnologías, argumentar por qué estarán disponibles en Colombia, qué problemas resolverán y qué nuevas inequidades podrían generar. El artículo debe tener mínimo 50 palabras, usar conectores de desarrollo e incluir una conclusión.",
     "criterios": [
-      "1. Mínimo 4 tecnologías prospectadas con fundamento.",
-      "2. Argumentación de disponibilidad en Colombia.",
-      "3. Análisis de impactos positivos y de inequidad.",
-      "4. Coherencia interna del escenario.",
-      "5. Formato ensayo o video completo."
+      "1. Artículo con introducción, desarrollo y conclusión.",
+      "2. Mínimo 4 tecnologías prospectadas con fundamento.",
+      "3. Uso de conectores (además, porque, sin embargo, etc.).",
+      "4. Argumentación de disponibilidad en Colombia.",
+      "5. Análisis de impactos positivos y de inequidad."
     ],
-    "recursos": "Fuentes prospectivas: WEF Future of Jobs · UNESCO 2040 · CEPAL Colombia digital<br>Herramienta de video (opcional)",
-    "tiempo_estimado": "60",
+    "recursos": "Fuentes prospectivas: WEF Future of Jobs · UNESCO 2040 · CEPAL Colombia digital",
+    "tiempo_estimado": "30",
     "jol_esp_1": {
       "pregunta": "¿Qué tan preparado/a estás para analizar tendencias tecnológicas actuales y proyectarlas a futuro con argumentos? (1=no sé cómo hacerlo · 5=lo hago con rigor)",
       "escala": "1 – 5"
@@ -409,23 +403,23 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
-    "titulo": "Automatiza una tarea repetitiva con macros",
-    "descripcion": "Tienes una hoja de cálculo con 200 filas de datos de calificaciones de 5 grupos. Semanalmente debes calcular el promedio, máximo, mínimo y resaltar en rojo a los estudiantes con nota inferior a 3.0. Crea una macro (en Google Sheets con Apps Script o en Excel con VBA) que realice todo esto automáticamente con un clic. La macro debe ser comentada explicando qué hace cada sección.",
+    "titulo": "Ordena la macro de calificaciones",
+    "descripcion": "Tienes una hoja de cálculo con 20 estudiantes de 5 grupos y sus notas. Tu tarea es ordenar correctamente los bloques de una macro de VBA/Apps Script que calcula promedios, resalta notas reprobadas y genera estadísticas. Arrastra los bloques en la secuencia lógica correcta — ¡cuidado con los distractores! Si aciertas el orden, la macro se ejecutará automáticamente y verás los resultados.",
     "criterios": [
-      "1. Macro funcional que calcula promedio, máx. y mín.",
-      "2. Resalta automáticamente notas < 3.0 en rojo.",
-      "3. Código comentado (explicación de cada sección).",
-      "4. Funciona correctamente con datos nuevos.",
-      "5. Sin errores de ejecución."
+      "1. Identifica la secuencia lógica correcta de una macro de automatización.",
+      "2. Ordena correctamente los 11 pasos de la macro.",
+      "3. Reconoce y descarta bloques distractores.",
+      "4. Comprende la estructura: declaración, bucle, condicional, finalización.",
+      "5. Relaciona cada bloque con su función dentro del flujo de automatización."
     ],
-    "recursos": "Google Sheets + Apps Script / Excel + VBA<br>Hoja de datos de práctica (proporcionada)",
-    "tiempo_estimado": "50",
+    "recursos": "MiniExcel interactivo con datos de ejemplo<br>Macro blocks para ordenar (drag & drop)",
+    "tiempo_estimado": "30",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro/a estás de escribir un script o macro básico en Google Apps Script o VBA para automatizar tareas en hojas de cálculo? (1=nunca he programado macros · 5=lo hago sin tutoriales)",
+      "pregunta": "¿Qué tan capaz eres de reconocer la estructura lógica de una macro (declarar, bucle, condicional, finalizar)? (1=No reconozco la estructura · 5=Identifico cada parte con claridad)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes identificar tareas repetitivas en un flujo de trabajo y diseñar la lógica de automatización antes de escribir el código? (1=no lo relaciono · 5=lo hago sistemáticamente)",
+      "pregunta": "¿Podrías distinguir instrucciones que pertenecen a una macro de calificaciones de aquellas que no? (1=Me confunden fácilmente · 5=Distingo sin problemas)",
       "escala": "1 – 5"
     }
   },
@@ -435,24 +429,23 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
-    "titulo": "Diseña la identidad digital del proyecto de grado",
-    "descripcion": "Tu grupo de trabajo necesita una identidad digital coherente para presentar el proyecto de grado. Diseña: (1) un logo vectorial simple, (2) una paleta de colores (máx. 4) con justificación, (3) tipografía principal y secundaria, (4) una plantilla de diapositivas de 5 slides, y (5) un banner para redes sociales. Todo debe seguir principios de diseño: contraste, alineación, repetición y proximidad (CARP). Entrega todos los archivos editables.",
+    "titulo": "Diseño de logos con SVG",
+    "descripcion": "Aprende los fundamentos del diseño vectorial SVG mientras construyes un logo profesional. El módulo interactivo incluye: (1) anatomía del SVG — contenedor, formas primitivas, agrupaciones y transformaciones; (2) paleta de colores — fill, stroke, opacidad, gradientes con editor en vivo; (3) diseño de logo — capas, texto, ajustes interactivos de color y radio; y (4) evaluación — ordena correctamente los pasos para construir un logo SVG y los pasos para aplicar colores. ¡Completa ambos ejercicios para aprobar!",
     "criterios": [
-      "1. Logo vectorial coherente con el proyecto.",
-      "2. Paleta justificada (contraste y armonía).",
-      "3. Tipografía apropiada y justificada.",
-      "4. Plantilla de 5 slides funcional.",
-      "5. Banner de redes (1920×1080 px mínimo).",
-      "6. Principios CARP aplicados y señalados."
+      "1. Comprende la estructura básica de un SVG: viewBox, formas, <g>.",
+      "2. Maneja correctamente fill, stroke, opacidad y gradientes.",
+      "3. Construye un logo estructurado en capas (símbolo + texto).",
+      "4. Ordena correctamente los 6 pasos de construcción de un logo SVG.",
+      "5. Ordena correctamente los 5 pasos para aplicar colores en SVG."
     ],
-    "recursos": "Canva Pro / Figma / Adobe Express<br>Guía de principios CARP (proporcionada)",
-    "tiempo_estimado": "60",
+    "recursos": "Módulo interactivo de diseño SVG embebido<br>Editor de código en vivo con vista previa",
+    "tiempo_estimado": "45",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan bien dominas los principios de diseño visual (contraste, alineación, repetición, proximidad) para aplicarlos en una identidad de marca? (1=no los conozco · 5=los aplico conscientemente)",
+      "pregunta": "¿Qué tan familiarizado estás con SVG (Scalable Vector Graphics) y sus elementos básicos como rect, circle, polygon y path? (1=nunca lo he usado · 5=lo uso con confianza)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes crear materiales digitales coherentes (logo, paleta, tipografía, plantilla) siguiendo una identidad visual unificada? (1=nunca lo he hecho · 5=lo hago con criterio)",
+      "pregunta": "¿Podrías estructurar un logo en capas (fondo, símbolo, texto) y elegir colores con criterio de contraste y armonía? (1=no sabría por dónde empezar · 5=lo hago con fundamentos de diseño)",
       "escala": "1 – 5"
     }
   },
@@ -462,23 +455,23 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
-    "titulo": "Base de datos de la tienda escolar (SQL básico)",
-    "descripcion": "La tienda escolar quiere digitalizar su inventario. Diseña e implementa una base de datos relacional simple con al menos 3 tablas: Productos, Ventas y Proveedores. En SQLite (o un entorno online como SQLiteOnline.com): crea las tablas con sus campos y tipos de datos, inserta 10 registros por tabla, y ejecuta 5 consultas: total de ventas del día, producto más vendido, stock bajo mínimo, ventas por categoría, y reporte de proveedores activos.",
+    "titulo": "SQL por bloques — Total ventas del día",
+    "descripcion": "Usa el simulador SQL por bloques para consultar la base de datos de la Tienda Escolar. El flujo es progresivo: (1) Crea las tablas Proveedores, Productos y Ventas; (2) Inserta los datos de ejemplo; (3) Resuelve el reto final: calcula el total de ventas del día 2025-05-17 usando SUM(total), COUNT(*) y SUM(cantidad) con WHERE fecha. Arma los bloques SELECT, FROM y WHERE para obtener los resultados reales.",
     "criterios": [
-      "1. 3 tablas con relaciones correctas (FK).",
-      "2. Tipos de datos apropiados.",
-      "3. 10 registros por tabla sin errores.",
-      "4. 5 consultas SQL funcionales.",
-      "5. Consultas producen resultados correctos."
+      "1. Comprende la estructura de CREATE TABLE.",
+      "2. Reconoce sentencias INSERT INTO.",
+      "3. Arma una consulta SELECT con funciones de agregación (SUM, COUNT).",
+      "4. Aplica filtro WHERE con condición de fecha.",
+      "5. Obtiene el resultado correcto: 39.200 COP total, 5 ventas, 21 unidades."
     ],
-    "recursos": "SQLiteOnline.com / DB Browser for SQLite<br>Esquema de referencia (proporcionado)",
-    "tiempo_estimado": "60",
+    "recursos": "Simulador SQL por bloques embebido<br>Base de datos simulada: Proveedores (10), Productos (10), Ventas (10)",
+    "tiempo_estimado": "30",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro/a estás de diseñar un esquema de base de datos relacional con tablas, campos, tipos de datos y relaciones (llaves foráneas)? (1=nunca he creado una BD · 5=lo diseño sin ayuda)",
+      "pregunta": "¿Qué tan claro tienes el proceso de crear tablas, insertar datos y luego consultar en SQL? (1=no distingo las fases · 5=entiendo el flujo completo)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes escribir consultas SQL básicas (SELECT, WHERE, GROUP BY, ORDER BY, JOIN) para obtener información específica de una base de datos? (1=no conozco SQL · 5=las escribo con confianza)",
+      "pregunta": "¿Puedes armar una consulta SELECT con SUM, COUNT y WHERE para obtener un total específico desde una tabla? (1=no sabría cómo · 5=lo hago con confianza)",
       "escala": "1 – 5"
     }
   },
@@ -488,23 +481,23 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Solución de problemas",
     "codigo_men": "C3",
-    "titulo": "Sensor de temperatura con Arduino (simulación)",
-    "descripcion": "Usando Tinkercad Circuits (simulador online gratuito), conecta un sensor de temperatura NTC o TMP36 a un Arduino Uno. Programa el Arduino para: leer la temperatura cada 2 segundos, mostrarla en el monitor serial, encender un LED rojo si la temperatura supera 30°C y un LED verde si es normal. Documenta el circuito con un esquema y el código con comentarios.",
+    "titulo": "Desafío Arduino — Ordena los bloques",
+    "descripcion": "Arma el programa de Arduino ordenando los bloques de código en las zonas correctas: Setup (configurar pines e iniciar monitor serial) y Loop (leer temperatura, mostrar en serial, decidir LED rojo/verde, esperar 2s). Cuando el código esté correcto, podrás simular el sensor TMP36 con un deslizador y ver los LEDs y el monitor serial funcionando en tiempo real.",
     "criterios": [
-      "1. Circuito correcto en simulador.",
-      "2. Lectura de temperatura funcional.",
-      "3. Lógica de LEDs correcta (>30°C rojo · resto verde).",
-      "4. Código comentado.",
-      "5. Esquema del circuito incluido."
+      "1. Coloca los 3 bloques de configuración en Setup (pines 12, 13 y serial).",
+      "2. Ordena correctamente los 6 bloques del Loop.",
+      "3. Comprende la lógica: leer sensor → mostrar → evaluar → actuar → esperar.",
+      "4. Verifica el funcionamiento con la simulación (LEDs y serial).",
+      "5. Identifica la estructura de un programa Arduino: setup() y loop()."
     ],
-    "recursos": "Tinkercad Circuits (tinkercad.com) — gratuito<br>Referencia de pinout del sensor y Arduino",
-    "tiempo_estimado": "50",
+    "recursos": "Simulador Arduino interactivo embebido con bloques drag & drop.<br>Sensor TMP36 simulado con control deslizante.",
+    "tiempo_estimado": "30",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro/a estás de conectar un sensor a un Arduino y programar la lectura de datos en un simulador como Tinkercad? (1=nunca lo he intentado · 5=lo hago con confianza)",
+      "pregunta": "¿Qué tan claro tienes el flujo de un programa Arduino: primero configuración en setup() y luego el ciclo repetitivo en loop()? (1=no lo entiendo · 5=lo explico sin problema)",
       "escala": "1 – 5"
     },
     "jol_esp_2": {
-      "pregunta": "¿Puedes escribir código Arduino (C++) que incluya condicionales para controlar actuadores (LEDs) según el valor leído por un sensor? (1=no conozco el lenguaje · 5=lo escribo sin problemas)",
+      "pregunta": "¿Puedes identificar la secuencia lógica correcta para leer un sensor, evaluar una condición y actuar sobre actuadores? (1=me cuesta · 5=lo ordeno con facilidad)",
       "escala": "1 – 5"
     }
   },
@@ -646,14 +639,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
-    "titulo": "Arqueología tecnológica: desarme y documento",
-    "descripcion": "Con un dispositivo electrónico en desuso (preferiblemente un celular o computador portátil viejo), desmóntalo con cuidado y documenta fotográficamente cada componente interno. Identifica el fabricante, función y fecha aproximada de cada pieza. Analiza de qué materiales (cobre, silicio, litio, plástico, etc.) están hechos y cuáles representan el mayor costo básico, lo que qué pasaría si no existiera cada componente en el mercado formal. Produce un informe técnico de 3 páginas con fotografías.",
+    "titulo": "Desmantelamiento virtual de un Smartphone",
+    "descripcion": "Ingresa a la estación de desmantelamiento virtual del smartphone. Explora cada uno de los 9 componentes estructurales y electroquímicos del teléfono móvil (como la pantalla, batería, micro, etc.) para analizar detalladamente sus materiales de origen, fabricantes, nivel de toxicidad y pasos de reciclaje. Posteriormente, pon a prueba tus capacidades críticas y de pensamiento sistémico resolviendo una evaluación interactiva sobre sostenibilidad y cadena de suministro tecnológica global.",
     "criterios": [
-      "Desmontaje documentado fotográficamente.",
-      "Mínimo 8 componentes identificados con función.",
-      "Análisis de materiales y ciclo de vida."
+      "1. Explora interactivamente los 9 componentes de la estructura y hardware del smartphone en la escena 3D explotada.",
+      "2. Identifica los materiales clave de los componentes (Indio, Cobalto, Neodimio, etc.) y su nivel de toxicidad.",
+      "3. Analiza las implicaciones geopolíticas, éticas y socioambientales del suministro tecnológico global.",
+      "4. Responde correctamente las preguntas del cuestionario de pensamiento crítico para aprobar la actividad."
     ],
-    "recursos": "Dispositivo en desuso, juego de destornilladores de precisión, iFixit.com, PNUMA (E-waste), Google Lens.\n\n---",
+    "recursos": "Simulador de desmantelamiento de celular y panel interactivo. Cuestionario de pensamiento crítico integrado.",
     "tiempo_estimado": "70",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
@@ -670,15 +664,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
-    "titulo": "Modelo comparativo de paradigmas de programación",
-    "descripcion": "Investiga y compara tres paradigmas de programación: imperativo (Python), funcional (Haskell/JS) y orientado a objetos (Java/Python). Para cada uno, define el paradigma y su filosofía central, resuelve el mismo problema de lógica en cada paradigma (ej. filtrar una lista de números pares), analiza ventajas, limitaciones y casos de uso ideales. Concluye: ¿qué paradigma se adapta mejor para qué tipo de tareas?",
+    "titulo": "Análisis comparativo de paradigmas de programación",
+    "descripcion": "Escribe un ensayo o análisis comparativo en el editor de texto integrado donde analices y contrastes tres paradigmas de programación: imperativo (Python), funcional (Haskell/JS) y orientado a objetos (Java/Python). En tu texto debes describir la filosofía central de cada paradigma, explicar con pseudocódigo o lógica cómo resolverías el mismo problema (como filtrar números pares) en cada uno de ellos, y discutir sus ventajas, limitaciones y casos de uso ideales.",
     "criterios": [
-      "Proceso de resolución en 3 paradigmas con definición clara.",
-      "Mismo problema implementado en los tres.",
-      "Análisis comparativo de ventajas y limitaciones.",
-      "Casos de uso reales identificados."
+      "1. Describe la filosofía central de los paradigmas imperativo, funcional y orientado a objetos.",
+      "2. Explica la lógica o pseudocódigo para resolver el mismo problema en los tres paradigmas.",
+      "3. Analiza las ventajas y limitaciones de cada enfoque.",
+      "4. Concluye identificando los casos de uso idóneos para cada paradigma."
     ],
-    "recursos": "Repl.it o IDEs para ejecutar los tres ejemplos, referencia (FreeCodeCamp, Real Python).\n\n---",
+    "recursos": "Editor de texto integrado en la plataforma. Guías conceptuales sobre paradigmas de programación.",
     "tiempo_estimado": "75",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
@@ -695,15 +689,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
-    "titulo": "Análisis crítico de una patente tecnológica",
-    "descripcion": "Selecciona una patente tecnológica reciente (2018-2024) relacionada con IA, biotecnología o energías renovables del repositorio USPTO o WIPO. Analiza: (a) qué problema resuelve y cuál es la innovación central, (b) qué conocimientos previos se construyeron para el desarrollo de la invención, (c) qué implicaciones tiene para la sociedad colombiana, (d) si crees que debería ser de dominio público o seguir patentada (argumento ético-económico), y (e) qué barreras tecnológicas impiden su aplicación en Colombia hoy. Ensayo de 800 palabras.",
+    "titulo": "Ensayo crítico sobre patentes de tecnología emergente",
+    "descripcion": "Escribe un ensayo crítico de mínimo 100 palabras en el editor de texto integrado sobre una patente tecnológica real de los últimos años (relacionada con IA, biotecnología o energías renovables). En tu ensayo, analiza: (a) qué problema resuelve y su innovación; (b) qué conocimientos previos se requirieron; (c) el impacto potencial para la sociedad colombiana; y (d) una reflexión ética sobre si este tipo de tecnologías deben ser de dominio público o estar patentadas.",
     "criterios": [
-      "Patente identificada y vinculada.",
-      "Análisis técnico de la invención.",
-      "Relación con conocimientos previos.",
-      "Impacto en Colombia argumentado."
+      "1. Identifica una patente tecnológica real y describe su innovación principal.",
+      "2. Analiza los conocimientos previos necesarios para su desarrollo.",
+      "3. Argumenta el impacto ético y socioeconómico de la patente en el contexto colombiano.",
+      "4. Estructura el escrito con introducción, desarrollo y conclusiones."
     ],
-    "recursos": "USPTO.gov, WIPO.int, SIC Colombia (patentes nacionales).\n\n---",
+    "recursos": "Editor de texto integrado en la plataforma. Repositorios de patentes sugeridos (WIPO, USPTO).",
     "tiempo_estimado": "80",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
@@ -720,15 +714,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
-    "titulo": "API REST para el sistema de notas del colegio",
-    "descripcion": "Implementa en Python (Flask o FastAPI) una API REST básica para gestionar un sistema de notas escolares. La API debe permitir: crear un estudiante (POST), consultar todos los estudiantes (GET), obtener las notas de un estudiante por ID (GET), agregar una nota a un estudiante (POST) y calcular el promedio (GET). Usa una estructura de datos en memoria (listas o diccionarios). Prueba con Postman o CURL y entrega la documentación de la API.",
+    "titulo": "Completar API REST para el sistema de notas del colegio",
+    "descripcion": "Usa el simulador IDE para completar el código de una API REST básica en Python usando Flask que gestiona las notas escolares. Deberás completar tres partes fundamentales del servidor: el método GET para listar todos los estudiantes en JSON, el método POST para registrar un nuevo estudiante procesando la petición, y la búsqueda de un estudiante específico por ID, incluyendo el control de errores con código HTTP 404 para casos inexistentes.",
     "criterios": [
-      "5 endpoints funcionales (CRUD).",
-      "Respuestas JSON correctas.",
-      "Manejo de errores (404, 400).",
-      "Pruebas documentadas."
+      "1. Completa la ruta GET /estudiantes usando el método HTTP correcto y la función de respuesta JSON.",
+      "2. Completa la ruta POST para crear estudiantes procesando el body y retornando el código HTTP 201.",
+      "3. Configura el parámetro dinámico y el código de error 404 en la búsqueda por ID.",
+      "4. Ejecuta y valida el código en el entorno simulado sin errores."
     ],
-    "recursos": "Python 3.x, FastAPI o Flask, Postman (gratuito) / Insomnia / cURL.\n\n---",
+    "recursos": "Simulador de IDE interactivo integrado. Plantilla de código `api_notas.py` con Flask.",
     "tiempo_estimado": "80",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
@@ -745,15 +739,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
-    "titulo": "Dashboard interactivo de datos abiertos colombianos",
-    "descripcion": "Usa estos abiertos del gobierno colombiano (datos.gov.co) sobre educación, salud o transporte. Con Python (Pandas + Plotly Dash o Power BI), crea un dashboard interactivo que incluya al menos 3 visualizaciones diferentes (mapa, gráfico de barras, línea de tiempo). Filtros dinámicos por departamento o año, y una métrica calculada (ej. % crecimiento). El dashboard debe contar una historia con los datos.",
+    "titulo": "Completar Dashboard interactivo de matrícula escolar",
+    "descripcion": "Usa el simulador IDE para estructurar y completar un script en Python (`dashboard.py`) que genera visualizaciones de matrícula escolar. Debes: (1) Cargar los datos desde un archivo CSV con Pandas y generar estadísticas descriptivas; (2) Configurar un gráfico de barras interactivo con Plotly Express definiendo los ejes correctos; y (3) Implementar un filtro dinámico que extraiga datos por año y calcule una métrica clave (KPI) de matrícula total.",
     "criterios": [
-      "Datos reales de datos.gov.co usados.",
-      "Mínimo 3 tipos de gráficos interactivos.",
-      "Filtros dinámicos funcionales.",
-      "KPI destacado con lógica propia."
+      "1. Completa la carga del archivo CSV y el método de estadísticas descriptivas con Pandas.",
+      "2. Define correctamente el tipo de gráfico (px.bar) y los ejes X y Y para la visualización con Plotly.",
+      "3. Implementa la lógica de filtrado booleano en Pandas por año y la suma de la columna correspondiente.",
+      "4. Ejecuta y comprueba los resultados en la terminal del simulador."
     ],
-    "recursos": "datos.gov.co, Python (Pandas, Plotly, Dash) / Power BI Desktop / Tableau. Tutorial Dash básico (proporcionado).\n\n---",
+    "recursos": "Simulador de IDE interactivo integrado. Plantilla de código `dashboard.py` con Pandas y Plotly.",
     "tiempo_estimado": "90",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
@@ -770,15 +764,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
-    "titulo": "Chatbot de orientación vocacional para el colegio",
-    "descripcion": "Diseña e implementa un chatbot de orientación vocacional para estudiantes de grado 10° usando Python. El bot debe tener un flujo de conversación estructurado (árbol de decisiones), hacer al menos 8 preguntas al usuario sobre sus intereses y habilidades, y finalmente generar una recomendación de 3 carreras con justificación, proporcionar información de universidades colombianas relevantes y guardar la sesión en un archivo JSON. Interfaz mínima: consola de Python.",
+    "titulo": "Completar Chatbot de orientación vocacional",
+    "descripcion": "Usa el simulador IDE para completar el código en Python (`chatbot.py`) de un asistente virtual de orientación vocacional. Debes: (1) Completar el árbol de decisión usando condicionales compuestos para recomendar carreras según intereses y conocimientos; (2) Implementar el guardado de la sesión del estudiante en un archivo JSON con los parámetros de formato correctos; y (3) Desarrollar el bucle de captura de datos interactivos usando funciones de entrada de texto.",
     "criterios": [
-      "Flujo de conversación completo y lógico.",
-      "Mínimo 8 preguntas con variables.",
-      "Lógica de recomendación de 3 carreras.",
-      "Registro de sesión en archivo JSON."
+      "1. Completa la estructura if/elif/else con las condiciones y retornos de carrera correspondientes.",
+      "2. Implementa la escritura del archivo en formato JSON y el modo de apertura 'w' apropiado.",
+      "3. Configura la captura de respuestas de usuario (input) y el método append en el bucle principal.",
+      "4. Ejecuta el chatbot simulado sin errores de sintaxis o lógica."
     ],
-    "recursos": "Python 3.x, JSON, SNIES (datos de universidades colombianas), Diagrama de flujo del chatbot (creado por el joven antes de código).\n\n---",
+    "recursos": "Simulador de IDE interactivo integrado. Plantilla de código `chatbot.py` en Python.",
     "tiempo_estimado": "100",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
@@ -795,15 +789,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Solución de problemas",
     "codigo_men": "C3",
-    "titulo": "Sistema IoT de monitoreo de la huerta escolar",
-    "descripcion": "La huerta escolar necesita monitoreo automatizado. En Tinkercad o con hardware real (Arduino + sensores), diseña un sistema que mida: humedad del suelo (sensor capacitivo o analógico), temperatura y humedad ambiental (DHT11). El sistema debe: (a) activar un LED si la humedad baja del 40%, (b) mostrar el estado en una pantalla LCD 16x2 o monitor serial, y (c) registrar lecturas cada 5 minutos en formato CSV. Entrega: diagrama del circuito, código comentado y prueba de funcionamiento.",
+    "titulo": "Carga de proyecto IoT: Monitoreo de la huerta escolar",
+    "descripcion": "Diseña en Tinkercad Circuits (o con hardware real) un sistema de monitoreo automatizado para la huerta escolar que mida la humedad del suelo, temperatura y humedad ambiental. Debe activar un LED de advertencia si la humedad baja del 40%, mostrar datos en LCD/monitor serial y simular un registro en CSV. Una vez terminado tu diseño, toma una captura de pantalla del circuito simulado o descarga tu código Arduino, y súbelo en esta sección.",
     "criterios": [
-      "Lectura correcta de humedad y temperatura.",
-      "Lógica de activación de actuadores (LED).",
-      "Empleo de estado en pantalla/serial.",
-      "Registro CSV de datos."
+      "1. Captura del circuito simulado que muestra la lectura correcta de humedad y temperatura.",
+      "2. Lógica visible para activación de actuadores (LED de alerta).",
+      "3. Empleo de monitor serial o pantalla LCD para visualización de lecturas.",
+      "4. Archivo subido en formato válido (PDF, PNG, JPG, ZIP o INO)."
     ],
-    "recursos": "Tinkercad Circuits / Arduino (físico) + sensores, Wokwi, Librerías: DHT.h, LiquidCrystal (LCD).\n\n---",
+    "recursos": "Plataforma Tinkercad Circuits / Wokwi / simulador Arduino. Panel de carga de archivos de Meta-Pathfinder.",
     "tiempo_estimado": "80",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
@@ -820,15 +814,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Solución de problemas",
     "codigo_men": "C3",
-    "titulo": "Modelo de Machine Learning para predecir deserción escolar",
-    "descripcion": "Usando un dataset simulado de 500 estudiantes (proporcionado) con variables: nota promedio, inasistencia (%), estrato socioeconómico, horas de estudio y acceso a internet, entrena un modelo que prediga el riesgo de deserción (alto/medio/bajo). El reporte en Python (Jupyter Notebook) debe incluir: análisis exploratorio de datos (EDA), limpieza de datos, entrenamiento (usando un algoritmo de árbol de decisión o regresión logística), evaluación de métricas (accuracy, precision) y sugerencia de 3 acciones preventivas basadas en resultados.",
+    "titulo": "Completar Modelo de Machine Learning para deserción escolar",
+    "descripcion": "Usa el simulador IDE para completar un flujo de aprendizaje automático en Python (`modelo_ml.py`) diseñado para identificar el riesgo de deserción estudiantil. Deberás: (1) Cargar el archivo de datos y contar la frecuencia de cada categoría de riesgo con Pandas; (2) Dividir los datos en conjuntos de entrenamiento/prueba y entrenar un clasificador de Árbol de Decisión usando scikit-learn; y (3) Generar predicciones y calcular la precisión (accuracy score) final del modelo.",
     "criterios": [
-      "EDA completo con visualizaciones.",
-      "Preprocesamiento correcto de variables.",
-      "Dos modelos entrenados y comparados.",
-      "Métricas reportadas y acciones sugeridas."
+      "1. Completa la lectura de datos y el conteo de frecuencias por categoría de riesgo usando Pandas.",
+      "2. Configura la división train_test_split, inicializa el clasificador y entrena el modelo con el método .fit().",
+      "3. Completa las funciones de predicción y cálculo de exactitud de scikit-learn.",
+      "4. Ejecuta el pipeline del modelo en el simulador y obtén las métricas correctas."
     ],
-    "recursos": "Python (Pandas, Scikit-learn, Matplotlib, Seaborn), Dataset (proporcionado), Jupyter Notebook o Colab.\n\n---",
+    "recursos": "Simulador de IDE interactivo integrado. Plantilla de código `modelo_ml.py` en Python.",
     "tiempo_estimado": "90",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
@@ -845,15 +839,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Solución de problemas",
     "codigo_men": "C3",
-    "titulo": "Aplicación móvil de primeros auxilios con geolocalización",
-    "descripcion": "Diseña e implementa con MIT App Inventor 2 o Thunkable una app móvil que en situaciones de emergencia muestre protocolos de primeros auxilios por voz e imágenes (ej. RCP, atragantamiento, ataque cardíaco), permita llamar al número de emergencias (123 Colombia) con un botón de emergencia, use la geolocalización para mostrar el hospital más cercano (Google Maps integrado), funcione sin conexión a internet para los protocolos, y envíe un mensaje de texto automático a un contacto de emergencia. Entrega: APK instalable + documentación del diseño.",
+    "titulo": "Completar Lógica de App de primeros auxilios",
+    "descripcion": "Usa el simulador IDE para completar la lógica de bloques estructurada en texto (`app_inventor.txt`) para una aplicación móvil de primeros auxilios y emergencias. Deberás completar tres funcionalidades críticas: (1) El bloque de control para abrir la pantalla de protocolos de ayuda; (2) La captura de latitud desde el sensor de ubicación para abrir mapas de Google; y (3) El disparo de la llamada de emergencia al número 123 y el envío de un SMS de auxilio.",
     "criterios": [
-      "Mínimo 4 protocolos de primeros auxilios.",
-      "Botón de llamada de emergencia (llamada real).",
-      "Integración de geolocalización.",
-      "Funcionamiento offline para protocolos e interfaz amigable."
+      "1. Configura el bloque de navegación con el nombre de la pantalla y el comando de control correctos.",
+      "2. Asigna la propiedad de latitud del sensor y la URL base de geolocalización para mapas.",
+      "3. Completa la acción de llamada de emergencia vinculando el número de auxilio 123.",
+      "4. Valida y ejecuta la simulación de bloques sin fallos de compilación."
     ],
-    "recursos": "MIT App Inventor 2 / Thunkable / Kodular, Google Maps API (gratuita con límites), 123 Colombia.\n\n---",
+    "recursos": "Simulador de IDE interactivo integrado. Representación textual de bloques de MIT App Inventor.",
     "tiempo_estimado": "100",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
@@ -870,14 +864,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Análisis de sesgo algorítmico en herramientas que usas",
-    "descripcion": "Investiga qué es el sesgo algorítmico y cómo puede afectar a grupos vulnerables. Luego, selecciona dos herramientas digitales que uses (ej. TikTok, Instagram, ChatGPT, sistema de búsqueda de empleo o recomendación) y analiza qué algoritmos las mueven, qué sesgos potenciales podrían tener (género, raza, clase social, geografía), qué evidencia existe de ese sesgo (busca estudios o artículos), y qué acciones podrías sugerir a la empresa para corregirlo. Ensayo de 700 palabras con citas.",
+    "titulo": "Ensayo de análisis de sesgo algorítmico",
+    "descripcion": "Escribe un ensayo analítico en el editor de texto sobre el sesgo algorítmico. Selecciona dos herramientas que uses a diario (ej. TikTok, Instagram, ChatGPT, etc.) y explica cómo funcionan sus algoritmos de recomendación o generación, qué sesgos potenciales podrían manifestar (de género, raza, geografía, etc.) y qué medidas propondrías a las empresas desarrolladoras para mitigar o corregir estos sesgos.",
     "criterios": [
-      "Definición fundamentada de sesgo algorítmico.",
-      "Dos herramientas analizadas con rigor.",
-      "Evidencia real citada de artículos confiables."
+      "1. Define con claridad el concepto de sesgo algorítmico y sus implicaciones sociales.",
+      "2. Analiza de manera crítica el comportamiento de dos herramientas digitales cotidianas.",
+      "3. Identifica sesgos potenciales específicos y sus posibles causas técnicas o de datos.",
+      "4. Propone recomendaciones concretas y viables para la mitigación del sesgo."
     ],
-    "recursos": "Fuentes: Algorithmic Justice League, AI Now Institute, El País Tecnología.\n\n---",
+    "recursos": "Editor de texto integrado en la plataforma. Recursos sobre ética en IA y sesgos algorítmicos.",
     "tiempo_estimado": "70",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
@@ -894,15 +889,15 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Startup tecnológica con impacto social: pitch deck",
-    "descripcion": "Diseña una startup tecnológica que resuelva un problema social real en Colombia (ej. acceso a tecnología, telemedicina rural, e-learning en zonas apartadas, gestión de residuos urbanos, inclusión financiera o IA para el bien social). Crea un pitch deck de 10 diapositivas siguiendo la estructura: Problema, solución, modelo de negocio, mercado objetivo, tecnología usada, impacto social esperado, equipo, hoja de ruta y necesidades de inversión. La propuesta debe ser viable técnica y económicamente.",
+    "titulo": "Carga de Pitch Deck: Startup tecnológica de impacto social",
+    "descripcion": "Diseña una propuesta de startup tecnológica viable para resolver un problema social en Colombia (telemedicina, residuos, educación rural, inclusión financiera, etc.). Estructura un pitch deck de 10 diapositivas que incluya el problema, solución, modelo de negocio, mercado e impacto social. Crea tu presentación usando herramientas como Canva o PowerPoint, y sube el archivo (formato PDF o imagen) en este panel para registrar tu solución.",
     "criterios": [
-      "Problema colombiano real y relevante.",
-      "Propuesta técnica viable y argumentada.",
-      "Modelo de negocio social coherente.",
-      "Calidad del pitch deck."
+      "1. Propuesta de negocio social enfocada en resolver un problema real del contexto colombiano.",
+      "2. Estructura de diapositivas clara que cubra problema, solución, modelo y tecnología.",
+      "3. Presentación visualmente cuidada y profesional.",
+      "4. Archivo subido en formato válido (PDF, PNG, JPG, PPTX o similar)."
     ],
-    "recursos": "Canva / Google Slides / Plantilla Airbnb pitch deck / Impulsa Colombia / Apps.co.\n\n---",
+    "recursos": "Canva / Google Slides / plantillas de pitch deck. Panel de carga de archivos en Meta-Pathfinder.",
     "tiempo_estimado": "80",
     "jol_esp_1": {
       "pregunta": "¿Qué tan seguro te sientes de resolver este reto avanzado?",
@@ -919,13 +914,13 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Investigación-acción: impacto de una tecnología en tu comunidad",
-    "descripcion": "Conduce una mini-investigación de campo sobre el impacto real de una tecnología específica (ej. WhatsApp, redes sociales, cajeros automáticos, IA) en un grupo social específico de tu comunidad. Pasos: (1) define la pregunta de investigación, (2) realiza 5 entrevistas semiestructuradas, (3) entrevista a 5 personas de diferentes perfiles (edades, géneros, roles), (4) transcribe y analiza las respuestas buscando patrones, (5) triangula con 3 fuentes académicas externas. Entrega: informe de 4 páginas con evidencias de las entrevistas y análisis de hallazgos.",
+    "titulo": "Carga de Reporte: Impacto tecnológico en la comunidad",
+    "descripcion": "Lleva a cabo una mini-investigación de campo sobre el impacto real de una tecnología en tu comunidad local (ej. WhatsApp, redes sociales, IA, etc.) entrevistando a 5 personas con perfiles diversos. Transcribe y analiza sus respuestas para encontrar patrones. Redacta tu reporte final de hallazgos y súbelo en esta sección en formato PDF o imagen.",
     "criterios": [
-      "Pregunta de investigación clara.",
-      "Muestra de población y entrevista válida (5 preguntas).",
-      "Entrevistas realizadas y documentadas.",
-      "Análisis de patrones y triangulación."
+      "1. Pregunta de investigación y perfiles de entrevistados bien documentados.",
+      "2. Análisis de patrones y conclusiones extraídas de las entrevistas.",
+      "3. Reporte redactado con coherencia y estructura formal.",
+      "4. Archivo subido en formato válido (PDF, DOCX, PNG o JPG)."
     ],
     "recursos": "Grabadora de voz / Notas escritas, Google Scholar, Redalyc, Scielo, Mendeley.",
     "tiempo_estimado": "100",

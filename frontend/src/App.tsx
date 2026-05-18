@@ -97,7 +97,7 @@ function StudentLayout({ children }: { children: React.ReactNode }) {
 
 function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen h-screen w-screen overflow-hidden bg-[#0F172A]">
+    <div className="min-h-screen h-screen w-screen overflow-hidden bg-transparent">
       <BackgroundNetwork />
       <CognitiveBrain />
       <main className="absolute inset-0 p-0 m-0 flex items-center justify-center">
@@ -134,6 +134,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   // En / no aplicar ningún layout, solo el canvas + Home
   if (location.pathname === '/') return <>{children}</>;
+
+  // En la vista de prueba no queremos menús ni distracciones, sin importar si es admin o estudiante
+  if (location.pathname === '/preview-phase-b') {
+    return <div className="min-h-screen bg-background overflow-auto">{children}</div>;
+  }
 
   if (role === 'admin') return <AdminLayout>{children}</AdminLayout>;
 

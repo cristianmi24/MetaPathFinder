@@ -82,7 +82,7 @@ export function Home() {
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 w-full max-w-4xl relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 w-full max-w-5xl relative z-10">
         {roles.map((role, idx) => (
           <motion.div
             key={role.id}
@@ -91,7 +91,7 @@ export function Home() {
             transition={{ delay: idx * 0.1 }}
             onClick={() => handleSelectRole(role.id)}
             className={cn(
-              "p-10 group cursor-pointer border-t-[10px] h-full flex flex-col hover:scale-[1.02] active:scale-[0.98] rounded-3xl transition-all duration-500",
+              "px-12 py-14 lg:py-16 min-h-[340px] group cursor-pointer border-t-[10px] h-full flex flex-col hover:scale-[1.02] active:scale-[0.98] rounded-3xl transition-all duration-500",
               theme === 'light'
                 ? 'bg-white shadow-[0_25px_50px_-18px_rgba(103,75,181,0.12)] hover:shadow-[0_30px_70px_-28px_rgba(103,75,181,0.18)]'
                 : 'bg-slate-950/95 border border-slate-700/70 shadow-[0_25px_60px_-25px_rgba(15,23,42,0.75)] hover:shadow-[0_30px_80px_-30px_rgba(56,189,248,0.2)]',
@@ -99,21 +99,21 @@ export function Home() {
             )}
           >
             <div className={cn(
-              "w-16 h-16 rounded-3xl flex items-center justify-center mb-10 transition-all duration-500 group-hover:rotate-6 group-hover:scale-110",
+              "w-20 h-20 rounded-3xl flex items-center justify-center mb-8 transition-all duration-500 group-hover:rotate-6 group-hover:scale-110",
               role.iconClasses
             )}>
-              <role.icon className="w-9 h-9" />
+              <role.icon className="w-10 h-10" />
             </div>
             <h3 className={cn(
-              "text-3xl font-black mb-4 tracking-tight",
+              "text-4xl font-black mb-4 tracking-tight",
               theme === 'light' ? "text-slate-900" : "text-white"
             )}>{role.title}</h3>
             <p className={cn(
-              "text-lg mb-12 flex-1 leading-relaxed font-medium",
+              "text-xl flex-1 leading-relaxed font-medium",
               theme === 'light' ? "text-slate-600" : "text-slate-200"
             )}>{role.desc}</p>
             <div className={cn(
-              "flex items-center gap-3 font-black text-sm uppercase tracking-widest group-hover:translate-x-2 transition-transform",
+              "flex items-center gap-3 font-black text-sm uppercase tracking-widest group-hover:translate-x-2 transition-transform mt-8",
               theme === 'light' ? "text-primary" : "text-cyan-300"
             )}>
               Comenzar ahora <ArrowRight className="w-5 h-5" />

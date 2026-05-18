@@ -1,10 +1,16 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { UploadCloud, File, CheckCircle2 } from 'lucide-react';
 
 interface UploadBoardProps {
   challengeId: string;
   onValidation: (success: boolean) => void;
 }
+
+const jolPatterns: Record<string, { keywords: string[] }> = {
+  'RM-C3-N1': {
+    keywords: ['arduino', 'sensor', 'tinkercad', 'temperatura', 'led', 'circuito', 'código', 'programación', 'c++', 'monitor serial', 'humedad', 'ntc', 'tmp36'],
+  },
+};
 
 export function UploadBoard({ challengeId, onValidation }: UploadBoardProps) {
   const [isDragging, setIsDragging] = useState(false);
@@ -36,10 +42,18 @@ export function UploadBoard({ challengeId, onValidation }: UploadBoardProps) {
     }
   };
 
+  const fileName = uploadedFile?.toLowerCase() ?? '';
+  const pattern = jolPatterns[challengeId];
+
+  const isSuccess = useMemo(() => {
+    if (!uploadedFile) return false;
+    if (!pattern) return true;
+    return pattern.keywords.some(k => fileName.includes(k));
+  }, [uploadedFile, fileName, pattern]);
+
   useEffect(() => {
-    // Es válido en cuanto haya un archivo subido
-    onValidation(uploadedFile !== null);
-  }, [uploadedFile, onValidation]);
+    onValidation(isSuccess);
+  }, [isSuccess, onValidation]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full p-8 bg-surface-container-lowest">

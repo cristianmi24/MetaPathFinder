@@ -60,7 +60,7 @@ function shuffle<T>(array: T[]) {
   return copy;
 }
 
-export default function MatchTechSituations() {
+export default function MatchTechSituations({ onValidation }: { onValidation?: (success: boolean) => void }) {
   const [cardOrder, setCardOrder] = useState<MatchCard[]>(() => shuffle(CARDS));
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<{ situationId: string; type: 'old' | 'modern' } | null>(null);
@@ -192,8 +192,10 @@ export default function MatchTechSituations() {
 
     if (correctCount === SITUATIONS.length) {
       setCompleted(true);
+      onValidation?.(true);
       setMessage('¡Perfecto! Asociaraste correctamente las 4 situaciones con tecnologías antiguas y modernas.');
     } else {
+      onValidation?.(false);
       setMessage(`Tienes ${correctCount} de 4 situaciones completas. Revisa las tecnologías que quedan.`);
     }
   };
@@ -207,8 +209,8 @@ export default function MatchTechSituations() {
     <div>
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
-        .page{padding:1.2rem 1rem 2.5rem;background:var(--color-surface);color:var(--color-on-surface)}
-        .hero{text-align:center;margin-bottom:1.4rem}
+        .page{padding:1.2rem 24px 2.5rem;background:transparent;color:var(--color-on-surface)}
+        .hero{text-align:center;margin-bottom:1.4rem;padding: 0 12px;}
         .hero h1{font-size:21px;font-weight:500}
         .hero p{font-size:13px;color:var(--color-on-surface-variant);margin-top:4px;line-height:1.5}
         .layout{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;margin-bottom:1.4rem}

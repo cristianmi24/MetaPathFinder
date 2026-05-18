@@ -35,7 +35,7 @@ function shuffle<T>(items: T[]) {
   return copy;
 }
 
-export default function DriveFileSorter() {
+export default function DriveFileSorter({ onValidation }: { onValidation?: (success: boolean) => void }) {
   const [order, setOrder] = useState<number[]>(() => shuffle(FILES.map(file => file.id)));
   const [dragSrc, setDragSrc] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
@@ -65,10 +65,13 @@ export default function DriveFileSorter() {
 
     if (correctCount === FILES.length) {
       setMessage('🎉 ¡Perfecto! Ordenaste todos los archivos por fecha correctamente. ¡Eres un experto de Drive!');
+      onValidation?.(true);
     } else if (correctCount >= 6) {
       setMessage(`⭐ ¡Muy bien! Tienes ${correctCount} de 10 archivos en el lugar correcto. Las rojas están mal — ¡inténtalo!`);
+      onValidation?.(false);
     } else {
       setMessage(`😅 Solo ${correctCount} correctos. Fíjate bien en las fechas y vuelve a intentarlo. ¡Tú puedes!`);
+      onValidation?.(false);
     }
   };
 
@@ -95,7 +98,7 @@ export default function DriveFileSorter() {
     <div>
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
-        .drive{background:var(--color-background-tertiary);min-height:600px}
+        .drive{background:var(--color-background-tertiary);min-height:600px;border-radius: 0 0 2rem 2rem;overflow:hidden}
         .topbar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:10px 16px;display:flex;align-items:center;gap:12px}
         .logo{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:500;color:var(--color-text-primary)}
         .logo-icon{width:28px;height:28px;border-radius:6px;background:#E6F1FB;display:flex;align-items:center;justify-content:center}
