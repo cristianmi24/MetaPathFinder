@@ -138,6 +138,7 @@ export function CognitiveChallenge() {
   const [clickCount, setClickCount] = useState(0);
   const [mouseDistance, setMouseDistance] = useState(0);
   const [mouseHistory, setMouseHistory] = useState<{x: number, y: number}[]>([]);
+  const boardAreaRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('editor');
   const [hintCount, setHintCount] = useState(0);
   const [strategyEvidence, setStrategyEvidence] = useState<Partial<StrategyEvidence>>({});
@@ -216,14 +217,15 @@ export function CognitiveChallenge() {
       setMouseDistance(p => p + d);
       currentMousePos.current = { x: e.clientX, y: e.clientY };
     };
-    const trackClick = () => setClickCount(p => p + 1);
 
+  // Only count clicks inside the actual challenge board (not sidebar or metrics panel)
+  const handleBoardAreaClick = () => {
+    setClickCount(p => p + 1);
+  };
     window.addEventListener('mousemove', trackMouse);
-    window.addEventListener('click', trackClick);
     return () => {
       clearInterval(timer);
       window.removeEventListener('mousemove', trackMouse);
-      window.removeEventListener('click', trackClick);
     };
   }, [challenge.id]);
 
@@ -398,42 +400,66 @@ export function CognitiveChallenge() {
         {/* Zona Central: Tablero o Editor */}
         <div className="fb-editor-zone">
           {componentMap[challenge.id] ? (
-            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
+            <div 
+  ref={boardAreaRef}
+  onClick={handleBoardAreaClick}
+  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
+>
               {React.cloneElement(componentMap[challenge.id] as any, {
                 challengeId: challenge.id,
                 onValidation: (success: boolean) => handleBoardValidation(success)
               })}
             </div>
           ) : getBoardType(challenge.id) === 'drag_drop' ? (
-            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
+            <div 
+  ref={boardAreaRef}
+  onClick={handleBoardAreaClick}
+  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
+>
               <DragAndDropBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => handleBoardValidation(success, '> ¡Orden correcto! Reto completado con éxito.')} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'text' ? (
-            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
+            <div 
+  ref={boardAreaRef}
+  onClick={handleBoardAreaClick}
+  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
+>
               <EssayBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => handleBoardValidation(success)} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'canvas' ? (
-            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
+            <div 
+  ref={boardAreaRef}
+  onClick={handleBoardAreaClick}
+  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
+>
               <CanvasBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => handleBoardValidation(success)} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'phone' ? (
-            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
+            <div 
+  ref={boardAreaRef}
+  onClick={handleBoardAreaClick}
+  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
+>
               <PhoneDismantlingBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => handleBoardValidation(success)} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'ide' ? (
-            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
+            <div 
+  ref={boardAreaRef}
+  onClick={handleBoardAreaClick}
+  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
+>
               <CodingIDEBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => handleBoardValidation(success)} 
@@ -455,7 +481,7 @@ export function CognitiveChallenge() {
                 </div>
               </div>
 
-              <div className="fb-editor-area">
+              <div ref={boardAreaRef} onClick={handleBoardAreaClick} className="fb-editor-area">
                 <textarea
                   className="fb-editor-field"
                   value={code}
