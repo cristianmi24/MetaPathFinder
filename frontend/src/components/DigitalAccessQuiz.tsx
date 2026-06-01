@@ -24,6 +24,10 @@ export function DigitalAccessQuiz({ challengeId, onValidation }: { challengeId?:
         onValidation(aciertos === total);
       }
     } else {
+      // Report partial mistake if they chose wrong
+      if (respuestas[paso] !== CORRECTAS[paso] && onValidation) {
+        onValidation(false);
+      }
       setPaso(paso + 1);
     }
   };

@@ -159,8 +159,18 @@ export function CognitiveChallenge() {
       setErrCount(0);
     } else {
       setErrCount(prev => prev + 1);
+
+      // Also log to the central cognitive tracking system for Phase B metrics
+      addEvent('QUIZ_ANSWER', {
+        questionId: challenge.id,
+        correct: false,
+        timeSpent: seconds,
+        clicks: clickCount,
+        timestamp: Date.now(),
+        source: 'phase-b-board'
+      });
     }
-  }, []); // Empty deps because all setters from useState are stable
+  }, [addEvent, challenge.id, seconds, clickCount]);
 
   // JOL promedio de Fase A (escala 1-5 → normalizado a 10)
   const jolValues = Object.values(initialJolAnswers).filter(v => typeof v === 'number') as number[];

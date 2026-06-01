@@ -24,6 +24,9 @@ export function SocialMediaQuiz({ challengeId, onValidation }: { challengeId?: s
         onValidation(aciertos === total);
       }
     } else {
+      if (respuestas[paso] !== CORRECTAS[paso] && onValidation) {
+        onValidation(false);
+      }
       setPaso(paso + 1);
     }
   };
