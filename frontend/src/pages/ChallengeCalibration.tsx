@@ -149,16 +149,9 @@ export function ChallengeCalibration() {
   };
 
   const handleNextLevel = () => {
-    console.log('⏭️ Avanzando de nivel. Consolidando sesión por seguridad...');
+    console.log('⏭️ Avanzando de nivel. Consolidando sesión por seguridad y yendo a selección de estrategias...');
     consolidateSession(); 
-    if (currentLevel < 3) {
-      setCurrentLevel(currentLevel + 1);
-      setCurrentChallengeId(null);
-      navigate('/evaluation-prep');
-    } else {
-      // Fin de la evaluación completa - ir a estrategias metacognitivas
-      navigate('/metacognitive-strategies');
-    }
+    navigate('/metacognitive-strategies');
   };
 
   const handleRetrySimplified = () => {

@@ -103,7 +103,7 @@ function shuffle<T>(array: T[]) {
   return copy;
 }
 
-export default function MatchImageTerms() {
+export default function MatchImageTerms({ onValidation }: { onValidation?: (success: boolean) => void } = {}) {
   const [imgOrder, setImgOrder] = useState<MatchItem[]>(() => shuffle(ITEMS));
   const [termOrder, setTermOrder] = useState<MatchItem[]>(() => shuffle(ITEMS));
   const [selectedImgId, setSelectedImgId] = useState<string | null>(null);
@@ -174,11 +174,13 @@ export default function MatchImageTerms() {
   const showResult = (nextMatchedIds: Set<string>, nextTries: number) => {
     if (nextMatchedIds.size === ITEMS.length) {
       setBanner({ text: '¡Perfecto! Conectaste todo sin errores. Eres un experto en infraestructura ciudadana!', type: 'win' });
+      if (onValidation) onValidation(true);
       return;
     }
     if (nextTries >= maxTries) {
       setBanner({ text: `Se acabaron los intentos. Lograste ${nextMatchedIds.size} de ${ITEMS.length}.`, type: 'lose' });
       setHint('Juego terminado. Presiona Jugar de nuevo para volver a intentar.');
+      if (onValidation) onValidation(false);
     }
   };
 
@@ -271,9 +273,6 @@ export default function MatchImageTerms() {
           </div>
         </div>
 
-        <div className="btn-row">
-          <button className="btn-main" onClick={resetGame}>Jugar de nuevo</button>
-        </div>
       </div>
     </div>
   );

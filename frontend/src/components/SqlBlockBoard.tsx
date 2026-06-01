@@ -249,21 +249,27 @@ export function SqlBlockBoard({ challengeId, onValidation }: SqlBlockBoardProps)
     if (phase === 0) {
       setResult({ type:'ok', msg:'✓ Tablas creadas exitosamente: Proveedores, Productos, Ventas.' });
       setPhaseDone(prev => { const next = [...prev]; next[0] = true; return next; });
-      onValidation(true);
+      onValidation(false); // Intento parcial
       setTimeout(() => { setPhase(1); setBlocks([]); setResult(null); }, 1500);
     } else if (phase === 1) {
       setResult({ type:'ok', msg:'✓ 10 registros insertados en cada tabla.' });
       setPhaseDone(prev => { const next = [...prev]; next[1] = true; return next; });
-      onValidation(true);
+      onValidation(false); // Intento parcial
       setTimeout(() => { setPhase(2); setBlocks([]); setResult(null); }, 1500);
     } else {
       const sql = genSQL(blocks);
-      if (!sql) { setResult({ type:'err', msg:'Arma una consulta con los bloques primero.' }); return; }
+      if (!sql) {
+        setResult({ type:'err', msg:'Arma una consulta con los bloques primero.' });
+        onValidation(false); // Intento fallido
+        return;
+      }
       const res = execSQL(sql);
       setResult(res);
       if (res.type !== 'err') {
         setPhaseDone(prev => { const next = [...prev]; next[2] = true; return next; });
-        setTimeout(() => { setCompleted(true); onValidation(true); }, 1500);
+        setTimeout(() => { setCompleted(true); onValidation(true); }, 1500); // Éxito final
+      } else {
+        onValidation(false); // Intento fallido
       }
     }
   }, [phase, blocks, genSQL, execSQL, onValidation]);

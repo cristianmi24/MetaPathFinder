@@ -29,6 +29,10 @@ import { ProspectiveTechEssay } from '../components/ProspectiveTechEssay';
 import MiniExcelBoard from '../components/MiniExcelBoard';
 import { DigitalIdentityBoard } from '../components/DigitalIdentityBoard';
 import { ArduinoHuertaBoard } from '../components/ArduinoHuertaBoard';
+import { SandwichAlgorithm } from '../components/SandwichAlgorithm';
+import LibraryPseudocode from '../components/LibraryPseudocode';
+import { nuevasEstrategias } from '../data/metacognitiveStrategies';
+import { StrategyMonitor, StrategyEvidence } from '../components/StrategyMonitor';
 
 import './CognitiveChallenge.css';
 
@@ -36,14 +40,20 @@ export function CognitiveChallenge() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const { addEvent, currentLevel } = useCognitiveStore();
+  const { addEvent, currentLevel, assignedStrategyId } = useCognitiveStore();
+
+  // Obtener estrategia activa (desde location state o desde el store)
+  const activeStrategyId = location.state?.assignedStrategyId || assignedStrategyId;
+  const activeStrategy = activeStrategyId
+    ? (nuevasEstrategias.find(e => e.id === activeStrategyId) || null)
+    : null;
 
   const getBoardType = (id: string): 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone' | 'ide' => {
     const mappings: Record<string, 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone' | 'ide'> = {
       // Básico
       "RB-C1-N1": "drag_drop", "RB-C2-N1": "drag_drop", "RB-C3-N1": "canvas", "RB-C4-N1": "canvas",
       "RB-C1-N2": "upload", "RB-C2-N2": "upload", "RB-C3-N2": "code", "RB-C4-N2": "text",
-      "RB-C1-N3": "text", "RB-C2-N3": "spreadsheet", "RB-C3-N3": "canvas", "RB-C4-N3": "text",
+      "RB-C1-N3": "text", "RB-C2-N3": "spreadsheet", "RB-C3-N3": "drag_drop", "RB-C4-N3": "text",
       // Medio
       "RM-C1-N1": "canvas", "RM-C1-N2": "text", "RM-C1-N3": "text", 
       "RM-C2-N1": "spreadsheet", "RM-C2-N2": "canvas", "RM-C2-N3": "spreadsheet", 
@@ -66,9 +76,9 @@ export function CognitiveChallenge() {
     'RB-C2-N1': <DriveFileSorter />,
     'RB-C2-N2': <DragAndDropBoard challengeId="RB-C2-N2" onValidation={() => {}} />,
     'RB-C2-N3': <DragAndDropBoard challengeId="RB-C2-N3" onValidation={() => {}} />,
-    'RB-C3-N1': <CanvasBoard challengeId="RB-C3-N1" onValidation={() => {}} />,
+    'RB-C3-N1': <SandwichAlgorithm challengeId="RB-C3-N1" onValidation={() => {}} />,
     'RB-C3-N2': <AttendanceSimulator />,
-    'RB-C3-N3': <CanvasBoard challengeId="RB-C3-N3" onValidation={() => {}} />,
+    'RB-C3-N3': <LibraryPseudocode onValidation={() => {}} />,
     'RB-C4-N1': <DigitalAccessQuiz />,
     'RB-C4-N2': <SocialMediaQuiz />,
     'RB-C4-N3': <EssayBoard challengeId="RB-C4-N3" onValidation={() => {}} />,
@@ -124,13 +134,21 @@ export function CognitiveChallenge() {
   const [editCount, setEditCount] = useState(0);
   const [pauseSecs, setPauseSecs] = useState(0);
   const [totalRuns, setTotalRuns] = useState(0);
-  const [errCount, setErrCount] = useState(0);  const [clickCount, setClickCount] = useState(0);
+  const [errCount, setErrCount] = useState(0);
+  const [clickCount, setClickCount] = useState(0);
   const [mouseDistance, setMouseDistance] = useState(0);
   const [mouseHistory, setMouseHistory] = useState<{x: number, y: number}[]>([]);
   const [activeTab, setActiveTab] = useState('editor');
+  const [hintCount, setHintCount] = useState(0);
+  const [strategyEvidence, setStrategyEvidence] = useState<Partial<StrategyEvidence>>({});
   
   const [showHint, setShowHint] = useState(false);
   const [boardSuccess, setBoardSuccess] = useState(false);
+
+  // JOL promedio de Fase A (escala 1-5 → normalizado a 10)
+  const jolValues = Object.values(initialJolAnswers).filter(v => typeof v === 'number') as number[];
+  const jolInicial = jolValues.length > 0 ? (jolValues.reduce((a,b) => a+b, 0) / jolValues.length) * 2 : undefined;
+  const estimatedMinutes = typeof estimatedTime === 'number' ? estimatedTime : parseInt(estimatedTime) || 0;
   const [consoleMessages, setConsoleMessages] = useState([
     { type: 'sys', text: '> Entorno preparado.' }
   ]);
@@ -249,10 +267,12 @@ export function CognitiveChallenge() {
       jolAnswers: initialJolAnswers,
       jolTimes,
       estimatedTime,
+      estrategia_monitoreada: activeStrategyId,
+      evidencias_estrategia: strategyEvidence,
       технические_метрики: {
         score: isSuccess ? 100 : 0,
         runs: totalRuns,
-        hints: showHint ? 1 : 0,
+        hints: hintCount,
         edits: editCount,
         final_code: code,
       },
@@ -351,11 +371,12 @@ export function CognitiveChallenge() {
         {/* Zona Central: Tablero o Editor */}
         <div className="fb-editor-zone">
           {componentMap[challenge.id] ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               {React.cloneElement(componentMap[challenge.id] as any, {
                 challengeId: challenge.id,
                 onValidation: (success: boolean) => {
                   setBoardSuccess(success);
+                  setTotalRuns(prev => prev + 1);
                   if (success) {
                     setConsoleMessages([{ type: 'ok', text: '> ¡Reto interactivo completado con éxito! Puedes avanzar.' }]);
                     setErrCount(0);
@@ -366,11 +387,12 @@ export function CognitiveChallenge() {
               })}
             </div>
           ) : getBoardType(challenge.id) === 'drag_drop' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               <DragAndDropBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
                   setBoardSuccess(success);
+                  setTotalRuns(prev => prev + 1);
                   if (success) {
                     setConsoleMessages([{ type: 'ok', text: '> ¡Orden correcto! Reto completado con éxito.' }]);
                     setErrCount(0);
@@ -382,38 +404,62 @@ export function CognitiveChallenge() {
               />
             </div>
           ) : getBoardType(challenge.id) === 'text' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               <EssayBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
                   setBoardSuccess(success);
+                  setTotalRuns(prev => prev + 1);
+                  if (success) {
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
                 }} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'canvas' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               <CanvasBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
                   setBoardSuccess(success);
+                  setTotalRuns(prev => prev + 1);
+                  if (success) {
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
                 }} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'phone' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               <PhoneDismantlingBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
                   setBoardSuccess(success);
+                  setTotalRuns(prev => prev + 1);
+                  if (success) {
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
                 }} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'ide' ? (
-            <div className="flex-1 w-full flex items-center justify-center bg-[#0d1117]/10 dark:bg-[#0d1117]/90 rounded-b-[2rem]">
+            <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               <CodingIDEBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => {
                   setBoardSuccess(success);
+                  setTotalRuns(prev => prev + 1);
+                  if (success) {
+                    setErrCount(0);
+                  } else {
+                    setErrCount(prev => prev + 1);
+                  }
                 }} 
               />
             </div>
@@ -484,6 +530,50 @@ export function CognitiveChallenge() {
             <span className="fb-live-badge" style={{ marginLeft: 'auto', marginRight: '0' }}>live</span>
           </div>
 
+          {/* Estrategia metacognitiva activa */}
+          {activeStrategy && (
+            <>
+              <div style={{
+                background: activeStrategy.iconBg,
+                border: `1px solid ${activeStrategy.color}44`,
+                borderRadius: '12px',
+                padding: '12px 14px',
+                marginBottom: '14px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <i className={`ti ${activeStrategy.icon}`} style={{ color: activeStrategy.color, fontSize: '14px' }}></i>
+                  <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', color: activeStrategy.color }}>Estrategia activa</span>
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--fb-text)', marginBottom: '6px', lineHeight: 1.3 }}>{activeStrategy.nombre}</div>
+                <div style={{ fontSize: '10px', color: 'var(--fb-text-muted)', lineHeight: 1.5, marginBottom: '8px' }}>{activeStrategy.desc}</div>
+                <div style={{ borderTop: `1px solid ${activeStrategy.color}33`, paddingTop: '8px' }}>
+                  {activeStrategy.pasos.map((paso, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '4px' }}>
+                      <span style={{ minWidth: '16px', height: '16px', borderRadius: '50%', background: activeStrategy.pasoBg, color: activeStrategy.pasoColor, fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{i + 1}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--fb-text-muted)', lineHeight: 1.4 }}>{paso}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <StrategyMonitor
+                strategy={activeStrategy}
+                seconds={seconds}
+                editCount={editCount}
+                errCount={errCount}
+                totalRuns={totalRuns}
+                hintCount={hintCount}
+                clickCount={clickCount}
+                isChallengeDone={isChallengeDone}
+                criteriaCount={challenge.criterios.length}
+                jolInicial={jolInicial}
+                estimatedMinutes={estimatedMinutes}
+                isCodeChallenge={!componentMap[challenge.id] ? (getBoardType(challenge.id) === 'code' || getBoardType(challenge.id) === 'ide') : ['RA-C1-N2', 'RA-C2-N1', 'RA-C2-N2', 'RA-C2-N3', 'RA-C3-N2', 'RA-C3-N3'].includes(challenge.id)}
+                onEvidence={(ev) => setStrategyEvidence(prev => ({ ...prev, ...ev }))}
+              />
+            </>
+          )}
+
           <div className="fb-metric-block">
             <div className="fb-metric-label">Latencia cognitiva</div>
             <div className="fb-metric-val">
@@ -539,11 +629,22 @@ export function CognitiveChallenge() {
 
           <div className="fb-andamiaje">
             <div className="fb-andamiaje-title">Andamiaje disponible</div>
-            <div className="fb-hint-item" onClick={() => setShowHint(prev => !prev)}>
+            <div className="fb-hint-item" onClick={() => {
+              setShowHint(prev => {
+                const next = !prev;
+                if (next) setHintCount(hc => hc + 1);
+                return next;
+              });
+            }}>
               <i className="ti ti-bulb" aria-hidden="true" style={{ color: 'var(--fb-blue)' }}></i>
               {showHint ? "Ocultar pista de ayuda" : "Pista 1: Activar ayuda"}
             </div>
-            <div className={`fb-hint-item ${errCount < 2 && !showHint ? 'locked' : ''}`} onClick={() => errCount >= 2 && setShowHint(true)}>
+            <div className={`fb-hint-item ${errCount < 2 && !showHint ? 'locked' : ''}`} onClick={() => {
+              if (errCount >= 2) {
+                setHintCount(hc => hc + 1);
+                setShowHint(true);
+              }
+            }}>
               <i className={`ti ${errCount >= 2 ? 'ti-bulb' : 'ti-lock'}`} aria-hidden="true" style={{ color: errCount >= 2 ? 'var(--fb-blue)' : 'inherit' }}></i>
               Pista 2: Explicación de rúbrica
             </div>

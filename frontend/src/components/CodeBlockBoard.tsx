@@ -185,6 +185,7 @@ export function CodeBlockBoard({ id, challengeId, onValidation, readOnly }: Prop
       setConsoleLines([
         { t: 'warn', v: 'Faltan espacios por completar. Arrastra todos los bloques antes de ejecutar.' }
       ]);
+      if (onValidation) onValidation(false); // Intento incompleto
       return;
     }
 
@@ -223,6 +224,7 @@ export function CodeBlockBoard({ id, challengeId, onValidation, readOnly }: Prop
       setTimeout(() => {
         setConsoleLines(newConsole);
         setError(msg);
+        if (onValidation) onValidation(false); // Intento fallido
       }, 400);
     }
   }, [blanks, allBlanksFilled, exercise, onValidation]);

@@ -4,64 +4,59 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useTheme } from '../ThemeContext';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { EvaluationTracker } from '../components/EvaluationTracker';
-import { perfilesData, Estrategia } from '../data/metacognitiveStrategies';
+import { nuevasEstrategias, Estrategia } from '../data/metacognitiveStrategies';
 import './MetacognitiveStrategies.css';
+
+const nivelLabel: Record<number, string> = { 1: 'Básico', 2: 'Medio', 3: 'Avanzado' };
+const nivelNext: Record<number, string> = { 1: 'Medio', 2: 'Avanzado', 3: '' };
 
 export function MetacognitiveStrategies() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const { currentLevel, setCurrentLevel, setCurrentChallengeId, addEvent } = useCognitiveStore();
+  const {
+    currentLevel,
+    setCurrentLevel,
+    setCurrentChallengeId,
+    addEvent,
+    assignedStrategyId,
+    setAssignedStrategyId,
+    events,
+  } = useCognitiveStore();
 
-  // Detectar perfil automáticamente si viene de la calibración
-  const incomingProfile = location.state?.cognitiveProfile || 'cal';
-  const profileMap: Record<string, string> = {
-    'overclaimer': 'over', 'underclaimer': 'sub', 'calibrated': 'cal',
-    'over': 'over', 'sub': 'sub', 'cal': 'cal'
-  };
-  const defaultPerfil = profileMap[incomingProfile] || 'cal';
+  // Estrategia que estuvo activa durante el nivel recién completado
+  const currentStrategy: Estrategia | null = assignedStrategyId
+    ? (nuevasEstrategias.find(e => e.id === assignedStrategyId) || null)
+    : null;
 
-  const [perfilActual, setPerfilActual] = useState(defaultPerfil);
-  const [adoptadas, setAdoptadas] = useState<Record<string, boolean>>({});
-  const [commitSel, setCommitSel] = useState<Record<string, boolean>>({});
+  // Estrategia que el estudiante selecciona para el próximo nivel
+  const [selectedId, setSelectedId] = useState<string>(assignedStrategyId || '');
+  const [confirmed, setConfirmed] = useState(false);
   const [tooltipId, setTooltipId] = useState<string | null>(null);
-  const [committed, setCommitted] = useState(false);
 
-  const pData = perfilesData[perfilActual];
-  const adoptCount = Object.values(adoptadas).filter(Boolean).length;
-  const commitCount = Object.values(commitSel).filter(Boolean).length;
+  const selectedStrategy = nuevasEstrategias.find(e => e.id === selectedId) || null;
+  const isSameStrategy = selectedId === assignedStrategyId;
 
-  const handleSetPerfil = (p: string) => {
-    setPerfilActual(p);
-    setAdoptadas({});
-    setCommitSel({});
-    setTooltipId(null);
-  };
+  // Resumen de monitoreo de Fase B (métricas capturadas)
+  const lastChallenge = [...events].reverse().find(e => e.type === 'CHALLENGE_COMPLETED');
+  const biometricas = lastChallenge?.metadata?.biometricas || {};
+  const tecnicas = lastChallenge?.metadata?.технические_метрики || {};
+  const totalTime = biometricas.total_time || 0;
+  const clicks = biometricas.clicks || 0;
+  const errores = tecnicas.runs || 0;
+  const ediciones = tecnicas.edits || 0;
 
-  const toggleAdoptar = (id: string) => {
-    setAdoptadas(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const toggleCommit = (id: string) => {
-    setCommitSel(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const toggleTooltip = (id: string) => {
-    setTooltipId(prev => prev === id ? null : id);
-  };
-
-  const handleCommit = () => {
-    if (commitCount < 2) return;
-    const sel = Object.keys(commitSel).filter(k => commitSel[k]);
-    const nombres = sel.map(id => pData.estrategias.find(e => e.id === id)?.nombre).filter(Boolean);
-    addEvent('METACOGNITIVE_STRATEGIES_COMMITTED', {
-      perfil: pData.label,
-      estrategias_adoptadas: Object.keys(adoptadas).filter(k => adoptadas[k]),
-      compromisos: nombres,
+  const handleConfirm = () => {
+    if (!selectedId) return;
+    setAssignedStrategyId(selectedId);
+    addEvent('STRATEGY_SELECTED_FOR_NEXT_LEVEL', {
+      nivel_completado: nivelLabel[currentLevel],
+      estrategia_anterior: assignedStrategyId,
+      estrategia_elegida: selectedId,
+      misma_estrategia: isSameStrategy,
     });
-    setCommitted(true);
+    setConfirmed(true);
 
-    // Navegar al siguiente nivel o al dashboard del estudiante
     setTimeout(() => {
       if (currentLevel < 3) {
         setCurrentLevel(currentLevel + 1);
@@ -73,15 +68,100 @@ export function MetacognitiveStrategies() {
     }, 1800);
   };
 
-  const activeTooltipData = tooltipId
-    ? pData.estrategias.find(e => e.id === tooltipId)
-    : null;
+  const activeTooltip = tooltipId ? nuevasEstrategias.find(e => e.id === tooltipId) : null;
+
+  const renderStrategyEvidences = () => {
+    const ev = lastChallenge?.metadata?.evidencias_estrategia || {};
+    if (!ev || Object.keys(ev).length === 0) {
+      return null;
+    }
+
+    const items: { label: string; value: string; icon: string }[] = [];
+
+    if (currentStrategy?.id === 'est1') {
+      if (ev.timeBeforeFirstEdit !== undefined) {
+        items.push({ label: 'Pausa de planificación inicial', value: `${ev.timeBeforeFirstEdit}s`, icon: 'ti-clock' });
+      }
+      if (ev.subtasksCreated !== undefined) {
+        items.push({ label: 'Subtareas definidas', value: `${ev.subtasksCreated}`, icon: 'ti-list-check' });
+      }
+    } else if (currentStrategy?.id === 'est2') {
+      if (ev.jolInicial !== undefined) {
+        items.push({ label: 'JOL Inicial', value: `${ev.jolInicial.toFixed(1)}/10`, icon: 'ti-star' });
+      }
+      if (ev.jolMedioActividad !== undefined) {
+        items.push({ label: 'Confianza en checkpoint (JOL)', value: `${ev.jolMedioActividad}/10`, icon: 'ti-star-half' });
+      }
+    } else if (currentStrategy?.id === 'est3') {
+      if (ev.prediccionEscrita) {
+        items.push({ label: 'Predicción registrada', value: `"${ev.prediccionEscrita}"`, icon: 'ti-message-question' });
+      }
+      if (ev.comparacionRealizada !== undefined) {
+        items.push({ label: 'Predicción contrastada', value: ev.comparacionRealizada ? 'Sí' : 'No', icon: 'ti-arrows-left-right' });
+      }
+    } else if (currentStrategy?.id === 'est4') {
+      if (ev.tiempoEstimado !== undefined) {
+        items.push({ label: 'Tiempo planificado', value: `${ev.tiempoEstimado} min`, icon: 'ti-hourglass' });
+      }
+      if (ev.tiempoReal !== undefined) {
+        items.push({ label: 'Tiempo real utilizado', value: `${Math.round(ev.tiempoReal / 60)} min`, icon: 'ti-clock' });
+      }
+    } else if (currentStrategy?.id === 'est5') {
+      if (ev.dudasListadas && ev.dudasListadas.length > 0) {
+        items.push({ label: 'Dudas explícitas mapeadas', value: `${ev.dudasListadas.length}`, icon: 'ti-help' });
+      }
+      if (ev.ayudasSolicitadas !== undefined) {
+        items.push({ label: 'Pistas de andamiaje consultadas', value: `${ev.ayudasSolicitadas}`, icon: 'ti-bulb' });
+      }
+    } else if (currentStrategy?.id === 'est6') {
+      if (ev.erroresCorregidos !== undefined) {
+        items.push({ label: 'Errores resueltos', value: `${ev.erroresCorregidos}`, icon: 'ti-bug-off' });
+      }
+      if (ev.tareasCompletadas !== undefined) {
+        items.push({ label: 'Hitos alcanzados', value: `${ev.tareasCompletadas}`, icon: 'ti-checkbox' });
+      }
+    } else if (currentStrategy?.id === 'est7') {
+      if (ev.porcentajeCompletado !== undefined) {
+        items.push({ label: 'Hitos del reto completados', value: `${ev.porcentajeCompletado}%`, icon: 'ti-stairs' });
+      }
+      if (ev.continuidadTrabajo !== undefined) {
+        items.push({ label: 'Continuidad de trabajo', value: ev.continuidadTrabajo ? 'Estable' : 'Fragmentada', icon: 'ti-activity' });
+      }
+    } else if (currentStrategy?.id === 'est8') {
+      if (ev.reflexionesError && ev.reflexionesError.length > 0) {
+        items.push({ label: 'Errores reencuadrados', value: `${ev.reflexionesError.length} reflexiones`, icon: 'ti-message-share' });
+      }
+    }
+
+    if (items.length === 0) {
+      return null;
+    }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px', borderTop: `1px solid ${currentStrategy?.color}33`, paddingTop: '10px' }}>
+        <div style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', color: currentStrategy?.color, marginBottom: '2px', textAlign: 'left' }}>
+          Mapeo de Autorregulación
+        </div>
+        {items.map((item, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--on-surface-variant)', textAlign: 'left' }}>
+              <i className={`ti ${item.icon}`} style={{ fontSize: '11px', color: currentStrategy?.color }}></i>
+              {item.label}
+            </span>
+            <span style={{ fontWeight: 700, color: 'var(--on-surface)', fontFamily: 'IBM Plex Mono, monospace', textAlign: 'right', marginLeft: '10px', maxWidth: '60%', wordBreak: 'break-word' }}>
+              {item.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className={`mp-root ${theme}`}>
       <EvaluationTracker currentPhase="Estrategias" />
 
-      <div className={`em-root`} style={{ paddingTop: '56px' }}>
+      <div className="em-root" style={{ paddingTop: '56px' }}>
         <div className="em-topbar">
           <div className="em-logo">
             <img src="/logo.png" alt="Meta-Pathfinder Logo" className="em-logo-mark" />
@@ -93,164 +173,201 @@ export function MetacognitiveStrategies() {
             <div className="em-phase-item done"><span className="em-pd"></span>Fase C</div>
             <div className="em-phase-item active"><span className="em-pd"></span>Estrategias metacognitivas</div>
           </div>
-          <div className="em-perfil-chip" style={pData.chipStyle}>
-            <i className={`ti ${pData.chipIcon}`} style={{ fontSize: '13px' }}></i>
-            <span>{pData.label}</span>
+          <div className="em-perfil-chip" style={{ background: 'rgba(93,202,165,0.1)', border: '0.5px solid rgba(93,202,165,0.35)', color: '#5dcaa5' }}>
+            <i className="ti ti-circle-check" style={{ fontSize: '13px' }}></i>
+            <span>Nivel {nivelLabel[currentLevel]} completado</span>
           </div>
         </div>
 
         <div className="em-body">
 
-          {/* Selector de perfil */}
-          <div className="em-section-header" style={{ marginBottom: '16px' }}>
-            <div className="em-section-title">
-              <i className="ti ti-filter" style={{ fontSize: '13px' }}></i>
-              Perfil detectado — comparar con otros
-            </div>
-            <div className="em-perfil-selector">
-              <button className={`em-perfil-btn ${perfilActual === 'over' ? 'active-over' : ''}`} onClick={() => handleSetPerfil('over')}>Sobreconfianza</button>
-              <button className={`em-perfil-btn ${perfilActual === 'sub' ? 'active-sub' : ''}`} onClick={() => handleSetPerfil('sub')}>Subestimación</button>
-              <button className={`em-perfil-btn ${perfilActual === 'cal' ? 'active-cal' : ''}`} onClick={() => handleSetPerfil('cal')}>Calibrado</button>
-            </div>
-          </div>
-
-          {/* Dimensiones metacognitivas */}
-          <div className="em-dim-grid">
-            <div className="em-dim-block">
-              <div className="em-dim-label"><i className="ti ti-book" style={{ fontSize: '12px' }}></i>Dimensión 1</div>
-              <div className="em-dim-name">Conocimiento metacognitivo</div>
-              <div className="em-dim-desc">Qué tanto sabe el estudiante sobre sus propios procesos cognitivos, fortalezas y limitaciones.</div>
-              <div className="em-dim-bar-wrap">
-                <div className="em-dim-bar" style={{ width: pData.dim1.w, background: pData.dim1.color }}></div>
+          {/* Resumen de monitoreo del nivel completado */}
+          {currentStrategy && (
+            <div style={{ marginBottom: '20px' }}>
+              <div className="em-section-header" style={{ marginBottom: '12px' }}>
+                <div className="em-section-title">
+                  <i className="ti ti-activity" style={{ fontSize: '13px' }}></i>
+                  Monitoreo de la estrategia en Nivel {nivelLabel[currentLevel]}
+                </div>
               </div>
-              <div className="em-dim-score" style={{ color: pData.dim1.color }}>{pData.dim1.score}</div>
-            </div>
-            <div className="em-dim-block">
-              <div className="em-dim-label"><i className="ti ti-settings" style={{ fontSize: '12px' }}></i>Dimensión 2</div>
-              <div className="em-dim-name">Regulación metacognitiva</div>
-              <div className="em-dim-desc">Capacidad para planificar, monitorear y evaluar el propio proceso de resolución en tiempo real.</div>
-              <div className="em-dim-bar-wrap">
-                <div className="em-dim-bar" style={{ width: pData.dim2.w, background: pData.dim2.color }}></div>
-              </div>
-              <div className="em-dim-score" style={{ color: pData.dim2.color }}>{pData.dim2.score}</div>
-            </div>
-          </div>
 
-          {/* Tooltip de teoría */}
-          <AnimatePresence>
-            {activeTooltipData && (
-              <motion.div
-                key={activeTooltipData.id}
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                className="em-tooltip-overlay show"
-                style={{ marginBottom: '12px' }}
-              >
-                <div className="em-tooltip-title">Base teórica · {activeTooltipData.nombre}</div>
-                <div className="em-tooltip-body">{activeTooltipData.teoriaDetail}</div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Header estrategias */}
-          <div className="em-section-header" style={{ marginBottom: '12px' }}>
-            <div className="em-section-title">
-              <i className="ti ti-sparkles" style={{ fontSize: '13px' }}></i>
-              Estrategias prescritas para tu perfil
-            </div>
-            <div style={{ fontSize: '10px', fontFamily: 'IBM Plex Mono, monospace', color: '#6e7681' }}>
-              {adoptCount} de 6 adoptadas
-            </div>
-          </div>
-
-          {/* Grid de estrategias */}
-          <div className="em-estrategias-grid">
-            {pData.estrategias.map((e: Estrategia) => {
-              const isAdop = !!adoptadas[e.id];
-              return (
-                <div key={e.id} className={`em-estrat-card ${isAdop ? 'adoptada' : ''}`}>
-                  <div className="em-estrat-top">
-                    <div className="em-estrat-icon" style={{ background: e.iconBg }}>
-                      <i className={`ti ${e.icon}`} style={{ color: e.color }}></i>
+              <div style={{
+                background: currentStrategy.iconBg,
+                border: `1.5px solid ${currentStrategy.color}55`,
+                borderRadius: '16px',
+                padding: '18px 20px',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '16px',
+                alignItems: 'start',
+              }}>
+                {/* Estrategia activa */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <div style={{ background: currentStrategy.iconBg, border: `1px solid ${currentStrategy.color}44`, borderRadius: '8px', padding: '6px', display: 'flex' }}>
+                      <i className={`ti ${currentStrategy.icon}`} style={{ color: currentStrategy.color, fontSize: '16px' }}></i>
                     </div>
-                    <span className="em-estrat-badge" style={{ background: e.badgeBg, color: e.badgeColor }}>{e.badge}</span>
+                    <div>
+                      <div style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: currentStrategy.color }}>Estrategia monitoreada</div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--on-surface)' }}>{currentStrategy.nombre}</div>
+                    </div>
                   </div>
-                  <div className="em-estrat-name">{e.nombre}</div>
-                  <div className="em-estrat-teoria">{e.teoria}</div>
-                  <div className="em-estrat-desc">{e.desc}</div>
-                  <div className="em-estrat-pasos">
-                    {e.pasos.map((p, i) => (
-                      <div key={i} className="em-estrat-paso">
-                        <span className="em-paso-num" style={{ background: e.pasoBg, color: e.pasoColor }}>{i + 1}</span>
-                        <span>{p}</span>
+                  <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', lineHeight: 1.5, margin: 0 }}>
+                    {currentStrategy.teoriaDetail}
+                  </p>
+                </div>
+
+                {/* Evidencias capturadas */}
+                <div>
+                  <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--on-surface-variant)', marginBottom: '10px' }}>
+                    Evidencias capturadas en Fase B
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                      { label: 'Tiempo total activo', value: `${Math.round(totalTime / 60)} min`, icon: 'ti-clock' },
+                      { label: 'Interacciones (clics)', value: `${clicks}`, icon: 'ti-hand-click' },
+                      { label: 'Intentos de ejecución', value: `${errores}`, icon: 'ti-player-play' },
+                      { label: 'Ediciones de código', value: `${ediciones}`, icon: 'ti-pencil' },
+                    ].map((item, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--on-surface-variant)' }}>
+                          <i className={`ti ${item.icon}`} style={{ fontSize: '11px', color: currentStrategy.color }}></i>
+                          {item.label}
+                        </span>
+                        <span style={{ fontWeight: 700, color: 'var(--on-surface)', fontFamily: 'IBM Plex Mono, monospace' }}>{item.value}</span>
                       </div>
                     ))}
+                    {renderStrategyEvidences()}
                   </div>
-                  <div className="em-estrat-actions">
-                    <button className="em-btn-adoptar" onClick={() => toggleAdoptar(e.id)}
-                      style={{
-                        background: isAdop ? 'rgba(35,134,54,0.12)' : 'transparent',
-                        color: isAdop ? '#7ee787' : e.color,
-                        borderColor: isAdop ? 'rgba(35,134,54,0.3)' : e.color + '55'
-                      }}>
-                      <i className={`ti ${isAdop ? 'ti-check' : 'ti-plus'}`} style={{ fontSize: '12px' }}></i>
-                      {isAdop ? 'Adoptada' : 'Adoptar estrategia'}
-                    </button>
-                    <button className="em-btn-info" onClick={() => toggleTooltip(e.id)} title="Ver base teórica">
-                      <i className="ti ti-book"></i>
-                    </button>
-                  </div>
-                  {isAdop && (
-                    <div className="em-adopted-banner show">Registrada en tu perfil de sesión</div>
-                  )}
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Barra de progreso */}
-          <div className="em-progreso-card">
-            <div className="em-prog-header">
-              <span className="em-prog-title"><i className="ti ti-list-check" style={{ fontSize: '12px', marginRight: '5px' }}></i>Compromiso de sesión</span>
-              <span className="em-prog-count">{adoptCount} / 6 estrategias</span>
+              </div>
             </div>
-            <div className="em-prog-items">
-              {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} className={`em-prog-dot ${i < adoptCount ? 'done' : ''}`}></div>
-              ))}
-            </div>
-          </div>
+          )}
 
-          {/* Zona de compromiso */}
-          {!committed ? (
+          {/* Sección de selección para el próximo nivel */}
+          {currentLevel < 3 && (
+            <>
+              <div className="em-section-header" style={{ marginBottom: '12px' }}>
+                <div className="em-section-title">
+                  <i className="ti ti-sparkles" style={{ fontSize: '13px' }}></i>
+                  Elige tu estrategia para el Nivel {nivelNext[currentLevel]}
+                </div>
+                <div style={{ fontSize: '10px', fontFamily: 'IBM Plex Mono, monospace', color: '#6e7681' }}>
+                  Puedes mantener la misma o elegir una diferente
+                </div>
+              </div>
+
+              {/* Tooltip de teoría */}
+              <AnimatePresence>
+                {activeTooltip && (
+                  <motion.div
+                    key={activeTooltip.id}
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="em-tooltip-overlay show"
+                    style={{ marginBottom: '12px' }}
+                  >
+                    <div className="em-tooltip-title">Qué monitoreará el sistema · {activeTooltip.nombre}</div>
+                    <div className="em-tooltip-body">{activeTooltip.teoriaDetail}</div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Grid de las 8 estrategias */}
+              <div className="em-estrategias-grid" style={{ marginBottom: '20px' }}>
+                {nuevasEstrategias.map((e: Estrategia) => {
+                  const isSelected = selectedId === e.id;
+                  const isCurrent = assignedStrategyId === e.id;
+                  return (
+                    <div
+                      key={e.id}
+                      className={`em-estrat-card ${isSelected ? 'adoptada' : ''}`}
+                      onClick={() => setSelectedId(e.id)}
+                      style={{ cursor: 'pointer', outline: isSelected ? `2px solid ${e.color}` : 'none', outlineOffset: '2px' }}
+                    >
+                      <div className="em-estrat-top">
+                        <div className="em-estrat-icon" style={{ background: e.iconBg }}>
+                          <i className={`ti ${e.icon}`} style={{ color: e.color }}></i>
+                        </div>
+                        <span className="em-estrat-badge" style={{ background: e.badgeBg, color: e.badgeColor }}>{e.badge}</span>
+                        {isCurrent && (
+                          <span style={{ marginLeft: 'auto', fontSize: '9px', fontWeight: 700, color: e.color, background: `${e.color}18`, borderRadius: '6px', padding: '2px 6px' }}>
+                            Actual
+                          </span>
+                        )}
+                      </div>
+                      <div className="em-estrat-name">{e.nombre}</div>
+                      <div className="em-estrat-teoria" style={{ color: 'var(--on-surface-variant)', fontSize: '10px', marginBottom: '6px' }}>{e.teoria}</div>
+                      <div className="em-estrat-desc">{e.desc}</div>
+                      <div className="em-estrat-actions">
+                        <button
+                          className="em-btn-adoptar"
+                          onClick={(ev) => { ev.stopPropagation(); setSelectedId(e.id); }}
+                          style={{
+                            background: isSelected ? 'rgba(35,134,54,0.12)' : 'transparent',
+                            color: isSelected ? '#7ee787' : e.color,
+                            borderColor: isSelected ? 'rgba(35,134,54,0.3)' : e.color + '55'
+                          }}
+                        >
+                          <i className={`ti ${isSelected ? 'ti-check' : 'ti-plus'}`} style={{ fontSize: '12px' }}></i>
+                          {isSelected ? 'Seleccionada' : 'Seleccionar'}
+                        </button>
+                        <button
+                          className="em-btn-info"
+                          onClick={(ev) => { ev.stopPropagation(); setTooltipId(prev => prev === e.id ? null : e.id); }}
+                          title="Ver qué monitorea el sistema"
+                        >
+                          <i className="ti ti-eye"></i>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Zona de confirmación */}
+          {!confirmed ? (
             <div className="em-commit-zone">
               <div className="em-commit-label">
                 <i className="ti ti-pencil" style={{ fontSize: '12px' }}></i>
-                Compromiso metacognitivo · cierre de ciclo
+                {currentLevel < 3
+                  ? `Confirmación de estrategia para Nivel ${nivelNext[currentLevel]}`
+                  : 'Evaluación completada · Resumen final'}
               </div>
-              <div className="em-commit-q">"¿Cuál de estas estrategias te comprometes a usar conscientemente en el próximo reto?"</div>
-              <div className="em-commit-options">
-                {pData.estrategias.map((e: Estrategia) => (
-                  <button
-                    key={e.id}
-                    className={`em-commit-opt ${commitSel[e.id] ? 'sel' : ''}`}
-                    onClick={() => toggleCommit(e.id)}
-                  >
-                    {e.nombre.split(':')[0]}
-                  </button>
-                ))}
-              </div>
+
+              {selectedStrategy && currentLevel < 3 && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  background: selectedStrategy.iconBg,
+                  border: `1px solid ${selectedStrategy.color}44`,
+                  borderRadius: '12px', padding: '12px 16px', marginBottom: '16px'
+                }}>
+                  <i className={`ti ${selectedStrategy.icon}`} style={{ color: selectedStrategy.color, fontSize: '20px' }}></i>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: selectedStrategy.color }}>
+                      {isSameStrategy ? '🔁 Mantienes la misma estrategia' : '✨ Nueva estrategia elegida'}
+                    </div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--on-surface)' }}>{selectedStrategy.nombre}</div>
+                  </div>
+                </div>
+              )}
+
               <div className="em-commit-next">
                 <button
-                  className={`em-btn-commit ${commitCount >= 2 ? 'ready' : ''}`}
-                  onClick={handleCommit}
+                  className={`em-btn-commit ${selectedId || currentLevel >= 3 ? 'ready' : ''}`}
+                  onClick={handleConfirm}
+                  disabled={!selectedId && currentLevel < 3}
                 >
                   <i className="ti ti-check" style={{ fontSize: '14px' }}></i>
-                  Registrar compromiso y cerrar ciclo
+                  {currentLevel < 3 ? `Confirmar y pasar a Nivel ${nivelNext[currentLevel]}` : 'Finalizar evaluación'}
                 </button>
                 <span className="em-commit-hint">
-                  {commitCount >= 2 ? `${commitCount} estrategias seleccionadas` : 'Selecciona al menos 2 estrategias'}
+                  {currentLevel < 3
+                    ? (!selectedId ? 'Selecciona una estrategia para continuar' : `Nivel ${nivelNext[currentLevel]} comenzará con esta estrategia`)
+                    : 'Has completado todos los niveles'}
                 </span>
               </div>
             </div>
@@ -262,16 +379,14 @@ export function MetacognitiveStrategies() {
               style={{ textAlign: 'center', paddingTop: '32px', paddingBottom: '32px' }}
             >
               <div style={{ fontSize: '40px', marginBottom: '12px' }}>🎯</div>
-              <p style={{ fontSize: '16px', fontWeight: 700, color: '#5dcaa5', marginBottom: '8px' }}>¡Compromiso registrado!</p>
-              <p style={{ fontSize: '13px', color: '#6e7681', marginBottom: '20px' }}>Las estrategias metacognitivas han sido guardadas en tu perfil.</p>
-              <button
-                onClick={() => navigate('/student')}
-                className="em-btn-commit ready"
-                style={{ background: '#5dcaa5', color: '#04342c', border: 'none', borderRadius: '7px', padding: '12px 24px', fontSize: '14px', fontFamily: 'Sora, sans-serif', fontWeight: 500, cursor: 'pointer' }}
-              >
-                <i className="ti ti-check" style={{ fontSize: '16px', marginRight: '6px' }}></i>
-                Finalizar y volver al dashboard
-              </button>
+              <p style={{ fontSize: '16px', fontWeight: 700, color: '#5dcaa5', marginBottom: '8px' }}>
+                {currentLevel < 3 ? `¡Iniciando Nivel ${nivelNext[currentLevel]}!` : '¡Evaluación completada!'}
+              </p>
+              <p style={{ fontSize: '13px', color: '#6e7681' }}>
+                {isSameStrategy
+                  ? 'Continuarás con la misma estrategia metacognitiva.'
+                  : 'Tu nueva estrategia ha sido registrada.'}
+              </p>
             </motion.div>
           )}
 

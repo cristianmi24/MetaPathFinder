@@ -35,7 +35,7 @@ function shuffle<T>(items: T[]) {
   return copy;
 }
 
-export default function DriveFileSorter() {
+export default function DriveFileSorter({ onValidation }: { onValidation?: (success: boolean) => void } = {}) {
   const [order, setOrder] = useState<number[]>(() => shuffle(FILES.map(file => file.id)));
   const [dragSrc, setDragSrc] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
@@ -65,10 +65,13 @@ export default function DriveFileSorter() {
 
     if (correctCount === FILES.length) {
       setMessage('🎉 ¡Perfecto! Ordenaste todos los archivos por fecha correctamente. ¡Eres un experto de Drive!');
+      if (onValidation) onValidation(true);
     } else if (correctCount >= 6) {
       setMessage(`⭐ ¡Muy bien! Tienes ${correctCount} de 10 archivos en el lugar correcto. Las rojas están mal — ¡inténtalo!`);
+      if (onValidation) onValidation(false);
     } else {
       setMessage(`😅 Solo ${correctCount} correctos. Fíjate bien en las fechas y vuelve a intentarlo. ¡Tú puedes!`);
+      if (onValidation) onValidation(false);
     }
   };
 
@@ -173,8 +176,6 @@ export default function DriveFileSorter() {
 
             <div className="toolbar">
               <button className="tb-btn primary" type="button" onClick={checkOrder}>Verificar orden</button>
-              <button className="tb-btn" type="button" onClick={resetGame}>Revolver</button>
-              <button className="tb-btn" type="button" onClick={showHint}>Pista</button>
               <div style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--color-text-secondary)' }}>
                 Del más antiguo al más reciente
               </div>

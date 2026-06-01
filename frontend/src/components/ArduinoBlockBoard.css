@@ -1,13 +1,30 @@
 .ard-root {
-  --ard-bg: #1e1e2e; --ard-panel: #252538; --ard-text: #cdd6f4;
-  --ard-blue: #00979d; --ard-surface: #181825; --ard-border: #313244;
+  /* Light defaults */
+  --ard-bg: #f8fafc;
+  --ard-panel: #ffffff;
+  --ard-text: #0f172a;
+  --ard-blue: #0ea5e9;
+  --ard-surface: #f1f5f9;
+  --ard-border: #e2e8f0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: var(--ard-bg); color: var(--ard-text);
+  background: var(--ard-bg);
+  color: var(--ard-text);
   width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;
   padding: 16px; overflow: auto;
 }
+
+/* Dark mode for ArduinoBlockBoard */
+.dark .ard-root {
+  --ard-bg: #1e1e2e;
+  --ard-panel: #252538;
+  --ard-text: #cdd6f4;
+  --ard-blue: #00979d;
+  --ard-surface: #181825;
+  --ard-border: #313244;
+}
 .ard-root h1 { color: var(--ard-blue); margin-bottom: 5px; font-size: 1.3rem; }
-.ard-root p.description { color: #a6adc8; text-align: center; max-width: 700px; margin-bottom: 16px; font-size: 0.85rem; }
+.ard-root p.description { color: #64748b; text-align: center; max-width: 700px; margin-bottom: 16px; font-size: 0.85rem; }
+.dark .ard-root p.description { color: #a6adc8; }
 
 .ard-message {
   padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.9rem;

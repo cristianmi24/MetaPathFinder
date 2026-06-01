@@ -101,12 +101,14 @@ body {
 .circuit-svg{width:100%;max-width:720px;display:block;margin:0 auto 1rem}
 
 .editor-wrap{margin-bottom:1rem}
-.editor-header{background:#1e1e2e;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;padding:9px 14px;display:flex;align-items:center;justify-content:space-between}
+.editor-header{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;padding:9px 14px;display:flex;align-items:center;justify-content:space-between}
+.dark .editor-header{background:#1e1e2e;border-color:#313244;}
 .e-dots{display:flex;gap:5px}
 .e-dot{width:11px;height:11px;border-radius:50%}
 .e-fname{font-size:11px;color:#89b4fa;font-family:var(--font-mono)}
 .e-lang{font-size:10px;color:#6c7086}
-.editor-body{background:#1e1e2e;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg)}
+.editor-body{background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg)}
+.dark .editor-body{background:#1e1e2e;border-color:#313244;}
 #code-ed{width:100%;min-height:360px;background:transparent;border:none;outline:none;font-family:var(--font-mono);font-size:12.5px;color:#cdd6f4;padding:14px;resize:vertical;line-height:1.75;tab-size:2}
 
 .hint-section{margin-bottom:14px}

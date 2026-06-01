@@ -937,6 +937,11 @@ export function CodingIDEBoard({ challengeId, onValidation }: Props) {
 
     setConsoleLines(result.output);
 
+    // Reportar intento individual a la Fase B
+    if (onValidation) {
+      onValidation(false);
+    }
+
     if (correct && !isLastEx) {
       setResultType('ok');
       setResultTitle('¡Correcto!');
@@ -952,7 +957,7 @@ export function CodingIDEBoard({ challengeId, onValidation }: Props) {
     } else {
       finishEvaluation();
     }
-  }, [exercise, attempted, finalized, inputValues, currentEx, isLastEx]);
+  }, [exercise, attempted, finalized, inputValues, currentEx, isLastEx, onValidation]);
 
   const finishEvaluation = useCallback(() => {
     const score = passed.filter(Boolean).length;

@@ -1,25 +1,27 @@
 .cv-root {
-  --cv-bg: #0e0f11;
-  --cv-surface: #16181c;
-  --cv-surface2: #1e2026;
-  --cv-border: #2e3038;
-  --cv-border2: #3a3d48;
-  --cv-primary: #7F77DD;
-  --cv-primary-bg: rgba(127, 119, 221, 0.12);
-  --cv-accent: #4ade80;
-  --cv-accent-dim: rgba(74, 222, 128, 0.12);
-  --cv-danger: #f87171;
-  --cv-danger-dim: rgba(248, 113, 113, 0.15);
-  --cv-warning: #fbbf24;
-  --cv-info: #60a5fa;
-  --cv-info-dim: rgba(96, 165, 250, 0.12);
-  --cv-text: #e8eaed;
-  --cv-text2: #9aa0ac;
-  --cv-text3: #5a5f6e;
+  /* Light mode defaults (Material 3 inspired) */
+  --cv-bg: #f8fafc;
+  --cv-surface: #ffffff;
+  --cv-surface2: #f1f5f9;
+  --cv-border: #e2e8f0;
+  --cv-border2: #cbd5e1;
+  --cv-primary: #674bb5;
+  --cv-primary-bg: rgba(103, 75, 181, 0.08);
+  --cv-accent: #16a34a;
+  --cv-accent-dim: rgba(22, 163, 74, 0.1);
+  --cv-danger: #dc2626;
+  --cv-danger-dim: rgba(220, 38, 38, 0.1);
+  --cv-warning: #ca8a04;
+  --cv-info: #2563eb;
+  --cv-info-dim: rgba(37, 99, 235, 0.1);
+  --cv-text: #0f172a;
+  --cv-text2: #475569;
+  --cv-text3: #64748b;
   --cv-mono: 'JetBrains Mono', monospace;
   --cv-sans: 'DM Sans', sans-serif;
   --cv-radius: 6px;
   --cv-radius-lg: 10px;
+
   font-family: var(--cv-sans);
   background: var(--cv-bg);
   color: var(--cv-text);
@@ -28,6 +30,27 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Dark mode overrides for CanvasBoard */
+.dark .cv-root {
+  --cv-bg: #0e0f11;
+  --cv-surface: #16181c;
+  --cv-surface2: #1e2026;
+  --cv-border: #2e3038;
+  --cv-border2: #3a3d48;
+  --cv-primary: #a5b4fc;
+  --cv-primary-bg: rgba(127, 119, 221, 0.15);
+  --cv-accent: #4ade80;
+  --cv-accent-dim: rgba(74, 222, 128, 0.15);
+  --cv-danger: #f87171;
+  --cv-danger-dim: rgba(248, 113, 113, 0.18);
+  --cv-warning: #fbbf24;
+  --cv-info: #60a5fa;
+  --cv-info-dim: rgba(96, 165, 250, 0.15);
+  --cv-text: #e8eaed;
+  --cv-text2: #9aa0ac;
+  --cv-text3: #5a5f6e;
 }
 
 .cv-root .cv-sr-only {

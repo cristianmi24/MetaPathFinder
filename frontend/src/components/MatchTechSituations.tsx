@@ -60,7 +60,7 @@ function shuffle<T>(array: T[]) {
   return copy;
 }
 
-export default function MatchTechSituations() {
+export default function MatchTechSituations({ onValidation }: { onValidation?: (success: boolean) => void } = {}) {
   const [cardOrder, setCardOrder] = useState<MatchCard[]>(() => shuffle(CARDS));
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<{ situationId: string; type: 'old' | 'modern' } | null>(null);
@@ -83,7 +83,7 @@ export default function MatchTechSituations() {
 
   const selectCard = (id: string) => {
     if (gameOver) {
-      setMessage('Juego terminado. Presiona Reiniciar para volver a jugar.');
+      setMessage('Juego terminado.');
       return;
     }
     setSelectedCardId(id);
@@ -92,7 +92,7 @@ export default function MatchTechSituations() {
 
   const placeCard = (situationId: string, slotType: 'old' | 'modern', cardToPlace?: MatchCard) => {
     if (gameOver) {
-      setMessage('Juego terminado. Presiona Reiniciar para volver a jugar.');
+      setMessage('Juego terminado.');
       return;
     }
     const placedCard = cardToPlace ?? selectedCard;
@@ -104,8 +104,9 @@ export default function MatchTechSituations() {
     setTries(nextTries);
 
     if (nextTries >= maxTries && !completed) {
-      setMessage('Ya no quedan más intentos. Presiona Reiniciar para volver a jugar.');
+      setMessage('Ya no quedan más intentos.');
       setCompleted(true);
+      if (onValidation) onValidation(false);
     }
 
     const targetSlot = placements[situationId];
@@ -121,8 +122,9 @@ export default function MatchTechSituations() {
 
     if (selectedCard.target !== situationId) {
       if (nextTries >= maxTries) {
-        setMessage('Intento fallido y no quedan más intentos. Presiona Reiniciar para volver a intentarlo.');
+        setMessage('Intento fallido y no quedan más intentos.');
         setCompleted(true);
+        if (onValidation) onValidation(false);
       } else {
         setMessage('Esta tecnología no corresponde a esa situación. Prueba otra combinación.');
       }
@@ -137,7 +139,8 @@ export default function MatchTechSituations() {
     setSelectedCardId(null);
     if (nextTries >= maxTries) {
       setCompleted(true);
-      setMessage('Has usado los 8 intentos. Revisa tus respuestas o reinicia para volver a intentarlo.');
+      setMessage('Has usado los 8 intentos. Revisa tus respuestas.');
+      if (onValidation) onValidation(false);
     } else {
       setMessage('¡Bien! Ahora selecciona otra tecnología para continuar.');
     }
@@ -192,9 +195,11 @@ export default function MatchTechSituations() {
 
     if (correctCount === SITUATIONS.length) {
       setCompleted(true);
-      setMessage('¡Perfecto! Asociaraste correctamente las 4 situaciones con tecnologías antiguas y modernas.');
+      setMessage('¡Perfecto! Asociaste correctamente las 4 situaciones con tecnologías antiguas y modernas.');
+      if (onValidation) onValidation(true);
     } else {
       setMessage(`Tienes ${correctCount} de 4 situaciones completas. Revisa las tecnologías que quedan.`);
+      if (onValidation) onValidation(false);
     }
   };
 
@@ -247,8 +252,6 @@ export default function MatchTechSituations() {
           <div className="status-banner">Intentos restantes: {remainingAttempts}</div>
           <div className="actions">
             <button className="btn primary" onClick={checkAnswers} disabled={gameOver}>Verificar</button>
-            <button className="btn secondary" onClick={resetGame}>Reiniciar</button>
-            <button className="btn secondary" onClick={clearSelection}>Limpiar selección</button>
           </div>
         </div>
 

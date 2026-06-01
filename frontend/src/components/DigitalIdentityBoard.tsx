@@ -54,7 +54,8 @@ body{font-family:var(--font-sans)}
 .step-intro{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
 .step-intro h3{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:.5rem;display:flex;align-items:center;gap:6px;}
 .step-intro p{font-size:13px;color:var(--color-text-secondary);line-height:1.6}
-.code-block{background:#1e1e2e;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:1rem;font-family:var(--font-mono);font-size:12px;color:#cdd6f4;margin:.75rem 0;overflow-x:auto;white-space:pre}
+.code-block{background:#f8fafc;border:0.5px solid #e2e8f0;border-radius:var(--border-radius-md);padding:1rem;font-family:var(--font-mono);font-size:12px;color:#0f172a;margin:.75rem 0;overflow-x:auto;white-space:pre}
+.dark .code-block{background:#1e1e2e;border-color:#313244;color:#cdd6f4;}
 .svg-demo{display:flex;justify-content:center;align-items:center;padding:1.25rem;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin:.75rem 0}
 .color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:.75rem 0}
 .color-swatch{height:36px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:transform .15s}
@@ -90,7 +91,8 @@ body{font-family:var(--font-sans)}
 .live-svg-area{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;margin:.75rem 0}
 .live-editor{display:grid;grid-template-columns:1fr 1fr;gap:0}
 .editor-pane{padding:.75rem;background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary)}
-.editor-pane textarea{width:100%;height:160px;font-family:var(--font-mono);font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:.5rem;background:#1e1e2e;color:#cdd6f4;resize:none;outline:none}
+.editor-pane textarea{width:100%;height:160px;font-family:var(--font-mono);font-size:12px;border:0.5px solid #e2e8f0;border-radius:6px;padding:.5rem;background:#ffffff;color:#0f172a;resize:none;outline:none}
+.dark .editor-pane textarea{background:#1e1e2e;border-color:#313244;color:#cdd6f4;}
 .preview-pane{display:flex;align-items:center;justify-content:center;background:white;padding:1rem;min-height:160px}
 .color-interactive{margin:.75rem 0}
 .color-row{display:flex;align-items:center;gap:10px;margin-bottom:.5rem}

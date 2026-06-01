@@ -1,19 +1,20 @@
 .pdb-root {
-  --bg: var(--fb-bg, #0a0e1a);
-  --surface: var(--fb-card, #111827);
-  --surface2: var(--fb-card, #1a2235);
-  --surface3: var(--fb-border, #1e2a3a);
-  --accent: #00e5ff;
-  --accent2: #ff6b35;
+  /* Light mode defaults */
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface2: #f1f5f9;
+  --surface3: #e2e8f0;
+  --accent: #0ea5e9;
+  --accent2: #f97316;
   --accent3: #7c3aed;
-  --green: #22c55e;
+  --green: #16a34a;
   --red: #ef4444;
   --yellow: #f59e0b;
-  --text: var(--fb-text, #e2e8f0);
-  --text-muted: var(--fb-text-muted, #64748b);
-  --text-dim: var(--fb-text-muted, #94a3b8);
-  --border: var(--fb-border, rgba(255,255,255,0.06));
-  --border-active: var(--fb-border, rgba(0,229,255,0.3));
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --border: #e2e8f0;
+  --border-active: rgba(14, 165, 233, 0.3);
   font-family: 'Space Grotesk', sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -393,4 +394,23 @@
 @media (max-width: 600px) {
   .pdb-info-grid { grid-template-columns: 1fr; }
   .pdb-info-cell:nth-child(odd) { border-right: none; }
+}
+
+/* Dark mode overrides for PhoneDismantlingBoard */
+.dark .pdb-root {
+  --bg: #0a0e1a;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --surface3: #1e2a3a;
+  --accent: #00e5ff;
+  --accent2: #ff6b35;
+  --accent3: #7c3aed;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --text: #e2e8f0;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --border: rgba(255,255,255,0.08);
+  --border-active: rgba(0,229,255,0.3);
 }

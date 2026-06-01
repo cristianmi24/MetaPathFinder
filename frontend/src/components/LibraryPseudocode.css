@@ -1,0 +1,337 @@
+.library-pseudocode-app {
+  padding: 1.5rem 1rem 2rem;
+  max-width: 680px;
+  margin: 0 auto;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #4b5563;
+  --color-text-tertiary: #9ca3af;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f9fafb;
+  --color-border-secondary: #e5e7eb;
+  --color-border-tertiary: #f3f4f6;
+  --border-radius-md: 10px;
+  --border-radius-lg: 16px;
+}
+
+/* Modo oscuro */
+.dark .library-pseudocode-app {
+  --color-text-primary: #f3f4f6;
+  --color-text-secondary: #d1d5db;
+  --color-text-tertiary: #6b7280;
+  --color-background-primary: #1e1f22;
+  --color-background-secondary: #18191b;
+  --color-border-secondary: #374151;
+  --color-border-tertiary: #2d3748;
+}
+
+.library-pseudocode-app .top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.library-pseudocode-app .top-bar h1 {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.library-pseudocode-app .score-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.library-pseudocode-app .instructions {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-bottom: 1.25rem;
+  padding: 12px 16px;
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border-secondary);
+  line-height: 1.4;
+}
+
+.library-pseudocode-app .columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.library-pseudocode-app .panel {
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-border-secondary);
+  background: var(--color-background-primary);
+  padding: 1.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.library-pseudocode-app .panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-text-secondary);
+  margin-bottom: 12px;
+}
+
+.library-pseudocode-app .blocks-pool {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 280px;
+}
+
+.library-pseudocode-app .block {
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: grab;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid transparent;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.library-pseudocode-app .block:active {
+  cursor: grabbing;
+  transform: scale(1.02);
+}
+
+.library-pseudocode-app .block.dragging {
+  opacity: 0.3;
+}
+
+.library-pseudocode-app .block.used {
+  opacity: 0.15;
+  pointer-events: none;
+  border-style: dashed;
+}
+
+.library-pseudocode-app .drag-icon {
+  font-size: 12px;
+  color: inherit;
+  opacity: 0.4;
+  letter-spacing: -1px;
+}
+
+.library-pseudocode-app .block-icon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.library-pseudocode-app .block-text {
+  flex: 1;
+  line-height: 1.3;
+}
+
+/* Colores semánticos de bloques */
+.library-pseudocode-app .block-start {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.library-pseudocode-app .block-read {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+}
+
+.library-pseudocode-app .block-if {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+.library-pseudocode-app .block-save {
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.3);
+  color: #8b5cf6;
+}
+
+.library-pseudocode-app .block-end {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.library-pseudocode-app .block-wrong {
+  background: rgba(107, 114, 128, 0.08);
+  border-color: rgba(107, 114, 128, 0.2);
+  color: var(--color-text-secondary);
+}
+
+.library-pseudocode-app .drop-zone {
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-border-secondary);
+  background: var(--color-background-secondary);
+  padding: 1.25rem;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.library-pseudocode-app .slot {
+  border-radius: 8px;
+  border: 1.5px dashed var(--color-border-secondary);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+  background: var(--color-background-primary);
+}
+
+.library-pseudocode-app .slot-number {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+
+.library-pseudocode-app .slot.over {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.library-pseudocode-app .slot-label {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+.library-pseudocode-app .slot .block {
+  width: 100%;
+  margin: 0;
+  cursor: default;
+}
+
+.library-pseudocode-app .slot .remove-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  padding: 4px;
+  border-radius: 4px;
+  line-height: 1;
+  z-index: 2;
+  transition: all 0.2s;
+}
+
+.library-pseudocode-app .slot .remove-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.library-pseudocode-app .check-row {
+  margin-top: 1.5rem;
+}
+
+.library-pseudocode-app .btn-check {
+  width: 100%;
+  padding: 12px;
+  border-radius: 50px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: #6366f1;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+}
+
+.library-pseudocode-app .btn-check:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 8px -1px rgba(99, 102, 241, 0.3);
+}
+
+.library-pseudocode-app .btn-check:active {
+  transform: translateY(0);
+}
+
+.library-pseudocode-app .feedback-bar {
+  margin-top: 1rem;
+  border-radius: var(--border-radius-md);
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.library-pseudocode-app .feedback-bar.show {
+  display: flex;
+}
+
+.library-pseudocode-app .feedback-bar.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.library-pseudocode-app .feedback-bar.partial {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.library-pseudocode-app .feedback-bar.fail {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.library-pseudocode-app .slot.checking.wrong {
+  animation: shake 0.4s ease;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  background: rgba(239, 68, 68, 0.05) !important;
+}
+
+.library-pseudocode-app .slot.checking.correct-mark {
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  background: rgba(16, 185, 129, 0.05) !important;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-4px); }
+  40%      { transform: translateX(4px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(3px); }
+}
+
+@keyframes fall {
+  from { transform: translateY(0) rotate(0deg); opacity: 1; }
+  to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}

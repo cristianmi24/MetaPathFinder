@@ -5,6 +5,8 @@ export default function MiniExcelBoard({ challengeId, onValidation }: { challeng
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'QUIZ_SUCCESS') {
         onValidation?.(true);
+      } else if (event.data?.type === 'QUIZ_FAIL') {
+        onValidation?.(false);
       }
     };
     window.addEventListener('message', handleMessage);
@@ -21,6 +23,18 @@ export default function MiniExcelBoard({ challengeId, onValidation }: { challeng
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
+  /* Light defaults for MiniExcel */
+  --bg:#f8fafc;--surface:#ffffff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --accent:#16a34a;--accent-dim:rgba(22,163,74,0.1);--accent-mid:rgba(22,163,74,0.2);
+  --danger:#dc2626;--danger-dim:rgba(220,38,38,0.1);
+  --warning:#ca8a04;--info:#2563eb;--info-dim:rgba(37,99,235,0.1);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.1);
+  --text:#0f172a;--text2:#475569;--text3:#64748b;
+  --mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;
+  --radius:6px;--radius-lg:10px;
+}
+.dark :root {
   --bg:#0e0f11;--surface:#16181c;--surface2:#1e2026;--surface3:#252830;
   --border:#2e3038;--border2:#3a3d48;
   --accent:#4ade80;--accent-dim:rgba(74,222,128,0.12);--accent-mid:rgba(74,222,128,0.25);
@@ -28,8 +42,6 @@ export default function MiniExcelBoard({ challengeId, onValidation }: { challeng
   --warning:#fbbf24;--info:#60a5fa;--info-dim:rgba(96,165,250,0.12);
   --purple:#c084fc;--purple-dim:rgba(192,132,252,0.12);
   --text:#e8eaed;--text2:#9aa0ac;--text3:#5a5f6e;
-  --mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;
-  --radius:6px;--radius-lg:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
@@ -525,14 +537,18 @@ async function verifyOrder(){
 
   if(dropSlots.some(s=>s===null)){
     showFeedback("err",\`⚠ Faltan \${dropSlots.filter(s=>s===null).length} bloque(s) por colocar. Necesitas \${CORRECT_BLOCKS.length} pasos.\`);
-    shakeDrop();return;
+    shakeDrop();
+    window.parent.postMessage({ type: 'QUIZ_FAIL' }, '*');
+    return;
   }
 
   const hasDecoy=dropSlots.some(b=>DECOYS.find(d=>d.id===b.id));
   if(hasDecoy){
     const decoyBlock=dropSlots.find(b=>DECOYS.find(d=>d.id===b.id));
-    showFeedback("err",\`✘ Error: "\${decoyBlock.text}" es un distractor y no pertenece a esta macro. Revísalo.\`);
-    shakeDrop();addLog(\`[Reto] Distractor detectado: "\${decoyBlock.text}"\`,"warn");return;
+    showFeedback("err",\`✘ Error: "\${decoyBlock.text}" es un distractor y no pertenece a esta macro. Revisalo.\`);
+    shakeDrop();addLog(\`[Reto] Distractor detectado: "\${decoyBlock.text}"\`,"warn");
+    window.parent.postMessage({ type: 'QUIZ_FAIL' }, '*');
+    return;
   }
 
   let firstWrong=-1;
@@ -551,16 +567,17 @@ async function verifyOrder(){
   } else {
     const b=dropSlots[firstWrong];
     const expected=CORRECT_BLOCKS[firstWrong];
-    showFeedback("err",\`✘ Paso \${firstWrong+1} incorrecto: pusiste "\${b.text}" pero aquí va "\${expected.text}".\`);
+    showFeedback("err",\`✘ Paso \${firstWrong+1} incorrecto: pusiste "\${b.text}" pero aqui va "\${expected.text}".\`);
     shakeDrop();
-    addLog(\`[Reto] Error paso \${firstWrong+1}: esperaba "\${expected.tag}", encontró "\${b.tag}"\`,"warn");
+    addLog(\`[Reto] Error paso \${firstWrong+1}: esperaba "\${expected.tag}", encontro "\${b.tag}"\`,"warn");
+    window.parent.postMessage({ type: 'QUIZ_FAIL' }, '*');
   }
 }
 
 function showFeedback(type,msg){
   const bar=document.getElementById("feedbackBar");
   bar.className=\`feedback-bar \${type}\`;
-  bar.innerHTML=\`<span>\${type==="ok"?"✅":"❌"} \${msg}</span>\`;
+  bar.innerHTML=\`<span>\${type==="ok"?"\u2705":"\u274c"} \${msg}</span>\`;
 }
 
 function shakeDrop(){

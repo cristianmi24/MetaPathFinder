@@ -32,6 +32,8 @@ import { ProspectiveTechEssay } from '../components/ProspectiveTechEssay';
 import MiniExcelBoard from '../components/MiniExcelBoard';
 import { DigitalIdentityBoard } from '../components/DigitalIdentityBoard';
 import { ArduinoHuertaBoard } from '../components/ArduinoHuertaBoard';
+import { SandwichAlgorithm } from '../components/SandwichAlgorithm';
+import LibraryPseudocode from '../components/LibraryPseudocode';
 
 // Mapeo detallado de cada reto con su componente React real y su gameplay conceptual
 const componentInfo: Record<string, { name: string; type: string; desc: string }> = {
@@ -42,9 +44,9 @@ const componentInfo: Record<string, { name: string; type: string; desc: string }
   'RB-C2-N1': { name: 'DriveFileSorter', type: 'Ordenador de Archivos', desc: 'Simulador visual de archivos Drive para ordenar por fecha de modificación.' },
   'RB-C2-N2': { name: 'DragAndDropBoard', type: 'Arrastrar Bloques', desc: 'Ordenar el plan de acción secuencial para realizar una videollamada escolar.' },
   'RB-C2-N3': { name: 'DragAndDropBoard', type: 'Arrastrar Bloques', desc: 'Ordenar fórmulas del presupuesto escolar de egresos e ingresos.' },
-  'RB-C3-N1': { name: 'CanvasBoard', type: 'Pizarra de Flujo', desc: 'Diseñar en una pizarra interactiva el diagrama de flujo para hacer un sándwich.' },
+  'RB-C3-N1': { name: 'SandwichAlgorithm', type: 'Algoritmo Interactivo', desc: 'Ordenar visualmente los bloques secuenciales para crear un algoritmo de sándwich.' },
   'RB-C3-N2': { name: 'AttendanceSimulator', type: 'Simulador de Asistencia', desc: 'Bloques lógicos visuales para controlar la asistencia y alertar sobre fallas.' },
-  'RB-C3-N3': { name: 'CanvasBoard', type: 'Pizarra de Flujo', desc: 'Diseñar el sistema lógico para el préstamo de libros en la biblioteca.' },
+  'RB-C3-N3': { name: 'LibraryPseudocode', type: 'Pseudocódigo Interactivo', desc: 'Ordenar el pseudocódigo lógico del sistema de préstamo de libros.' },
   'RB-C4-N1': { name: 'DigitalAccessQuiz', type: 'Módulo de Lectura', desc: 'Comprensión interactiva sobre la brecha digital y la conectividad escolar.' },
   'RB-C4-N2': { name: 'SocialMediaQuiz', type: 'Trivia Interactiva', desc: 'Cuestionario interactivo sobre hábitos saludables y bienestar en redes sociales.' },
   'RB-C4-N3': { name: 'EssayBoard', type: 'Editor de Ensayos', desc: 'Redacción crítica estructurada con rúbrica integrada sobre un problema de conectividad local.' },
@@ -85,6 +87,8 @@ const compMeta: Record<string, { color: string; bg: string; icon: any }> = {
   MatchTechSituations: { color: '#3fb950', bg: 'rgba(63,185,80,0.1)', icon: ArrowLeftRight },
   DriveFileSorter: { color: '#ff7b72', bg: 'rgba(255,123,114,0.1)', icon: Layers },
   DragAndDropBoard: { color: '#79c0ff', bg: 'rgba(121,192,255,0.1)', icon: Sliders },
+  SandwichAlgorithm: { color: '#bc8cff', bg: 'rgba(188,140,255,0.1)', icon: Sliders },
+  LibraryPseudocode: { color: '#bc8cff', bg: 'rgba(188,140,255,0.1)', icon: Sliders },
   CanvasBoard: { color: '#bc8cff', bg: 'rgba(188,140,255,0.1)', icon: GraduationCap },
   AttendanceSimulator: { color: '#56e3b8', bg: 'rgba(86,227,184,0.1)', icon: Cpu },
   DigitalAccessQuiz: { color: '#ff9bce', bg: 'rgba(255,155,206,0.1)', icon: HelpCircle },
@@ -107,15 +111,15 @@ const compMeta: Record<string, { color: string; bg: string; icon: any }> = {
 const getLiveComponent = (id: string, onValidation: () => void): React.ReactNode => {
   switch (id) {
     // Nivel Básico (RB)
-    case 'RB-C1-N1': return <TimelineGame />;
-    case 'RB-C1-N2': return <MatchImageTerms />;
-    case 'RB-C1-N3': return <MatchTechSituations />;
-    case 'RB-C2-N1': return <DriveFileSorter />;
+    case 'RB-C1-N1': return <TimelineGame onValidation={onValidation} />;
+    case 'RB-C1-N2': return <MatchImageTerms onValidation={onValidation} />;
+    case 'RB-C1-N3': return <MatchTechSituations onValidation={onValidation} />;
+    case 'RB-C2-N1': return <DriveFileSorter onValidation={onValidation} />;
     case 'RB-C2-N2': return <DragAndDropBoard challengeId="RB-C2-N2" onValidation={onValidation} />;
     case 'RB-C2-N3': return <DragAndDropBoard challengeId="RB-C2-N3" onValidation={onValidation} />;
-    case 'RB-C3-N1': return <CanvasBoard challengeId="RB-C3-N1" onValidation={onValidation} />;
+    case 'RB-C3-N1': return <SandwichAlgorithm challengeId="RB-C3-N1" onValidation={onValidation} />;
     case 'RB-C3-N2': return <AttendanceSimulator />;
-    case 'RB-C3-N3': return <CanvasBoard challengeId="RB-C3-N3" onValidation={onValidation} />;
+    case 'RB-C3-N3': return <LibraryPseudocode onValidation={onValidation} />;
     case 'RB-C4-N1': return <DigitalAccessQuiz />;
     case 'RB-C4-N2': return <SocialMediaQuiz />;
     case 'RB-C4-N3': return <EssayBoard challengeId="RB-C4-N3" onValidation={onValidation} />;
@@ -447,7 +451,7 @@ export function Activities() {
                 </div>
 
                 {/* Contenido del Modal (Scrollable) */}
-                <div className="flex-1 overflow-y-auto bg-surface-container-lowest transition-colors">
+                <div className={cn("flex-1 bg-surface-container-lowest transition-colors", modalTab === 'pedagogico' ? "overflow-y-auto" : "flex flex-col min-h-0 overflow-hidden")}>
                   {modalTab === 'pedagogico' ? (
                     <div className="p-6 space-y-6">
                       {/* Ficha Técnica */}
@@ -530,7 +534,7 @@ export function Activities() {
                     </div>
                   ) : (
                     /* Entorno de Simulación Real (Gameplay) */
-                    <div className="p-6 h-full flex flex-col space-y-4 min-h-[550px]">
+                    <div className="p-6 h-full flex flex-col space-y-4 min-h-0">
                       {/* Cabecera del sandbox de simulación */}
                       <div className="bg-surface-container border border-outline-variant/50 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-3 transition-colors">
                         <div className="flex items-center gap-2">
@@ -563,7 +567,7 @@ export function Activities() {
                       </div>
 
                       {/* Mockup de Navegador / Dispositivo que envuelve el juego */}
-                      <div className="flex-1 bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-inner flex flex-col min-h-[460px] relative transition-colors">
+                      <div className="flex-1 bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-inner flex flex-col min-h-0 relative transition-colors">
                         {/* Barra del Simulador (Mock browser tab) */}
                         <div className="h-9 bg-surface-container border-b border-outline-variant flex items-center px-4 gap-2 flex-shrink-0 select-none transition-colors">
                           <div className="flex gap-1.5">
@@ -579,8 +583,8 @@ export function Activities() {
                         </div>
 
                         {/* Contenedor del Componente React Real con Scroll local */}
-                        <div key={simResetKey} className="flex-1 overflow-auto p-1 md:p-4 bg-surface-container-lowest flex flex-col justify-start transition-colors">
-                          <div className="w-full h-full min-h-[400px]">
+                        <div key={simResetKey} className="flex-1 overflow-y-auto overflow-x-hidden p-1 md:p-4 bg-surface-container-lowest flex flex-col justify-start transition-colors min-h-0 relative">
+                          <div className="w-full min-h-full flex flex-col">
                             {getLiveComponent(selectedChallenge.id, handleValidation)}
                           </div>
                         </div>

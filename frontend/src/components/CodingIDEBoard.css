@@ -1,26 +1,28 @@
 .cib-root {
-  --bg-editor: var(--fb-bg, #1e1e2e);
-  --bg-sidebar: var(--fb-card, #181825);
-  --bg-tab: #252538;
-  --bg-tab-active: var(--fb-bg, #1e1e2e);
-  --bg-line: #2a2a3e;
-  --accent: #cba6f7;
-  --accent2: #89b4fa;
-  --accent3: #a6e3a1;
-  --accent4: #f38ba8;
-  --accent5: #fab387;
-  --text-main: var(--fb-text, #cdd6f4);
-  --text-muted: var(--fb-text-muted, #6c7086);
-  --text-comment: #585b70;
-  --border: var(--fb-border, #313244);
-  --green: #a6e3a1;
-  --red: #f38ba8;
-  --yellow: #f9e2af;
-  --blue: #89b4fa;
-  --purple: #cba6f7;
-  --teal: #94e2d5;
-  --blank-bg: #3d3d5c;
-  --blank-border: #7c7caa;
+  /* Light mode defaults */
+  --bg-editor: #ffffff;
+  --bg-sidebar: #f8fafc;
+  --bg-tab: #f1f5f9;
+  --bg-tab-active: #e0e7ff;
+  --bg-line: #e2e8f0;
+  --accent: #674bb5;
+  --accent2: #2563eb;
+  --accent3: #16a34a;
+  --accent4: #dc2626;
+  --accent5: #ea580c;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-comment: #94a3b8;
+  --border: #e2e8f0;
+  --green: #16a34a;
+  --red: #dc2626;
+  --yellow: #ca8a04;
+  --blue: #2563eb;
+  --purple: #674bb5;
+  --teal: #0d9488;
+  --blank-bg: #f1f5f9;
+  --blank-border: #cbd5e1;
+
   font-family: 'Sora', sans-serif;
   background: var(--bg-editor);
   border-radius: 12px;
@@ -31,6 +33,32 @@
   min-height: 620px;
   color: var(--text-main);
   width: 100%;
+}
+
+/* Dark mode for CodingIDEBoard (Catppuccin-inspired) */
+.dark .cib-root {
+  --bg-editor: #1e1e2e;
+  --bg-sidebar: #181825;
+  --bg-tab: #252538;
+  --bg-tab-active: #1e1e2e;
+  --bg-line: #2a2a3e;
+  --accent: #cba6f7;
+  --accent2: #89b4fa;
+  --accent3: #a6e3a1;
+  --accent4: #f38ba8;
+  --accent5: #fab387;
+  --text-main: #cdd6f4;
+  --text-muted: #6c7086;
+  --text-comment: #585b70;
+  --border: #313244;
+  --green: #a6e3a1;
+  --red: #f38ba8;
+  --yellow: #f9e2af;
+  --blue: #89b4fa;
+  --purple: #cba6f7;
+  --teal: #94e2d5;
+  --blank-bg: #3d3d5c;
+  --blank-border: #7c7caa;
 }
 
 .cib-titlebar {

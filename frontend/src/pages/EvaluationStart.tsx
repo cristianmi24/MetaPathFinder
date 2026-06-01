@@ -6,6 +6,7 @@ import { useTheme } from '../ThemeContext';
 import { dynamicChallengeBank, DynamicChallenge, JolEspecifico } from '../data/dynamicChallengeBank';
 import { jolGenerales } from '../data/jolGenerales';
 import { EvaluationTracker } from '../components/EvaluationTracker';
+import { nuevasEstrategias, Estrategia } from '../data/metacognitiveStrategies';
 import './EvaluationStart.css';
 
 // --- Motor de detección de tipo de escala ---
@@ -46,7 +47,19 @@ export function EvaluationStart() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const { addEvent, currentLevel, currentChallengeId, setCurrentChallengeId, setCurrentSessionId, currentSessionId } = useCognitiveStore();
+  const { addEvent, currentLevel, currentChallengeId, setCurrentChallengeId, setCurrentSessionId, currentSessionId, assignedStrategyId, setAssignedStrategyId } = useCognitiveStore();
+
+  // Asignar estrategia aleatoria en el nivel 1, o recuperar la del store
+  const assignedStrategy: Estrategia | null = assignedStrategyId
+    ? (nuevasEstrategias.find(e => e.id === assignedStrategyId) || null)
+    : null;
+
+  useEffect(() => {
+    if (currentLevel === 1 && !assignedStrategyId) {
+      const randomIdx = Math.floor(Math.random() * nuevasEstrategias.length);
+      setAssignedStrategyId(nuevasEstrategias[randomIdx].id);
+    }
+  }, [currentLevel, assignedStrategyId, setAssignedStrategyId]);
   
   useEffect(() => {
     if (currentLevel === 1 || !currentSessionId) {
@@ -76,11 +89,11 @@ export function EvaluationStart() {
 
     if (!currentChallengeId) {
       const candidates = dynamicChallengeBank.filter(c => c.nivel === currentLevelString);
-      const n2n3Candidates = candidates.filter(c => c.sub_nivel === 'N2' || c.sub_nivel === 'N3');
+      const n1n2Candidates = candidates.filter(c => c.sub_nivel === 'N1' || c.sub_nivel === 'N2');
       
-      if (n2n3Candidates.length > 0) {
-        const randomIdx = Math.floor(Math.random() * n2n3Candidates.length);
-        setCurrentChallengeId(n2n3Candidates[randomIdx].id);
+      if (n1n2Candidates.length > 0) {
+        const randomIdx = Math.floor(Math.random() * n1n2Candidates.length);
+        setCurrentChallengeId(n1n2Candidates[randomIdx].id);
       } else if (candidates.length > 0) {
         setCurrentChallengeId(candidates[0].id);
       }
@@ -152,6 +165,7 @@ export function EvaluationStart() {
         challengeId: currentChallenge!.id,
         jol_answers: jolAnswers,
         jol_times: jolTimes,
+        estrategia_asignada: assignedStrategyId,
       });
 
       navigate('/challenge', {
@@ -159,6 +173,7 @@ export function EvaluationStart() {
           challenge: currentChallenge,
           jolAnswers, 
           jolTimes,
+          assignedStrategyId,
         },
       });
     }, 2200);
@@ -345,10 +360,44 @@ export function EvaluationStart() {
               >
                 <div style={{ fontSize: '48px', marginBottom: '12px' }}>🚀</div>
                 <p className="mp-meta-q" style={{ fontSize: '20px' }}>¡Listo para iniciar!</p>
-                <p style={{ color: 'var(--on-surface-variant)', fontSize: '14px', marginBottom: '24px' }}>
+                <p style={{ color: 'var(--on-surface-variant)', fontSize: '14px', marginBottom: '20px' }}>
                   Has completado las {selectedJols.length} preguntas de autoevaluación. <br/>
                   Tiempo estimado del reto: <strong>{currentChallenge.tiempo_estimado} min</strong>
                 </p>
+
+                {/* Tarjeta de estrategia asignada */}
+                {assignedStrategy && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{
+                      background: assignedStrategy.iconBg,
+                      border: `1.5px solid ${assignedStrategy.color}55`,
+                      borderRadius: '16px',
+                      padding: '16px 20px',
+                      marginBottom: '20px',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                      <div style={{ background: assignedStrategy.iconBg, border: `1px solid ${assignedStrategy.color}44`, borderRadius: '10px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <i className={`ti ${assignedStrategy.icon}`} style={{ color: assignedStrategy.color, fontSize: '18px' }}></i>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: assignedStrategy.color, marginBottom: '2px' }}>
+                          {currentLevel === 1 ? '🎯 Estrategia asignada por el sistema' : '🔁 Estrategia activa esta fase'}
+                        </div>
+                        <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--on-surface)' }}>{assignedStrategy.nombre}</div>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', margin: '0 0 8px 0', lineHeight: 1.5 }}>{assignedStrategy.desc}</p>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: assignedStrategy.color, background: `${assignedStrategy.color}18`, borderRadius: '8px', padding: '6px 10px', display: 'inline-block' }}>
+                      <i className="ti ti-eye" style={{ marginRight: '5px' }}></i>
+                      {assignedStrategy.teoria}
+                    </div>
+                  </motion.div>
+                )}
+
                 <button className="mp-btn-iniciar ready" onClick={handleStart} style={{ fontSize: '18px', padding: '16px 40px' }}>
                   Iniciar Reto <i className="ti ti-rocket"></i>
                 </button>

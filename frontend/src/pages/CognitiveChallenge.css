@@ -216,8 +216,15 @@
 .fb-editor-zone {
   display: flex;
   flex-direction: column;
-  background: var(--fb-bg);
+  background: var(--fb-card, #ffffff);
   overflow: hidden;
+  border: 1px solid var(--fb-border, #e2e8f0);
+  border-radius: 0 0 2rem 2rem;
+}
+
+.dark .fb-editor-zone {
+  background: var(--fb-card, #161b22);
+  border-color: var(--fb-border, #30363d);
 }
 
 .fb-editor-tabs {

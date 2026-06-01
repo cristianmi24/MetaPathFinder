@@ -1,0 +1,499 @@
+\documentclass[11pt,a4paper]{article}
+
+% Paquetes esenciales
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\geometry{a4paper, margin=1in}
+
+% Colores institucionales
+\definecolor{primaryblue}{RGB}{15, 23, 42}
+\definecolor{accentgreen}{RGB}{16, 185, 129}
+\definecolor{accentorange}{RGB}{245, 158, 11}
+
+% Configuración de títulos
+\titleformat{\section}{\Large\bfseries\color{primaryblue}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries\color{primaryblue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{primaryblue}}{\thesubsubsection}{1em}{}
+
+% Encabezado y pie
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small MetaPathFinder --- Documentación del Software}
+\fancyhead[R]{\small Evaluación Metacognitiva}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Hipervínculos
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primaryblue,
+    urlcolor=accentgreen
+}
+
+% Título
+\title{\textbf{MetaPathFinder: Plataforma Web de Evaluación Metacognitiva y Seguimiento Cognitivo en Tiempo Real}\\[0.5em]
+\large Sistema Pedagógico para Investigación de Alto Impacto (Q1)}
+\author{Equipo de Desarrollo MetaPathFinder}
+\date{Mayo 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\textit{\small Guía de imágenes y códigos PlantUML disponible en: \texttt{imagenes\_y\_diagramas.html}}
+\end{center}
+
+\begin{abstract}
+El presente documento describe el software \textbf{MetaPathFinder}, una plataforma web interactiva diseñada para la evaluación y el desarrollo de la metacognición en contextos educativos y de investigación. El sistema implementa un modelo pedagógico innovador denominado \textit{Loop-per-Level} (ciclo por nivel) que combina tres fases por nivel de dificultad (Juicio de Aprendizaje, Resolución de Retos Interactivos y Calibración Metacognitiva). 
+
+La plataforma integra un motor de seguimiento cognitivo pasivo en tiempo real (\texttt{useCognitiveTracking}), una biblioteca extensible de más de 30 componentes interactivos multi-dominio (programación, lógica, alfabetización digital, algoritmos, hardware, etc.), detección automática de estados cognitivos (Flow, Frustración, Confusión, etc.) y un sistema de frenos metacognitivos adaptativos. 
+
+Adicionalmente, MetaPathFinder implementará un **motor híbrido de aprendizaje automático** compuesto por un Árbol de Decisión para clasificación en tiempo real y asignación inmediata de micro-cápsulas educativas personalizadas, junto con un Bosque Aleatorio (Random Forest) para el análisis batch de patrones de riesgo metacognitivo sobre conjuntos de datos acumulados. 
+
+MetaPathFinder genera datos de alta granularidad (eventos de interacción, latencias, patrones de navegación, calibración por reto) listos para análisis estadístico y publicación científica de nivel Q1. Este documento detalla los objetivos, requerimientos funcionales y no funcionales, la arquitectura del sistema y la implementación de cada componente principal del software.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Introducción}
+
+La metacognición ---la capacidad de un individuo de monitorear, evaluar y regular sus propios procesos de pensamiento y aprendizaje--- constituye uno de los predictores más robustos del éxito académico y la transferencia de conocimientos. Sin embargo, los instrumentos tradicionales de evaluación (exámenes de opción múltiple, rúbricas estáticas, auto-reportes post-hoc) presentan limitaciones fundamentales: miden principalmente el producto final del aprendizaje y no el proceso cognitivo en tiempo real, no detectan sesgos como la sobreconfianza o la subestimación, y ofrecen retroalimentación tardía que llega cuando el estudiante ya ha consolidado concepciones erróneas.
+
+La predicción y el diagnóstico del estado metacognitivo de un estudiante durante una tarea de aprendizaje representan un desafío debido a la naturaleza multidimensional y dinámica de los factores involucrados: carga cognitiva intrínseca y extrínseca, latencias de procesamiento, patrones de interacción con la interfaz, persistencia ante el error, y la brecha entre la autopercepción (Juicio de Aprendizaje, JOL) y el desempeño objetivo.
+
+El presente documento introduce \textbf{MetaPathFinder}, un software educativo y de investigación diseñado para abordar este desafío mediante un enfoque de evaluación adaptativa y de ciclo cerrado. La plataforma se distingue por su capacidad para:
+
+\begin{itemize}[leftmargin=*]
+    \item Capturar en tiempo real tanto el juicio metacognitivo explícito del estudiante como una rica señal de comportamiento cognitivo implícito (clics, tiempo por pregunta, cambios de pestaña, patrones de scroll y ratón, pausas prolongadas).
+    \item Implementar un flujo pedagógico estructurado en tres fases por nivel de dificultad (Básico $\rightarrow$ Intermedio $\rightarrow$ Experto), con decisión de avance basada en la calibración real (desempeño vs. juicio inicial).
+    \item Ofrecer una biblioteca diversa de retos interactivos auténticos (simuladores, IDEs embebidos, clasificadores drag-and-drop, ensayos guiados, desarmado de dispositivos, etc.) que minimizan la memorización mediante variaciones equivalentes cognitivamente.
+    \item Detectar automáticamente estados cognitivos y lanzar ``frenos metacognitivos'' (reflexiones guiadas de tipo socrático) cuando se identifican patrones de impulsividad, distracción o sobrecarga.
+    \item Proporcionar a investigadores datos exportables de alta resolución para estudios experimentales (grupos control vs. experimental con transferencia de estrategias).
+\end{itemize}
+
+Este enfoque integral representa un avance significativo en la instrumentación de la metacognición para investigación educativa de alto rigor científico.
+
+\section{Objetivos}
+
+\subsection{Objetivo General}
+
+El propósito del software MetaPathFinder es proporcionar una plataforma accesible, escalable y científicamente rigurosa para la evaluación, el diagnóstico y el desarrollo de la competencia metacognitiva en estudiantes de educación media y superior, generando simultáneamente datos de proceso de alta calidad para investigación académica de nivel Q1.
+
+\subsection{Objetivos Específicos}
+
+\begin{enumerate}[leftmargin=*]
+    \item Implementar y validar un flujo de evaluación metacognitiva estructurado en tres fases (Juicio de Aprendizaje $\rightarrow$ Resolución de Reto $\rightarrow$ Calibración) con decisión adaptativa de avance o repetición con variación.
+    \item Desarrollar un motor de seguimiento cognitivo pasivo en tiempo real capaz de detectar patrones de impulsividad, distracción, desorientación, frustración y fatiga sin interferir con la experiencia del usuario.
+    \item Implementar un motor híbrido de aprendizaje automático que combine un Árbol de Decisión para clasificación inmediata del perfil metacognitivo del estudiante (sobreconfianza, subestimación, calibrado) y la asignación instantánea de micro-cápsulas educativas personalizadas, junto con un Bosque Aleatorio (Random Forest) para el análisis de patrones complejos y predicción de riesgo sobre datos acumulados.
+    \item Proporcionar una interfaz web moderna, responsiva y diferenciada por rol (estudiante / administrador-investigador) que facilite tanto la ejecución de evaluaciones como el análisis científico de resultados.
+    \item Generar visualizaciones y métricas psicométricas listas para publicación (calibración por nivel, gap de confianza, patrones de interacción, mapas de calor, importancia de variables, etc.).
+    \item Soportar la ejecución de experimentos controlados con asignación de estrategias metacognitivas y medición de efectos de transferencia cross-domain.
+\end{enumerate}
+
+\section{Requerimientos Funcionales y No Funcionales del Software}
+
+\subsection{Requerimientos Funcionales}
+
+\subsubsection{RF-01: Flujo de Evaluación Metacognitiva en Tres Fases por Nivel}
+
+El sistema debe implementar el modelo pedagógico \textit{Loop-per-Level} con las siguientes fases para cada nivel de dificultad (Básico, Intermedio, Experto):
+
+\begin{itemize}
+    \item \textbf{Fase A --- Juicio de Aprendizaje (Perception/PreTest):} El estudiante expresa su confianza (escala 1-10 o JOL específica por reto) antes de enfrentarse al desafío. Esto establece la línea base de autopercepción.
+    \item \textbf{Fase B --- Resolución de Reto Interactivo:} El estudiante interactúa con un componente especializado (simulador, IDE, clasificador, etc.). El sistema registra automáticamente tiempo, clics, navegación, respuestas y patrones de interacción.
+    \item \textbf{Fase C --- Calibración Metacognitiva:} El sistema confronta el juicio inicial con el desempeño real, calcula el índice de calibración y presenta retroalimentación reflexiva. Si la calibración está por debajo del umbral del nivel, el estudiante recibe una variación del reto (equivalente cognitivamente) o un freno metacognitivo.
+\end{itemize}
+
+\subsubsection{RF-02: Seguimiento Automático de Comportamiento Cognitivo en Tiempo Real}
+
+El sistema debe capturar de forma pasiva (sin requerir acción explícita del usuario) los siguientes eventos y patrones:
+
+\begin{itemize}
+    \item Cambios de visibilidad de pestaña (distracción / multitasking).
+    \item Patrones excesivos de scroll y movimiento errático del ratón (desorientación).
+    \item Pausas prolongadas de inactividad ($>30$ segundos).
+    \item Latencias de respuesta extremadamente cortas (impulsividad).
+    \item Número total de clics, cambios de página y tiempo por reto.
+\end{itemize}
+
+Todos los eventos deben almacenarse con marca temporal y metadatos contextuales en el \texttt{CognitiveStore}.
+
+\subsubsection{RF-03: Biblioteca Extensible de Retos Interactivos Multi-Dominio}
+
+El sistema debe ofrecer un banco dinámico de retos (actualmente $>30$ componentes) organizados en niveles y componentes temáticos, incluyendo (pero no limitándose a):
+
+\begin{itemize}
+    \item Simuladores de algoritmos (TimelineGame, SandwichAlgorithm, LibraryPseudocode).
+    \item Entornos de desarrollo embebidos (CodingIDEBoard, SqlBlockBoard, CodeBlockBoard, ArduinoBlockBoard).
+    \item Clasificadores y emparejamientos interactivos (DragAndDropBoard, MatchImageTerms, MatchTechSituations, DriveFileSorter).
+    \item Evaluaciones de hardware y sistemas (PhoneDismantlingBoard, SmartphoneAnatomyQuiz).
+    \item Ensayos guiados y reflexivos (EssayBoard, ProspectiveTechEssay).
+    \item Herramientas de productividad digital (MiniExcelBoard, DigitalIdentityBoard, AttendanceSimulator).
+\end{itemize}
+
+Cada reto debe soportar variaciones narrativas equivalentes para evitar memorización.
+
+\subsubsection{RF-04: Sistema de Frenos Metacognitivos y Estrategias}
+
+El sistema debe detectar condiciones de riesgo metacognitivo (impulsividad, doble fallo, sobrecarga) y activar intervenciones:
+
+\begin{itemize}
+    \item Mensajes de ``humildad'' y tips educativos tras primer fallo.
+    \item Bloqueo de temas y oferta de rutas alternativas.
+    \item Freno de seguridad cuando se acumulan dos temas bloqueados en el mismo nivel.
+    \item Asignación explícita de estrategias metacognitivas (desde \texttt{metacognitiveStrategies.ts}) con monitor de evidencia de uso.
+\end{itemize}
+
+\subsubsection{RF-05: Dashboard Administrador y Analíticas para Investigación}
+
+El sistema debe proporcionar a usuarios con rol \texttt{admin}:
+
+\begin{itemize}
+    \item Lista de estudiantes registrados con filtros por estado (completado / en progreso / pendiente).
+    \item Modal detallado por estudiante con métricas agregadas (tiempo total, clics, navegaciones, score) y desglose por pregunta/reto.
+    \item Visualizaciones científicas: mapas de calor de interacción, gráficos de calibración, scatter plots de gap de confianza, líneas de tendencia.
+    \item Exportación de datos en formatos estructurados (JSON, CSV) listos para análisis estadístico.
+\end{itemize}
+
+\subsubsection{RF-06: Gestión de Sesiones y Persistencia de Estudiantes}
+
+El sistema debe permitir:
+
+\begin{itemize}
+    \item Registro de nuevos estudiantes (nombre, correo, fecha).
+    \item Inicio y cierre explícito de sesiones de prueba.
+    \item Persistencia robusta de todos los eventos y resultados mediante Zustand + middleware de persistencia en localStorage.
+    \item Consolidación de sesiones y eliminación de registros.
+\end{itemize}
+
+\subsubsection{RF-07: Motor de Estado Cognitivo y Métricas en Tiempo Real}
+
+El sistema debe mantener y actualizar en tiempo real las siguientes métricas por usuario/sesión:
+
+\begin{itemize}
+    \item Estado cognitivo inferido (\texttt{Flow}, \texttt{Frustration}, \texttt{Boredom}, \texttt{Confusion}, \texttt{Metacognitive\_Mismatch}).
+    \item Carga cognitiva y nivel de calibración (valores continuos 0--1).
+    \item Estrategias latentes detectadas y readiness de transferencia.
+\end{itemize}
+
+\subsubsection{RF-08: Soporte para Experimentos Controlados y Transferencia}
+
+El sistema debe facilitar la ejecución de estudios experimentales permitiendo:
+
+\begin{itemize}
+    \item Asignación de condiciones (Grupo Control vs. Experimental con estrategias de transferencia).
+    \item Registro de \texttt{latent\_strategy} y \texttt{transfer\_readiness} en los eventos.
+    \item Comparación de métricas entre grupos y exportación de datasets anonimizados.
+\end{itemize}
+
+\subsubsection{RF-09: Motor de Clasificación en Tiempo Real con Árbol de Decisión y Asignación de Micro-cápsulas}
+
+El sistema debe clasificar el perfil metacognitivo del estudiante (Sobreconfiado, Subestimado, Calibrado, Impulsivo, etc.) inmediatamente después de cada respuesta o al finalizar un nivel, utilizando un Árbol de Decisión. En función del perfil detectado, el sistema debe recomendar y mostrar de forma inmediata una **micro-cápsula educativa personalizada** (video corto, micro-lección o recurso de refuerzo) orientada a corregir el sesgo o debilidad identificada.
+
+\subsubsection{RF-10: Análisis Predictivo con Random Forest sobre Datos Acumulados}
+
+Una vez que existan suficientes registros (40+ estudiantes), el sistema debe permitir entrenar o cargar un modelo de Bosque Aleatorio (Random Forest) sobre los datos exportados (CSV/JSON) para:
+\begin{itemize}
+    \item Predecir el riesgo de bajo rendimiento metacognitivo o reprobación.
+    \item Identificar las variables más importantes (importancia de características) que explican los patrones de calibración deficiente.
+    \item Generar perfiles de riesgo agregados por tema, nivel o franja horaria para retroalimentación institucional.
+\end{itemize}
+
+El Random Forest operará en modo batch/offline, complementando la clasificación en tiempo real del Árbol de Decisión.
+
+\subsection{Requerimientos No Funcionales}
+
+\subsubsection{RNF-01: Precisión y Validez Científica de las Métricas}
+
+Las métricas de calibración, gap de confianza y detección de sesgos deben estar alineadas con la literatura psicométrica de metacognición. El sistema debe permitir la validación externa de los instrumentos mediante exportación de datos crudos.
+
+\subsubsection{RNF-02: Rendimiento y Responsividad}
+
+\begin{itemize}
+    \item Tiempo de respuesta de la interfaz interactiva inferior a 100 ms en la mayoría de acciones.
+    \item Actualización de métricas y estado cognitivo en tiempo real sin bloquear la UI.
+    \item Carga inicial de la aplicación inferior a 3 segundos en conexiones estándar.
+\end{itemize}
+
+\subsubsection{RNF-03: Usabilidad y Accesibilidad Multi-Dispositivo}
+
+La interfaz debe ser completamente responsiva (desktop, tablet, laptop) y utilizable en contextos de aula y laboratorio. Los layouts diferenciados (AuthLayout, StudentLayout, AdminLayout) deben adaptarse al rol y contexto de uso.
+
+\subsubsection{RNF-04: Persistencia y Recuperación de Sesiones}
+
+Todos los datos de evaluación deben persistir automáticamente en localStorage. El usuario debe poder recargar la página o cerrar el navegador sin pérdida de progreso de la sesión activa.
+
+\subsubsection{RNF-05: Privacidad y Preparación para Despliegue Seguro}
+
+Por defecto, todos los datos permanecen en el cliente. El backend actual actúa principalmente como servidor estático y receptor opcional de eventos. Futuras versiones deben soportar transmisión HTTPS y almacenamiento encriptado cuando se active el modo servidor.
+
+\section{Diagrama de Casos de Uso}
+
+\textbf{Nota sobre los actores:}  
+En la implementación actual, el flujo de evaluación es principalmente **autónomo por parte del estudiante**. El estudiante accede al sistema, selecciona su rol, se registra y comienza la evaluación por iniciativa propia (ver rutas `/tutorial` → `/evaluation-prep`). El actor ``Docente/Facilitador'' representa un rol de supervisión (por ejemplo, un profesor que revisa el avance de su grupo), pero actualmente no tiene la capacidad de iniciar evaluaciones en nombre de los estudiantes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.94\textwidth]{figuras/figura1_casos_de_uso.png}
+    \caption{Diagrama de casos de uso del sistema MetaPathFinder. Nota importante: en la versión actual del sistema, la evaluación es iniciada de forma autónoma por el propio Estudiante (flujo self-service). El actor ``Docente / Facilitador'' tiene principalmente permisos de supervisión y consulta de resultados de sus estudiantes, no de inicio directo de evaluaciones.}
+    \label{fig:casos-uso}
+\end{figure}
+
+\section{Arquitectura del Sistema}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.94\textwidth]{figuras/figura2_arquitectura_sistema.png}
+    \caption{Arquitectura de alto nivel de MetaPathFinder (vista de contenedores y componentes principales, incluyendo la capa de Aprendizaje Automático). El sistema combina un frontend React con motor de tracking cognitivo, una biblioteca de retos interactivos y un motor híbrido de ML: Árbol de Decisión para clasificación en tiempo real + asignación de micro-cápsulas, y Random Forest para análisis batch y descubrimiento de patrones.}
+    \label{fig:arquitectura}
+\end{figure}
+
+\section{Entrega de Requerimientos}
+
+\subsection{RF-01: Flujo de Evaluación Metacognitiva en Tres Fases por Nivel}
+
+Se implementó el flujo completo en el componente principal \texttt{CognitiveChallenge.tsx} (páginas \texttt{/challenge}, \texttt{/calibration}, \texttt{/metacognitive-strategies}) junto con \texttt{EvaluationStart.tsx} y \texttt{PreTest.tsx}.
+
+El flujo sigue la secuencia:
+
+\begin{verbatim}
+intro → perception (Juicio) → challenge (Resolución con Board interactivo) 
+        → calibration → (decisión: avanzar / repetir con variación / freno)
+\end{verbatim}
+
+La decisión de avance se basa en la calibración calculada:
+
+\[
+\text{Calibración} = \left( \frac{\text{Desempeño Real}}{\text{Juicio Inicial}} \right) \times 100
+\]
+
+Umbrales por nivel: Básico 60\%, Intermedio 70\%, Experto 80\%.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/figura3_interfaz_juicio_perception.png}
+    \caption{Interfaz de captura del Juicio de Aprendizaje (JOL / PreTest). El estudiante expresa su nivel de confianza (1-10) antes de iniciar la resolución del reto.}
+    \label{fig:juicio}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/figura4_reto_interactivo_ejemplo.png}
+    \caption{Componente interactivo de resolución (ejemplo: TimelineGame, CodingIDEBoard u otro board). El sistema registra automáticamente todas las interacciones mediante el hook \texttt{useCognitiveTracking}.}
+    \label{fig:reto}
+\end{figure}
+
+\subsection{RF-02: Seguimiento Automático de Comportamiento Cognitivo en Tiempo Real}
+
+El hook \texttt{useCognitiveTracking.ts} (activado globalmente en \texttt{AppLayout}) implementa listeners pasivos para:
+
+\begin{itemize}
+    \item \texttt{visibilitychange} $\rightarrow$ evento \texttt{COGNITIVE\_BIAS} (Distracción).
+    \item \texttt{scroll} excesivo $\rightarrow$ Desorientación.
+    \item \texttt{mousemove} con patrones circulares o de gran distancia $\rightarrow$ Desorientación.
+    \item Intervalo de inactividad $>30$s $\rightarrow$ Reflexión o Fatiga.
+    \item Latencia entre eventos para detección de Impulsividad (Metacognitive Brake).
+\end{itemize}
+
+Todos los eventos se despachan al \texttt{useCognitiveStore} y se persisten automáticamente.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/figura5_estado_cognitivo_tiempo_real.png}
+    \caption{Visualización del estado cognitivo actual (\texttt{Flow}, \texttt{Frustration}, etc.) y métricas de carga cognitiva / calibración actualizadas en tiempo real por el motor del sistema.}
+    \label{fig:estado-cognitivo}
+\end{figure}
+
+\subsection{RF-03 y RF-04: Biblioteca de Retos y Sistema de Frenos/Estrategias}
+
+La biblioteca se define en \texttt{dynamicChallengeBank.ts} (más de 30 retos) y se mapea a componentes reales en \texttt{CognitiveChallenge.tsx} mediante un \texttt{componentMap}.
+
+El sistema de variaciones y bloqueo de categorías está implementado en el flujo de \texttt{CognitiveChallenge} (manejo de primer y segundo fallo, \texttt{blockedCategories}, \texttt{getAvailableAlternative}).
+
+Las estrategias metacognitivas (definidas en \texttt{metacognitiveStrategies.ts}) se asignan y monitorean mediante el componente \texttt{StrategyMonitor}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/figura6_freno_metacognitivo_estrategia.png}
+    \caption{Intervención de freno metacognitivo o monitor de estrategia asignada. El sistema detecta patrones de riesgo (impulsividad, doble fallo, sobrecarga) y activa retroalimentación reflexiva o estrategias de autorregulación.}
+    \label{fig:freno}
+\end{figure}
+
+\subsection{RF-05 y RF-06: Dashboard Administrador y Gestión de Estudiantes}
+
+El componente \texttt{RegisteredUsers.tsx} (ruta \texttt{/registered-users}) implementa la vista completa de gestión:
+
+\begin{itemize}
+    \item Tarjetas por estudiante con métricas resumen.
+    \item Filtros por estado.
+    \item Modal con análisis detallado por pregunta (tiempo, clics, correctitud, navegación).
+    \item Gráficos de eficiencia, velocidad y estabilidad usando Recharts.
+    \item Acciones de eliminación y consolidación de sesiones.
+\end{itemize}
+
+La exportación de datos se realiza desde el store (\texttt{getStudentResults}).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/figura7_dashboard_usuarios_registrados.png}
+    \caption{Vista del dashboard administrador (/registered-users). Lista de estudiantes con métricas agregadas y filtros por estado, con acceso a detalle expandible por estudiante.}
+    \label{fig:dashboard}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/figura8_modal_analisis_estudiante.png}
+    \caption{Modal de análisis detallado por estudiante. Se muestran métricas por pregunta/reto (tiempo, clics, correctitud, navegación), gráficos de eficiencia y patrones de interacción.}
+    \label{fig:modal-analisis}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/figura9_graficos_analiticos_calibracion.png}
+    \caption{Visualizaciones analíticas científicas disponibles en el dashboard (scatter plots de calibración, mapas de calor de interacción, líneas de tendencia y distribución de estados cognitivos).}
+    \label{fig:analytics}
+\end{figure}
+
+\subsection{RF-07: Motor de Estado Cognitivo}
+
+Implementado principalmente en \texttt{useCognitiveStore.ts} con el tipo \texttt{CognitiveState} y las acciones \texttt{updateCognitiveMetrics} y \texttt{setCognitiveState}. El motor local combina heurísticas basadas en eventos con valores de calibración y carga cognitiva.
+
+\subsection{RF-08: Soporte para Experimentos}
+
+El store mantiene campos específicos (\texttt{latentStrategies}, \texttt{transferReadiness}, \texttt{assignedStrategyId}) que se registran en los eventos de tipo \texttt{EVALUATION\_COMPLETED} y \texttt{COGNITIVE\_BIAS}. Esto permite la comparación entre condiciones experimentales.
+
+\subsection{RF-09 y RF-10: Motor Híbrido de Aprendizaje Automático (Árbol de Decisión + Random Forest) y Micro-cápsulas Personalizadas}
+
+MetaPathFinder adoptará una arquitectura de aprendizaje automático híbrida de dos etapas que responde a necesidades distintas del proceso de evaluación metacognitiva:
+
+\begin{itemize}
+    \item \textbf{Etapa en tiempo real (Online):} Árbol de Decisión.
+    \item \textbf{Etapa de análisis masivo (Batch/Offline):} Bosque Aleatorio (Random Forest).
+\end{itemize}
+
+\subsubsection{Justificación de la elección de modelos}
+
+La decisión de utilizar ambos modelos (en lugar de uno solo) se basa en un análisis riguroso de las características del problema y de las necesidades de sustentación académica:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}p{3.8cm}p{5.5cm}p{5.5cm}@{}}
+\toprule
+\textbf{Característica} & \textbf{Árbol de Decisión} & \textbf{Random Forest} \\
+\midrule
+¿Qué es? & Un solo árbol de reglas interpretables. & Un conjunto (bosque) de muchos árboles que votan. \\
+\midrule
+Rol en MetaPathFinder & \textbf{Motor de Reglas Inmediato}: Clasifica al estudiante pregunta por pregunta para asignarle su micro-cápsula de refuerzo en el momento. & \textbf{Analista del Dataset}: Analiza las trazas completas de decenas de estudiantes para descubrir tendencias generales y predecir riesgo futuro. \\
+\midrule
+Punto fuerte & Alta explicabilidad (``caja blanca''). Se puede mostrar al jurado el camino exacto de decisión (ej: ``Alta confianza + Fallo $\rightarrow$ Sobreconfiado $\rightarrow$ Micro-cápsula de Verificación Sistemática''). & Alta precisión y robustez. Reduce drásticamente el sobreajuste (overfitting) y descubre interacciones complejas entre variables. \\
+\midrule
+Punto débil & Puede volverse rígido o sensible a variaciones pequeñas en datos nuevos. & Es una ``caja negra'' (difícil explicar el voto combinado de cientos de árboles). \\
+\midrule
+Momento de uso & Inmediatamente después de cada respuesta o nivel (latencia $<$ 200 ms). & Periódicamente, cuando se acumulan suficientes datos (CSV de 40+ estudiantes). \\
+\bottomrule
+\end{tabular}
+\caption{Comparación técnica y pedagógica entre el Árbol de Decisión y el Random Forest en la arquitectura de MetaPathFinder.}
+\label{tab:ml-comparacion}
+\end{table}
+
+\textbf{Analogía sencilla para sustentación:}
+
+\begin{itemize}
+    \item El \textbf{Árbol de Decisión} es como un profesor experimentado que, apenas ve que un estudiante respondió muy rápido y se equivocó, le dice al instante: ``Tú estás sobreconfiado. Mira este video de 2 minutos sobre cómo verificar antes de responder''.
+    \item El \textbf{Random Forest} es como un equipo de 100 profesores que, al final del semestre, analizan todos los exámenes de los 40 alumnos juntos y descubren patrones que ningún profesor individual había visto (``Los alumnos que responden en menos de 8 segundos en temas de Lógica tienen 3.2 veces más probabilidad de mostrar sobreconfianza sostenida'').
+\end{itemize}
+
+\subsubsection{Flujo de micro-cápsulas personalizadas}
+
+Una vez que el Árbol de Decisión clasifica el perfil del estudiante (Sobreconfiado, Subestimado, Impulsivo, Desorientado, etc.), el sistema entrega una micro-cápsula específica:
+
+\begin{itemize}
+    \item \textbf{Sobreconfiado} $\rightarrow$ Micro-cápsula de ``Verificación Sistemática'' (técnicas de revisión antes de responder).
+    \item \textbf{Subestimado} $\rightarrow$ Micro-cápsula de ``Reconocimiento de Fortalezas'' + ejercicios de autoeficacia.
+    \item \textbf{Impulsivo} $\rightarrow$ Micro-cápsula de ``Freno Cognitivo'' (técnicas de pausa y respiración).
+    \item \textbf{Desorientado} $\rightarrow$ Micro-cápsula de ``Estrategias de Navegación y Estructuración''.
+\end{itemize}
+
+Esta asignación ocurre en el mismo flujo de la evaluación, maximizando la oportunidad de intervención formativa inmediata.
+
+\subsubsection{Implementación técnica prevista}
+
+\begin{itemize}
+    \item El Árbol de Decisión se implementará inicialmente con reglas explícitas en TypeScript (fácil de auditar) y posteriormente se migrará a un modelo exportado desde \texttt{scikit-learn} (Python) vía una API ligera o WebAssembly.
+    \item El Random Forest se entrenará en Python con \texttt{scikit-learn} sobre los datasets exportados desde el dashboard. Se generarán artefactos (modelo \texttt{.pkl} + lista de importancia de features) que podrán cargarse en el sistema para consultas futuras.
+    \item Ambos modelos formarán parte de una nueva capa de ``Cognitive ML Service'' que se comunicará con el frontend React.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/figura10_microcapsula_recomendada.png}
+    \caption{Ejemplo de micro-cápsula personalizada mostrada inmediatamente después de la clasificación del perfil metacognitivo mediante el Árbol de Decisión. La micro-cápsula está directamente vinculada al sesgo detectado (sobreconfianza, impulsividad, etc.).}
+    \label{fig:microcapsula}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/figura11_importancia_variables_randomforest.png}
+    \caption{Visualización de la importancia de variables obtenida del modelo Random Forest (ejemplo ilustrativo). El gráfico permite identificar qué factores (tiempo de respuesta, nivel de confianza inicial, tema, latencia entre clics, etc.) tienen mayor peso predictivo sobre el rendimiento metacognitivo.}
+    \label{fig:feature-importance}
+\end{figure}
+
+\section{Conclusión}
+
+MetaPathFinder constituye una plataforma digital de nueva generación para la evaluación y el desarrollo de la metacognición. Su diseño integra principios de la psicometría moderna, el seguimiento de comportamiento en interfaces digitales y la pedagogía de ciclo cerrado, generando datos de proceso que los instrumentos tradicionales no pueden capturar.
+
+Las implicaciones pedagógicas y de investigación de MetaPathFinder abarcan múltiples actores del ecosistema educativo:
+
+\begin{enumerate}
+    \item \textbf{Investigadores y académicos (publicación Q1):}
+    \begin{itemize}
+        \item Generación de datasets de alta granularidad (eventos con timestamp, latencias, patrones de interacción, calibración por reto).
+        \item Soporte nativo para diseños experimentales con grupos control y experimental (transferencia de estrategias metacognitivas).
+        \item Métricas validadas psicométricamente listas para análisis estadístico y reportes de investigación.
+    \end{itemize}
+    
+    \item \textbf{Docentes y facilitadores:}
+    \begin{itemize}
+        \item Diagnóstico inmediato del estado metacognitivo de sus estudiantes sin necesidad de instrumentos externos.
+        \item Retroalimentación formativa rica (calibración, frenos, estrategias) que puede integrarse directamente en la práctica de aula.
+        \item Posibilidad de adaptar la dificultad y el andamiaje según los patrones observados.
+    \end{itemize}
+    
+    \item \textbf{Estudiantes de educación media y superior:}
+    \begin{itemize}
+        \item Desarrollo explícito de la competencia metacognitiva a través de ciclos reflexivos repetidos.
+        \item Toma de conciencia de sesgos (sobreconfianza, impulsividad, distracción) mediante evidencia objetiva de su propio comportamiento.
+        \item Transferencia de estrategias de autorregulación a otros dominios de aprendizaje.
+    \end{itemize}
+    
+    \item \textbf{Instituciones educativas y programas de investigación:}
+    \begin{itemize}
+        \item Herramienta didáctica de alto valor para cursos de psicología educativa, didáctica, formación docente e investigación en aprendizaje autorregulado.
+        \item Infraestructura para la generación sistemática de evidencia sobre intervenciones metacognitivas.
+        \item Potencial de escalamiento a estudios multi-institucionales mediante la estandarización del banco de retos y los protocolos de captura de datos.
+    \end{itemize}
+\end{enumerate}
+
+El desarrollo continuo de MetaPathFinder contempla la implementación completa del motor híbrido de aprendizaje automático (Árbol de Decisión en tiempo real + Random Forest en modo batch) para la predicción temprana de estados de riesgo metacognitivo y la entrega de micro-cápsulas educativas personalizadas, la expansión del banco de retos a nuevos dominios disciplinares, y la transición hacia un backend con persistencia en base de datos cuando se requiera despliegue institucional a gran escala.
+
+La combinación de rigor psicométrico, riqueza de interacción y usabilidad moderna posiciona a MetaPathFinder como una contribución significativa a la transferencia de conocimiento científico sobre metacognición hacia la práctica educativa cotidiana y la investigación de alto impacto.
+
+\end{document}

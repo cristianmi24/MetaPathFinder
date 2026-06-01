@@ -103,6 +103,8 @@ interface CognitiveStore {
   setCurrentChallengeId: (id: string | null) => void;
   currentSessionId: string | null;
   setCurrentSessionId: (id: string | null) => void;
+  assignedStrategyId: string | null;
+  setAssignedStrategyId: (id: string | null) => void;
   removeStudent: (id: string) => void;
   consolidateSession: () => void;
 }
@@ -126,9 +128,11 @@ export const useCognitiveStore = create<CognitiveStore>()(
       currentLevel: 1,
       currentChallengeId: null,
       currentSessionId: null,
+      assignedStrategyId: null,
       setCurrentLevel: (level) => set({ currentLevel: level }),
       setCurrentChallengeId: (id) => set({ currentChallengeId: id }),
       setCurrentSessionId: (id) => set({ currentSessionId: id }),
+      setAssignedStrategyId: (id) => set({ assignedStrategyId: id }),
 
       setUser: (user) => set({ user }),
       setRole: (role) => set({ role }),
@@ -400,7 +404,8 @@ export const useCognitiveStore = create<CognitiveStore>()(
           lastEventTime: Date.now(),
           currentTestSession: null,
           currentSessionId: null,
-          currentLevel: 1
+          currentLevel: 1,
+          assignedStrategyId: null,
         });
       }
     }),

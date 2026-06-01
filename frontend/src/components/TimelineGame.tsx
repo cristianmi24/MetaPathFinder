@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export default function TimelineGame(){
+export default function TimelineGame({ onValidation }: { onValidation?: (success: boolean) => void } = {}){
   useEffect(()=>{
     const ITEMS = [
       {id:1, name:"Rueda", year:"3300 a.C.", order:1, img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Wooden_wheel.jpg/320px-Wooden_wheel.jpg"},
@@ -122,9 +122,18 @@ export default function TimelineGame(){
         if(item && item.order===i+1){correct++; tick.classList.add("ok"); tick.textContent="✓";} else {tick.classList.add("bad"); tick.textContent="✗"}
         el.appendChild(tick);
       });
-      if(correct===8){bar.className="result-bar show win"; bar.textContent = "🎉 ¡Perfecto! Ordenaste todos los artefactos correctamente. ¡Eres un genio de la historia!"}
-      else if(correct>=5){bar.className="result-bar show partial"; bar.textContent = "🌟 ¡Casi! Tienes "+correct+" de 8 en el lugar correcto. ¡Inténtalo de nuevo!"}
-      else {bar.className="result-bar show lose"; bar.textContent = "😅 Solo "+correct+" correctos. ¡No te rindas, vuelve a intentarlo!"}
+      if(correct===8){
+        bar.className="result-bar show win"; bar.textContent = "🎉 ¡Perfecto! Ordenaste todos los artefactos correctamente. ¡Eres un genio de la historia!";
+        if((window as any).__onValidationCb) (window as any).__onValidationCb(true);
+      }
+      else if(correct>=5){
+        bar.className="result-bar show partial"; bar.textContent = "🌟 ¡Casi! Tienes "+correct+" de 8 en el lugar correcto. ¡Inténtalo de nuevo!";
+        if((window as any).__onValidationCb) (window as any).__onValidationCb(false);
+      }
+      else {
+        bar.className="result-bar show lose"; bar.textContent = "😅 Solo "+correct+" correctos. ¡No te rindas, vuelve a intentarlo!";
+        if((window as any).__onValidationCb) (window as any).__onValidationCb(false);
+      }
     }
 
     function resetGame(){
@@ -137,6 +146,7 @@ export default function TimelineGame(){
 
     (window as any).__checkOrder = checkOrder;
     (window as any).__resetGame = resetGame;
+    (window as any).__onValidationCb = onValidation;
 
     setTimeout(()=>resetGame(), 50);
 
@@ -145,6 +155,7 @@ export default function TimelineGame(){
       delete (window as any).__onDragEnd;
       delete (window as any).__checkOrder;
       delete (window as any).__resetGame;
+      delete (window as any).__onValidationCb;
     };
   },[]);
 
@@ -207,7 +218,6 @@ export default function TimelineGame(){
 
         <div className="check-row">
           <button className="check-btn" onClick={()=>{(window as any).__checkOrder && (window as any).__checkOrder()}}>Verificar orden</button>
-          <button className="reset-btn" onClick={()=>{(window as any).__resetGame && (window as any).__resetGame()}}>Reiniciar</button>
         </div>
 
         <div className="result-bar" id="result-bar"></div>
