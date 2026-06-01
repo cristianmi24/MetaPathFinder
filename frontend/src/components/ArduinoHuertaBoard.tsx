@@ -105,11 +105,14 @@ body {
 .dark .editor-header{background:#1e1e2e;border-color:#313244;}
 .e-dots{display:flex;gap:5px}
 .e-dot{width:11px;height:11px;border-radius:50%}
-.e-fname{font-size:11px;color:#89b4fa;font-family:var(--font-mono)}
-.e-lang{font-size:10px;color:#6c7086}
+.e-fname{font-size:11px;color:#2563eb;font-family:var(--font-mono)}
+.dark .e-fname{color:#89b4fa}
+.e-lang{font-size:10px;color:#64748b}
+.dark .e-lang{color:#6c7086}
 .editor-body{background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg)}
 .dark .editor-body{background:#1e1e2e;border-color:#313244;}
-#code-ed{width:100%;min-height:360px;background:transparent;border:none;outline:none;font-family:var(--font-mono);font-size:12.5px;color:#cdd6f4;padding:14px;resize:vertical;line-height:1.75;tab-size:2}
+#code-ed{width:100%;min-height:360px;background:transparent;border:none;outline:none;font-family:var(--font-mono);font-size:12.5px;color:#1f2937;padding:14px;resize:vertical;line-height:1.75;tab-size:2}
+.dark #code-ed{color:#cdd6f4}
 
 .hint-section{margin-bottom:14px}
 .hint-section-title{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px}
@@ -595,7 +598,7 @@ void loop() {
 </div>
 
 <script>
-let stepsUnlocked=1, stepsCompleted=0, hintsUsed=[], codeVerified=false;
+let stepsUnlocked=0, stepsCompleted=0, hintsUsed=[], codeVerified=false;
 const ORIG=document.getElementById('code-ed').value;
 
 // Apply dark mode theme if configured in parent page body class
@@ -603,8 +606,12 @@ if (window.parent.document.body.classList.contains('dark') || window.parent.docu
   document.body.classList.add('dark');
 }
 
+// Initial sync
+updateProgress();
+goStep(0);
+
 function goStep(i){
-  if(i>=stepsUnlocked)return;
+  if(i > stepsUnlocked) return;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page'+i).classList.add('active');
   document.querySelectorAll('.snav-btn').forEach((b,j)=>{
@@ -616,10 +623,10 @@ function goStep(i){
 }
 
 function completeStep(i){
-  if(i+1>stepsUnlocked)stepsUnlocked=i+1;
-  stepsCompleted=Math.max(stepsCompleted,i+1);
+  stepsUnlocked = Math.max(stepsUnlocked, i + 1);
+  stepsCompleted = Math.max(stepsCompleted, i + 1);
   updateProgress();
-  goStep(i+1);
+  goStep(i + 1);
 }
 
 function updateProgress(){
@@ -713,7 +720,7 @@ function renderScore(pct,items,pen){
   if(pct>=70){
     na.style.display='flex';
     na.innerHTML='<i class="ti ti-arrow-right" style="font-size:16px" aria-hidden="true"></i> ¡Buen trabajo! Ahora ve al <b style="margin:0 4px">Paso 4</b> para probar la simulación en tiempo real. <button class="btn-main" style="margin-left:auto;padding:6px 14px;font-size:12px" onclick="completeStep(2)">Ir a prueba →</button>';
-    if(stepsUnlocked<3)stepsUnlocked=3;
+    stepsUnlocked = Math.max(stepsUnlocked, 3);
     updateProgress();
     
     // Automatically report success to MetaPathFinder
