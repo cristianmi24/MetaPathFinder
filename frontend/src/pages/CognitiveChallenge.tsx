@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
@@ -144,6 +144,23 @@ export function CognitiveChallenge() {
   
   const [showHint, setShowHint] = useState(false);
   const [boardSuccess, setBoardSuccess] = useState(false);
+
+  // Stable validation handler to prevent infinite loops in child boards
+  // (EssayBoard, CodingIDEBoard, etc. call onValidation inside useEffect when their result changes)
+  const handleBoardValidation = useCallback((success: boolean, customMessage?: string) => {
+    setBoardSuccess(success);
+    setTotalRuns(prev => prev + 1);
+
+    if (success) {
+      setConsoleMessages([{
+        type: 'ok',
+        text: customMessage || '> ¡Reto interactivo completado con éxito! Puedes avanzar.'
+      }]);
+      setErrCount(0);
+    } else {
+      setErrCount(prev => prev + 1);
+    }
+  }, []); // Empty deps because all setters from useState are stable
 
   // JOL promedio de Fase A (escala 1-5 → normalizado a 10)
   const jolValues = Object.values(initialJolAnswers).filter(v => typeof v === 'number') as number[];
@@ -374,93 +391,42 @@ export function CognitiveChallenge() {
             <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               {React.cloneElement(componentMap[challenge.id] as any, {
                 challengeId: challenge.id,
-                onValidation: (success: boolean) => {
-                  setBoardSuccess(success);
-                  setTotalRuns(prev => prev + 1);
-                  if (success) {
-                    setConsoleMessages([{ type: 'ok', text: '> ¡Reto interactivo completado con éxito! Puedes avanzar.' }]);
-                    setErrCount(0);
-                  } else {
-                    setErrCount(prev => prev + 1);
-                  }
-                }
+                onValidation: (success: boolean) => handleBoardValidation(success)
               })}
             </div>
           ) : getBoardType(challenge.id) === 'drag_drop' ? (
             <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               <DragAndDropBoard 
                 challengeId={challenge.id} 
-                onValidation={(success) => {
-                  setBoardSuccess(success);
-                  setTotalRuns(prev => prev + 1);
-                  if (success) {
-                    setConsoleMessages([{ type: 'ok', text: '> ¡Orden correcto! Reto completado con éxito.' }]);
-                    setErrCount(0);
-                  } else {
-                    setConsoleMessages([{ type: 'sys', text: '> Entorno preparado.' }]);
-                    setErrCount(prev => prev + 1);
-                  }
-                }} 
+                onValidation={(success) => handleBoardValidation(success, '> ¡Orden correcto! Reto completado con éxito.')} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'text' ? (
             <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               <EssayBoard 
                 challengeId={challenge.id} 
-                onValidation={(success) => {
-                  setBoardSuccess(success);
-                  setTotalRuns(prev => prev + 1);
-                  if (success) {
-                    setErrCount(0);
-                  } else {
-                    setErrCount(prev => prev + 1);
-                  }
-                }} 
+                onValidation={(success) => handleBoardValidation(success)} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'canvas' ? (
             <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               <CanvasBoard 
                 challengeId={challenge.id} 
-                onValidation={(success) => {
-                  setBoardSuccess(success);
-                  setTotalRuns(prev => prev + 1);
-                  if (success) {
-                    setErrCount(0);
-                  } else {
-                    setErrCount(prev => prev + 1);
-                  }
-                }} 
+                onValidation={(success) => handleBoardValidation(success)} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'phone' ? (
             <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               <PhoneDismantlingBoard 
                 challengeId={challenge.id} 
-                onValidation={(success) => {
-                  setBoardSuccess(success);
-                  setTotalRuns(prev => prev + 1);
-                  if (success) {
-                    setErrCount(0);
-                  } else {
-                    setErrCount(prev => prev + 1);
-                  }
-                }} 
+                onValidation={(success) => handleBoardValidation(success)} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'ide' ? (
             <div className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20">
               <CodingIDEBoard 
                 challengeId={challenge.id} 
-                onValidation={(success) => {
-                  setBoardSuccess(success);
-                  setTotalRuns(prev => prev + 1);
-                  if (success) {
-                    setErrCount(0);
-                  } else {
-                    setErrCount(prev => prev + 1);
-                  }
-                }} 
+                onValidation={(success) => handleBoardValidation(success)} 
               />
             </div>
           ) : (
