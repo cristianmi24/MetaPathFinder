@@ -173,6 +173,10 @@ export function CognitiveChallenge() {
     }
   }, [addEvent, challenge.id, seconds, clickCount]);
 
+  const handleBoardAreaClick = () => {
+    setClickCount(p => p + 1);
+  };
+
   // JOL promedio de Fase A (escala 1-5 → normalizado a 10)
   const jolValues = Object.values(initialJolAnswers).filter(v => typeof v === 'number') as number[];
   const jolInicial = jolValues.length > 0 ? (jolValues.reduce((a,b) => a+b, 0) / jolValues.length) * 2 : undefined;
@@ -218,10 +222,6 @@ export function CognitiveChallenge() {
       currentMousePos.current = { x: e.clientX, y: e.clientY };
     };
 
-  // Only count clicks inside the actual challenge board (not sidebar or metrics panel)
-  const handleBoardAreaClick = () => {
-    setClickCount(p => p + 1);
-  };
     window.addEventListener('mousemove', trackMouse);
     return () => {
       clearInterval(timer);
