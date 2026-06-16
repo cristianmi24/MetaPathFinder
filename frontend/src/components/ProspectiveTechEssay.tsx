@@ -136,7 +136,7 @@ export function ProspectiveTechEssay({ challengeId, onValidation }: ProspectiveT
       {showFeedback && (
         <div className="mx-6 mt-4 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/30">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-bold">Evaluación de estructura</span>
+            <span className="text-sm font-bold">Revisión de estructura</span>
             <span className={`text-lg font-black ${getNivelColor()}`}>
               {result.nivel} ({result.nota}/9)
             </span>

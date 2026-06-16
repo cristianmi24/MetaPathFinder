@@ -60,7 +60,7 @@ export const jolGenerales: JolGeneral[] = [
     "id": "JG-A1",
     "nivel": "Avanzado",
     "codigo": "A-G1",
-    "pregunta": "Considerando todos los criterios de evaluación de este reto, ¿en qué porcentaje estás seguro/a de cumplirlos todos? (0 % = ninguno · 100 % = todos con certeza)",
+    "pregunta": "Considerando todos los criterios de este reto, ¿en qué porcentaje estás seguro/a de cumplirlos todos? (0 % = ninguno · 100 % = todos con certeza)",
     "escala": "0 % – 100 %",
     "dimension": "Calibración metacognitiva de criterios"
   },

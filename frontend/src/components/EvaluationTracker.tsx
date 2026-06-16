@@ -81,7 +81,7 @@ export function EvaluationTracker({
       {!profileLabel && currentPhase === 'Estrategias' && (
         <div className="em-perfil-chip calibrated">
           <Trophy className="w-3.5 h-3.5" />
-          <span>Evaluación Finalizada</span>
+          <span>Diagnóstico Completado</span>
         </div>
       )}
 

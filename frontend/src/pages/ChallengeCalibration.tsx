@@ -262,7 +262,7 @@ export function ChallengeCalibration() {
             <div className="fc-interv-item">
               <div className="fc-interv-icon info"><Info className="w-5 h-5" /></div>
               <div className="fc-interv-body">
-                <h4 className="fc-interv-title">Autoevaluación guiada</h4>
+                <h4 className="fc-interv-title">Autodiagnóstico guiado</h4>
                 <p className="fc-interv-desc">Identifica 3 supuestos erróneos que tenías al inicio del reto.</p>
               </div>
             </div>

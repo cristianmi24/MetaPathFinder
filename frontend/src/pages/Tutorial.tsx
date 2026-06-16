@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Target, Zap, ShieldCheck, ChevronRight, Sparkles } from 'lucide-react';
+import { Target, Zap, ShieldCheck, ChevronRight, Sparkles, MousePointerClick, ListOrdered } from 'lucide-react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,7 +8,7 @@ export function Tutorial() {
   const navigate = useNavigate();
   const { addEvent, setCurrentLevel, setCurrentChallengeId } = useCognitiveStore();
 
-  const startEvaluationAfterTutorial = () => {
+  const startDiagnosisAfterTutorial = () => {
     setCurrentLevel(1);
     setCurrentChallengeId(null);
     addEvent('PHASE_START', { phase: 'Juicio_Pretest', theme: 'Autopercepción_Programación' });
@@ -26,34 +26,55 @@ export function Tutorial() {
           <div className="flex flex-col md:flex-row gap-12 items-center">
             <div className="flex-1 space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-secondary/10 text-secondary rounded-full text-[10px] font-black uppercase tracking-widest">
-                <Sparkles className="w-4 h-4" /> Guía de Supervivencia Cognitiva
+                <Sparkles className="w-4 h-4" /> Guía de inicio
               </div>
               <h3 className="text-4xl font-black text-on-surface tracking-tight leading-tight">
-                ¿Cómo funciona esta <span className="text-primary italic">Evaluación</span>?
+                ¿Cómo funciona este <span className="text-primary italic">diagnóstico</span>?
               </h3>
               <p className="text-on-surface-variant font-medium text-lg leading-relaxed">
-                No es un examen tradicional. Es un entorno de <strong>calibración intensa</strong> diseñado para mapear tus fortalezas y puntos ciegos.
+                No es un examen tradicional. Es un entorno de <strong>diagnóstico metacognitivo</strong> que mapea tus fortalezas, lagunas y cómo calibras tu propia confianza antes y después de cada actividad.
               </p>
 
               <div className="space-y-4">
                 <TutorialStep
                   number="1"
-                  title="Fase A: Autopercepción"
-                  desc="Te presentamos el tema y nos dices qué tan seguro te sientes (1-10) antes de ver el reto."
+                  title="Fase A: Autopercepción (preguntas JOL)"
+                  desc="Antes del reto verás 5 preguntas de juicio de aprendizaje (JOL). Responde con honestidad: desliza el control, escribe un número o haz clic en la opción que mejor te describa. No hay respuestas correctas."
                   icon={Target}
                 />
                 <TutorialStep
                   number="2"
-                  title="Fase B: Ejecución Técnica"
-                  desc="Resuelves el desafío técnico en un contexto real (Médico, Gaming, E-commerce, etc)."
+                  title="Fase B: Actividad interactiva"
+                  desc="Resolverás un reto en pantalla: ordenar bloques, arrastrar elementos, escribir un texto o completar código. Lee las instrucciones paso a paso que aparecen antes de comenzar."
                   icon={Zap}
                 />
                 <TutorialStep
                   number="3"
-                  title="Protocolo de Andamiaje"
-                  desc="Si fallas, te damos una segunda oportunidad con un contexto diferente. Si fallas de nuevo, bloqueamos el nodo para que no te frustres."
+                  title="Fase C: Calibración y retroalimentación"
+                  desc="El sistema compara tu confianza inicial con tu desempeño real y te muestra si estabas bien calibrado, sobreconfiado o subestimado."
                   icon={ShieldCheck}
                 />
+              </div>
+
+              <div className="p-5 bg-surface-container rounded-2xl border border-outline-variant/20 space-y-3">
+                <h4 className="font-bold text-on-surface flex items-center gap-2 text-sm">
+                  <ListOrdered className="w-4 h-4 text-primary" /> ¿Cómo se elige tu reto?
+                </h4>
+                <p className="text-xs text-on-surface-variant leading-relaxed">
+                  El sistema selecciona <strong>aleatoriamente</strong> un reto de nivel Básico, Medio o Avanzado (según tu progreso), priorizando actividades N1 o N2 del componente curricular. Cada sesión puede ser diferente.
+                </p>
+              </div>
+
+              <div className="p-5 bg-primary/5 rounded-2xl border border-primary/20 space-y-3">
+                <h4 className="font-bold text-on-surface flex items-center gap-2 text-sm">
+                  <MousePointerClick className="w-4 h-4 text-primary" /> Cómo responder las preguntas JOL
+                </h4>
+                <ul className="text-xs text-on-surface-variant space-y-2 list-disc pl-4 leading-relaxed">
+                  <li><strong>Escala numérica (1–10):</strong> mueve el deslizador y pulsa «Continuar».</li>
+                  <li><strong>Porcentaje (0 %–100 %):</strong> ajusta el control hasta el valor que sientas y confirma.</li>
+                  <li><strong>Número (minutos o intentos):</strong> escribe un valor y pulsa «Continuar».</li>
+                  <li><strong>Opciones de texto:</strong> haz clic en la frase que mejor te represente; se resaltará en color. Luego pulsa «Continuar».</li>
+                </ul>
               </div>
             </div>
 
@@ -69,10 +90,10 @@ export function Tutorial() {
 
           <div className="mt-12 flex justify-center pt-8 border-t border-outline-variant/10">
             <button
-              onClick={startEvaluationAfterTutorial}
+              onClick={startDiagnosisAfterTutorial}
               className="px-16 py-6 bg-primary text-on-primary rounded-[2rem] font-black text-2xl shadow-2xl shadow-primary/40 hover:scale-105 transition-all active:scale-95 flex items-center gap-4"
             >
-              Entendido, ¡Empecemos! <ChevronRight className="w-8 h-8" />
+              Entendido, ¡empecemos! <ChevronRight className="w-8 h-8" />
             </button>
           </div>
         </div>
@@ -81,7 +102,7 @@ export function Tutorial() {
   );
 }
 
-function TutorialStep({ number, title, desc, icon: Icon }: { number: string; title: string; desc: string; icon: any }) {
+function TutorialStep({ number, title, desc, icon: Icon }: { number: string; title: string; desc: string; icon: React.ComponentType<{ className?: string }> }) {
   return (
     <div className="flex gap-4 p-4 hover:bg-surface-container transition-colors rounded-2xl border border-transparent hover:border-outline-variant/10">
       <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-sm shrink-0">

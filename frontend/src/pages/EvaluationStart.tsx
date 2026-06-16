@@ -5,6 +5,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../ThemeContext';
 import { dynamicChallengeBank, DynamicChallenge, JolEspecifico } from '../data/dynamicChallengeBank';
 import { jolGenerales } from '../data/jolGenerales';
+import { getChallengeBriefing } from '../data/challengeBriefings';
+import { getStrategyChallengeGuidance } from '../data/strategyChallengeGuidance';
 import { EvaluationTracker } from '../components/EvaluationTracker';
 import { nuevasEstrategias, Estrategia } from '../data/metacognitiveStrategies';
 import './EvaluationStart.css';
@@ -47,7 +49,7 @@ export function EvaluationStart() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const { addEvent, currentLevel, currentChallengeId, setCurrentChallengeId, setCurrentSessionId, currentSessionId, assignedStrategyId, setAssignedStrategyId } = useCognitiveStore();
+  const { addEvent, currentLevel, currentChallengeId, setCurrentChallengeId, setCurrentSessionId, currentSessionId, assignedStrategyId, strategyAssignedRandomly, setAssignedStrategyId } = useCognitiveStore();
 
   // Asignar estrategia aleatoria en el nivel 1, o recuperar la del store
   const assignedStrategy: Estrategia | null = assignedStrategyId
@@ -55,11 +57,11 @@ export function EvaluationStart() {
     : null;
 
   useEffect(() => {
-    if (currentLevel === 1 && !assignedStrategyId) {
+    if (!assignedStrategyId) {
       const randomIdx = Math.floor(Math.random() * nuevasEstrategias.length);
-      setAssignedStrategyId(nuevasEstrategias[randomIdx].id);
+      setAssignedStrategyId(nuevasEstrategias[randomIdx].id, true);
     }
-  }, [currentLevel, assignedStrategyId, setAssignedStrategyId]);
+  }, [assignedStrategyId, setAssignedStrategyId]);
   
   useEffect(() => {
     if (currentLevel === 1 || !currentSessionId) {
@@ -109,9 +111,11 @@ export function EvaluationStart() {
   const [jolAnswers, setJolAnswers] = useState<Record<string, number | string>>({});
   const [jolTimes, setJolTimes] = useState<Record<string, number>>({});
   const [showToast, setShowToast] = useState(false);
-  const [activeStep, setActiveStep] = useState(0); 
-  
+  const [activeStep, setActiveStep] = useState(0);
+  const [showJolPhase, setShowJolPhase] = useState(false);
+
   const stepStartTime = useRef(Date.now());
+  const jolSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (currentChallenge) {
@@ -131,8 +135,17 @@ export function EvaluationStart() {
       setActiveStep(0);
       setJolAnswers({});
       setJolTimes({});
+      setShowJolPhase(false);
     }
   }, [currentChallenge?.id]);
+
+  const handleBeginJol = () => {
+    setShowJolPhase(true);
+    stepStartTime.current = Date.now();
+    setTimeout(() => {
+      jolSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
 
   const currentJolQuestion = selectedJols[activeStep];
   const allJolsDone = activeStep >= selectedJols.length;
@@ -156,8 +169,18 @@ export function EvaluationStart() {
     stepStartTime.current = Date.now();
   };
 
+  const getEstimatedMinutes = (): number => {
+    const timeJol = selectedJols.find(j => j.id === 'JG-B2' || j.id === 'JG-M2');
+    if (timeJol && jolAnswers[timeJol.id] !== undefined) {
+      const val = parseInt(String(jolAnswers[timeJol.id]));
+      return isNaN(val) ? 0 : val;
+    }
+    return parseInt(currentChallenge?.tiempo_estimado || '0') || 0;
+  };
+
   const handleStart = () => {
     setShowToast(true);
+    const estimatedTime = getEstimatedMinutes();
     setTimeout(() => {
       setShowToast(false);
       addEvent('PHASE_START', {
@@ -166,6 +189,7 @@ export function EvaluationStart() {
         jol_answers: jolAnswers,
         jol_times: jolTimes,
         estrategia_asignada: assignedStrategyId,
+        estimatedTime,
       });
 
       navigate('/challenge', {
@@ -174,10 +198,21 @@ export function EvaluationStart() {
           jolAnswers, 
           jolTimes,
           assignedStrategyId,
+          estimatedTime,
         },
       });
     }, 2200);
   };
+
+  const briefing = currentChallenge
+    ? getChallengeBriefing(currentChallenge.id, currentChallenge.tiempo_estimado)
+    : null;
+  const strategyGuidance = currentChallenge && assignedStrategy
+    ? getStrategyChallengeGuidance(currentChallenge.id, assignedStrategy.id)
+    : null;
+
+  const isRetryVariation = Boolean(location.state?.retryVariation);
+  const isRandomAssignment = !isRetryVariation;
 
   if (!currentChallenge || selectedJols.length === 0) {
     return (
@@ -317,25 +352,188 @@ export function EvaluationStart() {
         <div className="mp-main">
           <div className="mp-competencia-tag">Nivel: {currentChallenge.nivel} ({currentChallenge.sub_nivel}) | {currentChallenge.componente}</div>
           <h1 className="mp-reto-title">{currentChallenge.titulo}</h1>
-          <p className="mp-reto-desc">{currentChallenge.descripcion}</p>
 
-          <div className="mp-divider"></div>
+          {!showJolPhase && isRandomAssignment && (
+            <div style={{
+              marginTop: '14px',
+              padding: '16px 18px',
+              background: 'rgba(56, 139, 253, 0.08)',
+              borderRadius: '14px',
+              border: '1px solid rgba(56, 139, 253, 0.28)',
+              display: 'flex',
+              gap: '12px',
+              alignItems: 'flex-start',
+            }}>
+              <div style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: 'rgba(56, 139, 253, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <i className="ti ti-dice-5" style={{ color: '#388bfd', fontSize: 18 }} />
+              </div>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.7px', color: '#388bfd', marginBottom: '6px' }}>
+                  {currentLevel === 1 ? 'Tu primer reto — asignado al azar' : 'Reto asignado al azar'}
+                </div>
+                {currentLevel === 1 ? (
+                  <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.6, margin: 0 }}>
+                    Acabas de empezar el diagnóstico. Entre todos los retos del nivel <strong>{currentChallenge.nivel}</strong>, el sistema
+                    {' '}<strong>te tocó este al azar</strong> — como un sorteo. Tú no lo elegiste: simplemente fue el que salió.
+                    Cada compañero puede recibir uno distinto, y eso es normal. Lo importante es cómo trabajas en él, no cuál te tocó.
+                  </p>
+                ) : (
+                  <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.6, margin: 0 }}>
+                    Para el nivel <strong>{currentChallenge.nivel}</strong>, el sistema <strong>te asignó este reto al azar</strong> entre
+                    las actividades disponibles ({currentChallenge.sub_nivel}). No lo seleccionaste tú — fue el sorteo del sistema.
+                  </p>
+                )}
 
-          {/* Indicador de progreso de preguntas */}
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', justifyContent: 'center' }}>
-            {selectedJols.map((_, i) => (
-              <div key={i} style={{
-                width: i === activeStep ? '32px' : '10px',
-                height: '10px',
-                borderRadius: '99px',
-                background: i < activeStep ? 'var(--primary)' : i === activeStep ? 'var(--primary)' : 'var(--mp-divider, #ddd)',
-                opacity: i < activeStep ? 0.4 : 1,
-                transition: 'all 0.3s ease'
-              }} />
-            ))}
-          </div>
+              </div>
+            </div>
+          )}
 
-          <AnimatePresence mode="wait">
+          {!showJolPhase && isRetryVariation && (
+            <div style={{
+              marginTop: '14px',
+              padding: '14px 18px',
+              background: 'rgba(242, 204, 96, 0.1)',
+              borderRadius: '14px',
+              border: '1px solid rgba(242, 204, 96, 0.35)',
+              fontSize: '13px',
+              color: 'var(--on-surface)',
+              lineHeight: 1.55,
+            }}>
+              <i className="ti ti-info-circle" style={{ color: '#f2cc60', marginRight: 6 }} />
+              Esta es una <strong>variación de apoyo</strong> del mismo tema, para que puedas practicar con un reto un poco más accesible. No fue sorteo: el sistema te la asignó según tu recorrido anterior.
+            </div>
+          )}
+
+          {!showJolPhase && briefing && (
+            <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ padding: '18px 20px', background: 'linear-gradient(135deg, var(--primary-container, rgba(79,55,139,0.12)) 0%, transparent 100%)', borderRadius: '16px', border: '1px solid var(--primary, #4f378b)33' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--primary)', marginBottom: '10px' }}>
+                  <i className="ti ti-school" style={{ marginRight: 6 }} />
+                  Presentación del reto
+                </div>
+                <p style={{ fontSize: '15px', color: 'var(--on-surface)', lineHeight: 1.65, margin: '0 0 14px 0', fontWeight: 500 }}>{briefing.saludo}</p>
+                <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.65, margin: '0 0 14px 0' }}>{briefing.contexto}</p>
+                <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', lineHeight: 1.65, margin: 0, fontStyle: 'italic' }}>{briefing.puente}</p>
+              </div>
+
+              <div style={{ padding: '16px 20px', background: 'var(--surface-container-low, rgba(0,0,0,0.03))', borderRadius: '14px', border: '1px solid var(--outline-variant, #e0e0e0)44' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
+                  ¿Qué vas a aprender?
+                </div>
+                <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.55, margin: 0 }}>{briefing.queVasAprender}</p>
+              </div>
+
+              <div style={{ padding: '16px 20px', background: 'var(--surface-container-low, rgba(0,0,0,0.03))', borderRadius: '14px', border: '1px solid var(--outline-variant, #e0e0e0)44' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
+                  ¿Qué vas a hacer en pantalla?
+                </div>
+                <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.6, margin: '0 0 12px 0' }}>{briefing.queVasHacer}</p>
+                <div style={{ padding: '12px 14px', background: 'var(--primary-container, rgba(79,55,139,0.06))', borderRadius: '10px', borderLeft: '3px solid var(--primary, #4f378b)' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--primary)', marginBottom: '6px' }}>
+                    Cuando llegue el momento, tu trabajo debe incluir
+                  </div>
+                  <p style={{ fontSize: '13px', color: 'var(--on-surface)', lineHeight: 1.55, margin: 0 }}>{briefing.tareaConcreta}</p>
+                </div>
+                {briefing.tiempoSugerido && (
+                  <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: '12px 0 0 0' }}>
+                    <i className="ti ti-clock" style={{ marginRight: 4 }} />
+                    Tiempo orientativo: <strong>{briefing.tiempoSugerido}</strong>
+                  </p>
+                )}
+              </div>
+
+              <div style={{ padding: '16px 20px', background: 'var(--primary-container, rgba(79,55,139,0.08))', borderRadius: '16px', border: '1px solid var(--primary, #4f378b)22' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--primary)', marginBottom: '10px' }}>
+                  Instrucciones paso a paso (sigue este orden)
+                </div>
+                <ol style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {briefing.pasosDetallados.map((step, i) => (
+                    <li key={i} style={{ fontSize: '13px', color: 'var(--on-surface)', lineHeight: 1.55, fontWeight: 500 }}>{step}</li>
+                  ))}
+                </ol>
+              </div>
+
+              <div style={{ padding: '14px 18px', background: 'rgba(35,134,54,0.08)', borderRadius: '12px', border: '1px solid rgba(35,134,54,0.25)' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', color: '#238636', marginBottom: '8px' }}>
+                  Recuerda
+                </div>
+                <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {briefing.recuerda.map((item, i) => (
+                    <li key={i} style={{ fontSize: '12px', color: 'var(--on-surface)', lineHeight: 1.5 }}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div style={{ textAlign: 'center', paddingTop: '8px' }}>
+                <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', margin: '0 0 16px 0', lineHeight: 1.55 }}>
+                  Cuando hayas leído todo y te sientas listo/a, pulsa el botón para continuar.
+                  <br />
+                  El siguiente paso son unas preguntas cortas sobre cómo te sientes — todavía no entras al reto.
+                </p>
+                <button
+                  type="button"
+                  className="mp-btn-iniciar ready"
+                  onClick={handleBeginJol}
+                  style={{ fontSize: '17px', padding: '14px 36px' }}
+                >
+                  Comenzar <i className="ti ti-arrow-right" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showJolPhase && (
+            <div ref={jolSectionRef} style={{ marginTop: '12px' }}>
+              {!allJolsDone && (
+                <>
+                  <div style={{ padding: '18px 20px', background: 'var(--surface-container-low, rgba(0,0,0,0.03))', borderRadius: '16px', border: '1px solid var(--outline-variant, #e0e0e0)55', marginBottom: '20px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--primary)', marginBottom: '10px' }}>
+                      <i className="ti ti-brain" style={{ marginRight: 6 }} />
+                      ¿Qué son las preguntas JOL?
+                    </div>
+                    <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.65, margin: '0 0 12px 0' }}>
+                      <strong>JOL</strong> significa <em>Juicio de Aprendizaje</em>. Son {selectedJols.length} preguntas breves que te hacemos <strong>antes</strong> de entrar al reto, para saber cómo te percibes en este momento.
+                    </p>
+                    <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', lineHeight: 1.6, margin: '0 0 12px 0' }}>
+                      No es un examen: <strong>no hay respuestas correctas ni incorrectas</strong>. Lo que importa es que respondas con honestidad, como cuando un profesor pregunta «¿qué tan preparado te sientes?» antes de una actividad.
+                    </p>
+                    <ul style={{ margin: '0 0 12px 0', paddingLeft: '20px', fontSize: '13px', color: 'var(--on-surface)', lineHeight: 1.55 }}>
+                      <li style={{ marginBottom: '6px' }}>Algunas preguntas son generales (tu confianza, el tiempo que crees que tardarás).</li>
+                      <li style={{ marginBottom: '6px' }}>Otras son específicas de este reto: «{currentChallenge.titulo}».</li>
+                      <li>Después compararemos lo que pensabas con lo que ocurre en la actividad — eso ayuda a entrenar tu metacognición.</li>
+                    </ul>
+                    <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: 0, fontStyle: 'italic' }}>
+                      Responde pregunta por pregunta. Puedes usar el deslizador, escribir un número o elegir una opción, según cada pregunta.
+                    </p>
+                  </div>
+                  <div className="mp-divider" />
+                </>
+              )}
+
+              {/* Indicador de progreso de preguntas */}
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', justifyContent: 'center' }}>
+                {selectedJols.map((_, i) => (
+                  <div key={i} style={{
+                    width: i === activeStep ? '32px' : '10px',
+                    height: '10px',
+                    borderRadius: '99px',
+                    background: i < activeStep ? 'var(--primary)' : i === activeStep ? 'var(--primary)' : 'var(--mp-divider, #ddd)',
+                    opacity: i < activeStep ? 0.4 : 1,
+                    transition: 'all 0.3s ease'
+                  }} />
+                ))}
+              </div>
+
+              <AnimatePresence mode="wait">
             {!allJolsDone ? (
               <motion.div
                 key={currentJolQuestion.id}
@@ -345,9 +543,15 @@ export function EvaluationStart() {
                 className="mp-meta-card"
               >
                 <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
-                  Pregunta {activeStep + 1} de {selectedJols.length}
+                  Pregunta JOL {activeStep + 1} de {selectedJols.length}
                 </div>
                 <p className="mp-meta-q">{currentJolQuestion.pregunta}</p>
+                <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', marginBottom: '12px', lineHeight: 1.5 }}>
+                  {detectScaleType(currentJolQuestion.escala) === 'slider' && 'Mueve el deslizador hasta el valor que sientas y pulsa «Continuar».'}
+                  {detectScaleType(currentJolQuestion.escala) === 'percent' && 'Ajusta el porcentaje de confianza y pulsa «Continuar».'}
+                  {detectScaleType(currentJolQuestion.escala) === 'number' && 'Escribe un número estimado y pulsa «Continuar».'}
+                  {detectScaleType(currentJolQuestion.escala) === 'options' && 'Haz clic en la opción que mejor te describa. Se resaltará al seleccionarla. Luego pulsa «Continuar».'}
+                </p>
                 {renderJolInput(currentJolQuestion)}
               </motion.div>
             ) : (
@@ -361,7 +565,7 @@ export function EvaluationStart() {
                 <div style={{ fontSize: '48px', marginBottom: '12px' }}>🚀</div>
                 <p className="mp-meta-q" style={{ fontSize: '20px' }}>¡Listo para iniciar!</p>
                 <p style={{ color: 'var(--on-surface-variant)', fontSize: '14px', marginBottom: '20px' }}>
-                  Has completado las {selectedJols.length} preguntas de autoevaluación. <br/>
+                  Has completado tus preguntas de autopercepción. <br/>
                   Tiempo estimado del reto: <strong>{currentChallenge.tiempo_estimado} min</strong>
                 </p>
 
@@ -379,21 +583,73 @@ export function EvaluationStart() {
                       textAlign: 'left',
                     }}
                   >
+                    <div style={{
+                      padding: '12px 14px',
+                      background: strategyAssignedRandomly ? 'rgba(56, 139, 253, 0.08)' : 'rgba(93, 202, 165, 0.08)',
+                      borderRadius: '10px',
+                      border: `1px solid ${strategyAssignedRandomly ? 'rgba(56, 139, 253, 0.25)' : 'rgba(93, 202, 165, 0.3)'}`,
+                      marginBottom: '12px',
+                      display: 'flex',
+                      gap: '10px',
+                      alignItems: 'flex-start',
+                    }}>
+                      <i className={`ti ${strategyAssignedRandomly ? 'ti-dice-5' : 'ti-hand-click'}`} style={{ color: strategyAssignedRandomly ? '#388bfd' : '#5dcaa5', fontSize: 16, marginTop: 2 }} />
+                      <p style={{ fontSize: '12px', color: 'var(--on-surface)', lineHeight: 1.55, margin: 0 }}>
+                        {strategyAssignedRandomly ? (
+                          <>
+                            Entre las 8 estrategias metacognitivas, el sistema <strong>te asignó esta al azar</strong> para el Nivel {currentChallenge.nivel}.
+                            No la elegiste tú — fue sorteo, igual que el reto. Durante la actividad tendrás herramientas de apoyo basadas en ella.
+                          </>
+                        ) : (
+                          <>
+                            Esta es la estrategia que <strong>tú elegiste</strong> al terminar el nivel anterior.
+                            La usarás como apoyo durante este reto del Nivel {currentChallenge.nivel}.
+                          </>
+                        )}
+                      </p>
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                       <div style={{ background: assignedStrategy.iconBg, border: `1px solid ${assignedStrategy.color}44`, borderRadius: '10px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <i className={`ti ${assignedStrategy.icon}`} style={{ color: assignedStrategy.color, fontSize: '18px' }}></i>
                       </div>
                       <div>
                         <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: assignedStrategy.color, marginBottom: '2px' }}>
-                          {currentLevel === 1 ? '🎯 Estrategia asignada por el sistema' : '🔁 Estrategia activa esta fase'}
+                          {strategyAssignedRandomly ? 'Estrategia asignada al azar' : 'Tu estrategia elegida'}
                         </div>
                         <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--on-surface)' }}>{assignedStrategy.nombre}</div>
                       </div>
                     </div>
                     <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', margin: '0 0 8px 0', lineHeight: 1.5 }}>{assignedStrategy.desc}</p>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: assignedStrategy.color, background: `${assignedStrategy.color}18`, borderRadius: '8px', padding: '6px 10px', display: 'inline-block' }}>
+                    {strategyGuidance && (
+                      <div style={{ fontSize: '12px', color: 'var(--on-surface)', lineHeight: 1.5, marginBottom: '10px', padding: '10px 12px', background: `${assignedStrategy.color}10`, borderRadius: '10px', borderLeft: `3px solid ${assignedStrategy.color}` }}>
+                        <strong style={{ color: assignedStrategy.color }}>En este reto concreto: </strong>
+                        {strategyGuidance.mensajeProfesor}
+                      </div>
+                    )}
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: assignedStrategy.color, background: `${assignedStrategy.color}18`, borderRadius: '8px', padding: '6px 10px', display: 'inline-block', marginBottom: '12px' }}>
                       <i className="ti ti-eye" style={{ marginRight: '5px' }}></i>
                       {assignedStrategy.teoria}
+                    </div>
+                    {strategyGuidance && strategyGuidance.pasosEnEsteReto.length > 0 && (
+                      <ol style={{ margin: '0 0 12px 0', paddingLeft: '18px', fontSize: '11px', lineHeight: 1.5, color: 'var(--on-surface-variant)' }}>
+                        {strategyGuidance.pasosEnEsteReto.slice(0, 3).map((paso, i) => (
+                          <li key={i} style={{ marginBottom: 4 }}>{paso}</li>
+                        ))}
+                      </ol>
+                    )}
+                    <div style={{ textAlign: 'left', borderTop: `1px solid ${assignedStrategy.color}33`, paddingTop: '10px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', color: assignedStrategy.color, marginBottom: '8px' }}>
+                        Herramientas que usarás durante la actividad
+                      </div>
+                      {assignedStrategy.herramientas.map(h => (
+                        <div key={h.id} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', marginBottom: '8px' }}>
+                          <i className={`ti ${h.icon}`} style={{ color: assignedStrategy.color, fontSize: '14px', marginTop: '2px' }} />
+                          <div>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--on-surface)' }}>{h.nombre}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)', lineHeight: 1.4 }}>{h.descripcion}</div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </motion.div>
                 )}
@@ -403,7 +659,9 @@ export function EvaluationStart() {
                 </button>
               </motion.div>
             )}
-          </AnimatePresence>
+              </AnimatePresence>
+            </div>
+          )}
         </div>
       </div>
 

@@ -689,7 +689,7 @@ const CHALLENGES: Record<string, ChallengeConfig> = {
           { id: 'l1', placeholder: 'calcular exactitud...', width: 340, answer: 'accuracy_score(y_test, predicciones)', hint: 'Compara predicciones con valores reales' },
         ],
         code: [
-          { type: 'plain', html: '<span class="cib-cm"># ML — Evaluación</span>' },
+          { type: 'plain', html: '<span class="cib-cm"># ML — Diagnóstico</span>' },
           { type: 'plain', html: '<span class="cib-kw">from</span> sklearn.metrics <span class="cib-kw">import</span> <span class="cib-fn">accuracy_score</span>, <span class="cib-fn">classification_report</span>' },
           { type: 'plain', html: '<span class="cib-var">predicciones</span> <span class="cib-op">=</span> <span class="cib-var">modelo</span>__BLANK_l0__' },
           { type: 'plain', html: '<span class="cib-var">precision</span> <span class="cib-op">=</span> __BLANK_l1__' },
@@ -969,7 +969,7 @@ export function CodingIDEBoard({ challengeId, onValidation }: Props) {
 
     setShowFinalScore(true);
     setResultType(totalScore >= 2 ? 'ok' : 'fail');
-    setResultTitle(totalScore === totalEx ? '¡Evaluación completada!' : totalScore >= 2 ? 'Evaluación completada' : 'Evaluación finalizada');
+    setResultTitle(totalScore === totalEx ? '¡Diagnóstico completado!' : totalScore >= 2 ? 'Diagnóstico completado' : 'Diagnóstico finalizado');
     setResultDesc(`Obtuviste ${totalScore} de ${totalEx} ejercicios correctos.`);
     setShowResult(true);
     setFinalized(true);
@@ -1015,7 +1015,7 @@ export function CodingIDEBoard({ challengeId, onValidation }: Props) {
             <div className="cib-dot cib-dot-g"></div>
           </div>
           <div className="cib-filename">
-            <span>{config.filename.replace(/\..*$/, '')}</span>.{config.filename.split('.').pop()} — Evaluación
+            <span>{config.filename.replace(/\..*$/, '')}</span>.{config.filename.split('.').pop()} — Diagnóstico
           </div>
         </div>
         <div className="cib-badge-eval">EVALUATIVO · 1 INTENTO</div>

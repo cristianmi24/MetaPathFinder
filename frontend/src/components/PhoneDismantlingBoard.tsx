@@ -350,7 +350,7 @@ export function PhoneDismantlingBoard({ challengeId, onValidation }: Props) {
 
     return (
       <div className="pdb-root">
-        <div className="pdb-header"><h1>Resultado de Evaluacion</h1></div>
+        <div className="pdb-header"><h1>Resultado del Diagnóstico</h1></div>
         <div className="pdb-score">
           <div className="pdb-score-num">{correctCount}/{totalQuiz}</div>
           <div className="pdb-score-label">respuestas correctas</div>
@@ -369,7 +369,7 @@ export function PhoneDismantlingBoard({ challengeId, onValidation }: Props) {
 
     return (
       <div className="pdb-root">
-        <div className="pdb-header"><h1>Evaluacion de Pensamiento Critico</h1></div>
+        <div className="pdb-header"><h1>Diagnóstico de Pensamiento Crítico</h1></div>
         <div className="pdb-progress">
           <div className="pdb-progress-label">
             <span>Pregunta {currentQ + 1} de {totalQuiz}</span>
@@ -518,7 +518,7 @@ export function PhoneDismantlingBoard({ challengeId, onValidation }: Props) {
             ← Anterior
           </button>
           <button className="pdb-nav-btn primary" onClick={nextComponent}>
-            {currentComp === components.length - 1 ? 'Evaluacion →' : 'Siguiente →'}
+            {currentComp === components.length - 1 ? 'Diagnóstico →' : 'Siguiente →'}
           </button>
         </div>
       </div>

@@ -32,7 +32,12 @@ import { ArduinoHuertaBoard } from '../components/ArduinoHuertaBoard';
 import { SandwichAlgorithm } from '../components/SandwichAlgorithm';
 import LibraryPseudocode from '../components/LibraryPseudocode';
 import { nuevasEstrategias } from '../data/metacognitiveStrategies';
-import { StrategyMonitor, StrategyEvidence } from '../components/StrategyMonitor';
+import { getChallengeInstructions } from '../data/challengeInstructions';
+import { getChallengeProfile } from '../data/challengeProfiles';
+import { getChallengeBriefing } from '../data/challengeBriefings';
+import { getStrategyChallengeGuidance } from '../data/strategyChallengeGuidance';
+import { StrategyEvidence } from '../components/StrategyMonitor';
+import { StrategyHelpToolkit } from '../components/StrategyHelpToolkit';
 
 import './CognitiveChallenge.css';
 
@@ -125,6 +130,12 @@ export function CognitiveChallenge() {
     jol_esp_2: { pregunta: "", escala: "" }
   };
 
+  const challengeProfile = getChallengeProfile(challenge.id);
+  const challengeBriefing = getChallengeBriefing(challenge.id, challenge.tiempo_estimado);
+  const strategyGuidance = activeStrategy
+    ? getStrategyChallengeGuidance(challenge.id, activeStrategy.id)
+    : null;
+
   const initialJolAnswers = location.state?.jolAnswers || {};
   const jolTimes = location.state?.jolTimes || {};
   const estimatedTime = location.state?.estimatedTime || 0;
@@ -146,9 +157,17 @@ export function CognitiveChallenge() {
   const [showHint, setShowHint] = useState(false);
   const [boardSuccess, setBoardSuccess] = useState(false);
 
-  // Stable validation handler to prevent infinite loops in child boards
-  // (EssayBoard, CodingIDEBoard, etc. call onValidation inside useEffect when their result changes)
+  const secondsRef = useRef(seconds);
+  const clickCountRef = useRef(clickCount);
+  secondsRef.current = seconds;
+  clickCountRef.current = clickCount;
+  const lastBoardValidationRef = useRef<boolean | null>(null);
+
+  // Callback estable: los tableros hijos lo usan en useEffect y no debe cambiar cada tick.
   const handleBoardValidation = useCallback((success: boolean, customMessage?: string) => {
+    if (lastBoardValidationRef.current === success) return;
+    lastBoardValidationRef.current = success;
+
     setBoardSuccess(success);
     setTotalRuns(prev => prev + 1);
 
@@ -160,18 +179,26 @@ export function CognitiveChallenge() {
       setErrCount(0);
     } else {
       setErrCount(prev => prev + 1);
-
-      // Also log to the central cognitive tracking system for Phase B metrics
       addEvent('QUIZ_ANSWER', {
         questionId: challenge.id,
         correct: false,
-        timeSpent: seconds,
-        clicks: clickCount,
+        timeSpent: secondsRef.current,
+        clicks: clickCountRef.current,
         timestamp: Date.now(),
         source: 'phase-b-board'
       });
     }
-  }, [addEvent, challenge.id, seconds, clickCount]);
+  }, [addEvent, challenge.id]);
+
+  const handleStrategyEvidence = useCallback((ev: Partial<StrategyEvidence>) => {
+    setStrategyEvidence(prev => {
+      const next = { ...prev, ...ev };
+      const unchanged = Object.keys(ev).every(
+        k => prev[k as keyof StrategyEvidence] === next[k as keyof StrategyEvidence]
+      );
+      return unchanged ? prev : next;
+    });
+  }, []);
 
   const handleBoardAreaClick = () => {
     setClickCount(p => p + 1);
@@ -343,7 +370,7 @@ export function CognitiveChallenge() {
     if (editCount > 30 && !boardSuccess) {
       return {
         icon: "ti ti-info-circle",
-        text: "Alta densidad de edición. Te recomendamos repasar los criterios de evaluación."
+        text: "Alta densidad de edición. Te recomendamos repasar los criterios del reto."
       };
     }
     return {
@@ -380,11 +407,30 @@ export function CognitiveChallenge() {
           <div className="fb-reto-card">
             <div className="fb-reto-tag">MEN · {challenge.nivel} · {challenge.sub_nivel}</div>
             <div className="fb-reto-title">{challenge.titulo}</div>
-            <div className="fb-reto-desc">{challenge.descripcion}</div>
+            <div className="fb-reto-desc">{challengeBriefing.resumenSuave}</div>
+          </div>
+
+          {challengeProfile && (
+            <div style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--fb-text-muted)', marginBottom: 12, padding: '10px 12px', background: 'var(--fb-surface-2, rgba(255,255,255,0.04))', borderRadius: 8, borderLeft: '3px solid var(--primary, #4f378b)' }}>
+              <div style={{ fontWeight: 800, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--primary, #4f378b)', marginBottom: 6 }}>
+                Consejo del profesor
+              </div>
+              {challengeProfile.consejoProfesor}
+            </div>
+          )}
+
+          <div className="fb-criteria" style={{ marginBottom: '12px' }}>
+            <div className="fb-criteria-title">Cómo completar esta actividad</div>
+            {getChallengeInstructions(challenge.id).map((step, i) => (
+              <div key={i} className="fb-criterion">
+                <span className="fb-criterion-dot"></span>
+                {step}
+              </div>
+            ))}
           </div>
 
           <div className="fb-criteria">
-            <div className="fb-criteria-title">Criterios de evaluación</div>
+            <div className="fb-criteria-title">Criterios del reto</div>
             {challenge.criterios.map((c: string, i: number) => {
               const done = isChallengeDone || (consoleMessages.some(m => m.type === 'ok') && i === 0);
               return (
@@ -399,6 +445,30 @@ export function CognitiveChallenge() {
 
         {/* Zona Central: Tablero o Editor */}
         <div className="fb-editor-zone">
+          {activeStrategy && (
+            <StrategyHelpToolkit
+              variant="banner"
+              challengeId={challenge.id}
+              strategy={activeStrategy}
+              seconds={seconds}
+              editCount={editCount}
+              errCount={errCount}
+              totalRuns={totalRuns}
+              hintCount={hintCount}
+              clickCount={clickCount}
+              isChallengeDone={isChallengeDone}
+              criteriaCount={challenge.criterios.length}
+              criteriaLabels={challenge.criterios}
+              jolInicial={jolInicial}
+              estimatedMinutes={estimatedMinutes}
+              isCodeChallenge={
+                !componentMap[challenge.id]
+                  ? (getBoardType(challenge.id) === 'code' || getBoardType(challenge.id) === 'ide')
+                  : ['RA-C1-N2', 'RA-C2-N1', 'RA-C2-N2', 'RA-C2-N3', 'RA-C3-N2', 'RA-C3-N3'].includes(challenge.id)
+              }
+              onEvidence={handleStrategyEvidence}
+            />
+          )}
           {componentMap[challenge.id] ? (
             <div 
   ref={boardAreaRef}
@@ -532,48 +602,35 @@ export function CognitiveChallenge() {
             <span className="fb-live-badge" style={{ marginLeft: 'auto', marginRight: '0' }}>live</span>
           </div>
 
-          {/* Estrategia metacognitiva activa */}
           {activeStrategy && (
-            <>
-              <div style={{
-                background: activeStrategy.iconBg,
-                border: `1px solid ${activeStrategy.color}44`,
-                borderRadius: '12px',
-                padding: '12px 14px',
-                marginBottom: '14px',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <i className={`ti ${activeStrategy.icon}`} style={{ color: activeStrategy.color, fontSize: '14px' }}></i>
-                  <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', color: activeStrategy.color }}>Estrategia activa</span>
-                </div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--fb-text)', marginBottom: '6px', lineHeight: 1.3 }}>{activeStrategy.nombre}</div>
-                <div style={{ fontSize: '10px', color: 'var(--fb-text-muted)', lineHeight: 1.5, marginBottom: '8px' }}>{activeStrategy.desc}</div>
-                <div style={{ borderTop: `1px solid ${activeStrategy.color}33`, paddingTop: '8px' }}>
-                  {activeStrategy.pasos.map((paso, i) => (
-                    <div key={i} style={{ display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '4px' }}>
-                      <span style={{ minWidth: '16px', height: '16px', borderRadius: '50%', background: activeStrategy.pasoBg, color: activeStrategy.pasoColor, fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>{i + 1}</span>
-                      <span style={{ fontSize: '10px', color: 'var(--fb-text-muted)', lineHeight: 1.4 }}>{paso}</span>
-                    </div>
-                  ))}
-                </div>
+            <div style={{
+              background: activeStrategy.iconBg,
+              border: `1px solid ${activeStrategy.color}33`,
+              borderRadius: '10px',
+              padding: '10px 12px',
+              marginBottom: '12px',
+              fontSize: '10px',
+              color: 'var(--fb-text-muted)',
+            }}>
+              <div style={{ fontWeight: 800, color: activeStrategy.color, marginBottom: '4px', fontSize: '9px', textTransform: 'uppercase' }}>
+                Estrategia activa
               </div>
-
-              <StrategyMonitor
-                strategy={activeStrategy}
-                seconds={seconds}
-                editCount={editCount}
-                errCount={errCount}
-                totalRuns={totalRuns}
-                hintCount={hintCount}
-                clickCount={clickCount}
-                isChallengeDone={isChallengeDone}
-                criteriaCount={challenge.criterios.length}
-                jolInicial={jolInicial}
-                estimatedMinutes={estimatedMinutes}
-                isCodeChallenge={!componentMap[challenge.id] ? (getBoardType(challenge.id) === 'code' || getBoardType(challenge.id) === 'ide') : ['RA-C1-N2', 'RA-C2-N1', 'RA-C2-N2', 'RA-C2-N3', 'RA-C3-N2', 'RA-C3-N3'].includes(challenge.id)}
-                onEvidence={(ev) => setStrategyEvidence(prev => ({ ...prev, ...ev }))}
-              />
-            </>
+              <div style={{ fontWeight: 700, color: 'var(--fb-text)', marginBottom: '6px' }}>{activeStrategy.nombre}</div>
+              {strategyGuidance && (
+                <div style={{ fontSize: 10, lineHeight: 1.45, marginBottom: 6 }}>
+                  {strategyGuidance.mensajeProfesor}
+                </div>
+              )}
+              {activeStrategy.herramientas.map(h => (
+                <div key={h.id} style={{ display: 'flex', gap: 5, alignItems: 'center', marginBottom: 3 }}>
+                  <i className={`ti ${h.icon}`} style={{ color: activeStrategy.color, fontSize: 10 }} />
+                  <span>{h.nombre}</span>
+                </div>
+              ))}
+              <div style={{ marginTop: 6, fontSize: 9, color: activeStrategy.color }}>
+                ↑ Usa las herramientas arriba de la actividad
+              </div>
+            </div>
           )}
 
           <div className="fb-metric-block">

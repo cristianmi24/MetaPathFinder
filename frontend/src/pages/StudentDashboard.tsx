@@ -28,14 +28,14 @@ export function StudentDashboard() {
             Hola, {user?.name || 'Estudiante'}
           </h1>
           <p className="text-xl text-on-surface-variant max-w-2xl mx-auto font-medium leading-relaxed">
-            Vas a descubrir <strong>cómo aprendes realmente</strong>. Este sistema mide tu 
-            precisión metacognitiva: qué tan bien coincide lo que crees saber con lo que realmente sabes.
+            Aquí explorarás <strong>cómo aprendes</strong> — sin examen, sin nota, sin presión.
+            Es un diagnóstico para conocerte mejor y practicar estrategias de estudio.
           </p>
           <button
             onClick={() => navigate('/profile')}
             className="inline-flex items-center gap-3 px-10 py-5 bg-primary text-on-primary rounded-2xl font-black text-lg shadow-2xl shadow-primary/30 hover:scale-105 transition-all active:scale-95"
           >
-            Comencemos <ChevronRight className="w-5 h-5" />
+            Ir a mi perfil <ChevronRight className="w-5 h-5" />
           </button>
         </motion.div>
 
@@ -52,8 +52,8 @@ export function StudentDashboard() {
             </div>
             <h3 className="text-xl font-black text-on-surface">¿Qué es?</h3>
             <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
-              No es un examen tradicional. Es un entorno de <strong>calibración intensa</strong> 
-              donde cada reto mide tu conciencia metacognitiva en tiempo real.
+              <strong>No es una evaluación.</strong> Es un espacio tranquilo para practicar retos de tecnología
+              mientras observas cómo piensas — como en clase, pero sin nota.
             </p>
           </div>
 

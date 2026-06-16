@@ -178,7 +178,7 @@ input[type=range]{flex:1;accent-color:#639922}
 </head>
 <body>
 <div class="w">
-<h2 class="sr-only">Módulo de evaluación paso a paso: Sistema de monitoreo para huerta escolar con Arduino</h2>
+<h2 class="sr-only">Módulo de diagnóstico paso a paso: Sistema de monitoreo para huerta escolar con Arduino</h2>
 
 <div style="margin-bottom:1rem">
   <div class="progress-label">
@@ -772,7 +772,7 @@ csvAdd();simUpdate();
       <iframe 
         srcDoc={htmlContent} 
         style={{ width: '100%', height: '100%', flex: 1, border: 'none' }} 
-        title="Evaluación Huerta Escolar Arduino"
+        title="Diagnóstico Huerta Escolar Arduino"
       />
     </div>
   );

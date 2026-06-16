@@ -30,41 +30,110 @@ export interface StrategyEvidence {
 
 interface Props {
   strategy: Estrategia;
-  seconds: number;           // tiempo transcurrido en Fase B
+  seconds: number;
   editCount: number;
   errCount: number;
   totalRuns: number;
   hintCount: number;
-  clickCount?: number;       // total clics
+  clickCount?: number;
   isChallengeDone: boolean;
-  criteriaCount: number;     // total criterios
-  jolInicial?: number;       // JOL promedio de Fase A
-  estimatedMinutes?: number; // minutos estimados por el estudiante
-  isCodeChallenge?: boolean; // si es reto de código
+  criteriaCount: number;
+  criteriaLabels?: string[];
+  jolInicial?: number;
+  estimatedMinutes?: number;
+  isCodeChallenge?: boolean;
+  placeholderHint?: string;
   onEvidence: (evidence: Partial<StrategyEvidence>) => void;
 }
 
 export function StrategyMonitor({
   strategy, seconds, editCount, errCount, totalRuns, hintCount, clickCount = 0,
-  isChallengeDone, criteriaCount, jolInicial, estimatedMinutes, isCodeChallenge = true, onEvidence
+  isChallengeDone, criteriaCount, criteriaLabels = [], jolInicial, estimatedMinutes,
+  isCodeChallenge = true, placeholderHint, onEvidence
 }: Props) {
 
-  // Estado interno por estrategia
   const [subtasks, setSubtasks] = useState<string[]>([]);
   const [newSubtask, setNewSubtask] = useState('');
   const [jolCheckpoint, setJolCheckpoint] = useState<number | null>(null);
   const [showJolCapture, setShowJolCapture] = useState(false);
+  const [jolReminder, setJolReminder] = useState(false);
   const [prediccion, setPrediccion] = useState('');
   const [prediccionConfirmada, setPrediccionConfirmada] = useState(false);
   const [coincidio, setCoincidio] = useState<boolean | null>(null);
   const [dudas, setDudas] = useState<string[]>([]);
   const [nuevaDuda, setNuevaDuda] = useState('');
+  const [seQue, setSeQue] = useState('');
+  const [creoQue, setCreoQue] = useState('');
+  const [noSe, setNoSe] = useState('');
+  const [avances, setAvances] = useState<string[]>([]);
+  const [nuevoAvance, setNuevoAvance] = useState('');
+  const [hitosMarcados, setHitosMarcados] = useState<boolean[]>([]);
   const [reflexionesError, setReflexionesError] = useState<string[]>([]);
   const [reflexionActual, setReflexionActual] = useState('');
   const [prevErrCount, setPrevErrCount] = useState(errCount);
   const [timeBeforeEdit, setTimeBeforeEdit] = useState<number | null>(null);
   const startTime = useRef(Date.now());
   const firstEditRegistered = useRef(false);
+  const lastJolReminder = useRef(0);
+  const lastReportedMinute = useRef(-1);
+  const lastReportedErrCount = useRef(-1);
+  const lastReportedChallengeDone = useRef(false);
+  const lastEst7CompleteReported = useRef(false);
+  const onEvidenceRef = useRef(onEvidence);
+  onEvidenceRef.current = onEvidence;
+
+  const milestoneLabels = criteriaLabels.length > 0
+    ? criteriaLabels.map(c => c.replace(/^\d+\.\s*/, ''))
+    : Array.from({ length: criteriaCount }, (_, i) => `Hito ${i + 1}`);
+
+  // est2: recordatorio automático cada 3 minutos
+  useEffect(() => {
+    if (strategy.id === 'est2' && seconds > 0 && seconds - lastJolReminder.current >= 180) {
+      lastJolReminder.current = seconds;
+      setJolReminder(true);
+      setShowJolCapture(true);
+    }
+  }, [seconds, strategy.id]);
+
+  // est4: reportar tiempo como máximo una vez por minuto (sin bucle de setState)
+  useEffect(() => {
+    if (strategy.id !== 'est4') return;
+    const currentMin = Math.floor(seconds / 60);
+    if (currentMin === lastReportedMinute.current) return;
+    lastReportedMinute.current = currentMin;
+    onEvidenceRef.current({
+      strategyId: strategy.id,
+      tiempoEstimado: estimatedMinutes || 0,
+      tiempoReal: seconds,
+    });
+  }, [strategy.id, seconds, estimatedMinutes]);
+
+  // est6: reportar solo cuando cambian errores o estado de completado
+  useEffect(() => {
+    if (strategy.id !== 'est6') return;
+    if (
+      errCount === lastReportedErrCount.current &&
+      isChallengeDone === lastReportedChallengeDone.current
+    ) return;
+    lastReportedErrCount.current = errCount;
+    lastReportedChallengeDone.current = isChallengeDone;
+    onEvidenceRef.current({
+      strategyId: strategy.id,
+      erroresCorregidos: errCount,
+      tareasCompletadas: avances.length || (isChallengeDone ? criteriaCount : 0),
+    });
+  }, [strategy.id, errCount, isChallengeDone, avances.length, criteriaCount]);
+
+  // est7: reportar 100% una sola vez al completar el reto
+  useEffect(() => {
+    if (strategy.id !== 'est7' || !isChallengeDone || lastEst7CompleteReported.current) return;
+    lastEst7CompleteReported.current = true;
+    onEvidenceRef.current({
+      strategyId: strategy.id,
+      porcentajeCompletado: 100,
+      continuidadTrabajo: seconds > 60,
+    });
+  }, [strategy.id, isChallengeDone, seconds]);
 
   // Detectar primer edit o interacción para estrategia est1
   useEffect(() => {
@@ -169,7 +238,7 @@ export function StrategyMonitor({
               value={newSubtask}
               onChange={e => setNewSubtask(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addSubtask()}
-              placeholder={isCodeChallenge ? "ej. Leer enunciado..." : "ej. Entender la interfaz..."}
+              placeholder={placeholderHint ?? (isCodeChallenge ? "ej. Leer enunciado..." : "ej. Entender la interfaz...")}
             />
             <button onClick={addSubtask} style={{ ...btnStyle(), width: 'auto', padding: '4px 8px', marginTop: 0 }}>+</button>
           </div>
@@ -200,8 +269,13 @@ export function StrategyMonitor({
             {Math.abs(jolCheckpoint - jolInicial * 2) > 2 ? '⚠ Variación alta de confianza detectada' : '✓ Confianza estable'}
           </div>
         )}
+        {jolReminder && (
+          <div style={{ fontSize: '10px', padding: '6px 8px', borderRadius: '6px', background: 'rgba(56,139,253,0.15)', color: '#388bfd', marginBottom: '6px', fontWeight: 700 }}>
+            ⏰ Checkpoint: ¿sigues con la misma confianza?
+          </div>
+        )}
         {!showJolCapture ? (
-          <button style={btnStyle()} onClick={() => setShowJolCapture(true)}>
+          <button style={btnStyle()} onClick={() => { setShowJolCapture(true); setJolReminder(false); }}>
             <i className="ti ti-refresh" style={{ marginRight: '4px', fontSize: '9px' }}></i>
             Registrar confianza ahora
           </button>
@@ -245,7 +319,7 @@ export function StrategyMonitor({
               style={{ ...inputStyle, minHeight: '50px' }}
               value={prediccion}
               onChange={e => setPrediccion(e.target.value)}
-              placeholder={isCodeChallenge ? "Espero que este código haga..." : "Espero que esta respuesta/acción haga..."}
+              placeholder={placeholderHint ?? (isCodeChallenge ? "Espero que este código haga..." : "Espero que esta respuesta/acción haga...")}
             />
             <button style={btnStyle(prediccion.trim().length > 5)} onClick={handleConfirmPrediccion} disabled={prediccion.trim().length < 5}>
               Registrar predicción
@@ -284,9 +358,6 @@ export function StrategyMonitor({
     const estimMin = estimatedMinutes || 0;
     const desfase = realMin - estimMin;
     const desfasePct = estimMin > 0 ? Math.round((desfase / estimMin) * 100) : 0;
-    useEffect(() => {
-      onEvidence({ strategyId: strategy.id, tiempoEstimado: estimMin, tiempoReal: seconds });
-    }, [seconds]);
     return (
       <div style={containerStyle}>
         <div style={labelStyle}><i className="ti ti-clock"></i>Monitor · Estimación vs realidad</div>
@@ -311,23 +382,34 @@ export function StrategyMonitor({
       setNuevaDuda('');
       onEvidence({ strategyId: strategy.id, dudasListadas: updated, ayudasSolicitadas: hintCount });
     };
-    useEffect(() => {
-      onEvidence({ strategyId: strategy.id, ayudasSolicitadas: hintCount, dudasListadas: dudas });
-    }, [hintCount]);
+    const saveMapa = () => {
+      const mapped = [
+        seQue.trim() ? `Sé que: ${seQue.trim()}` : '',
+        creoQue.trim() ? `Creo que: ${creoQue.trim()}` : '',
+        noSe.trim() ? `No sé: ${noSe.trim()}` : '',
+        ...dudas,
+      ].filter(Boolean);
+      onEvidence({ strategyId: strategy.id, ayudasSolicitadas: hintCount, dudasListadas: mapped });
+    };
     return (
       <div style={containerStyle}>
-        <div style={labelStyle}><i className="ti ti-zoom-question"></i>Monitor · Dudas reales</div>
+        <div style={labelStyle}><i className="ti ti-zoom-question"></i>Herramienta · Mapa de certeza</div>
         {metricRow('Pistas solicitadas', hintCount, 'ti-bulb', hintCount > 0)}
         {metricRow('Dudas registradas', dudas.length, 'ti-help', dudas.length > 0)}
+        <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <input style={{ ...inputStyle, padding: '4px 6px' }} value={seQue} onChange={e => setSeQue(e.target.value)} onBlur={saveMapa} placeholder="Sé que… (certeza alta)" />
+          <input style={{ ...inputStyle, padding: '4px 6px' }} value={creoQue} onChange={e => setCreoQue(e.target.value)} onBlur={saveMapa} placeholder="Creo que… (podría equivocarme)" />
+          <input style={{ ...inputStyle, padding: '4px 6px' }} value={noSe} onChange={e => setNoSe(e.target.value)} onBlur={saveMapa} placeholder="No sé cómo… (necesito verificar)" />
+        </div>
         <div style={{ marginTop: '8px' }}>
-          <div style={{ fontSize: '10px', color: 'var(--fb-text-muted)', marginBottom: '4px' }}>Registra lo que no sabes:</div>
+          <div style={{ fontSize: '10px', color: 'var(--fb-text-muted)', marginBottom: '4px' }}>O agrega dudas sueltas:</div>
           <div style={{ display: 'flex', gap: '4px' }}>
             <input
               style={{ ...inputStyle, flex: 1, padding: '4px 6px' }}
               value={nuevaDuda}
               onChange={e => setNuevaDuda(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addDuda()}
-              placeholder="No sé cómo..."
+              placeholder={placeholderHint ?? "No sé cómo..."}
             />
             <button onClick={addDuda} style={{ ...btnStyle(), width: 'auto', padding: '4px 8px', marginTop: 0 }}>+</button>
           </div>
@@ -343,52 +425,96 @@ export function StrategyMonitor({
 
   // ─── EST6: Registro de evidencias de competencia ─────────────────────
   if (strategy.id === 'est6') {
-    useEffect(() => {
-      onEvidence({ strategyId: strategy.id, erroresCorregidos: errCount, tareasCompletadas: isChallengeDone ? criteriaCount : 0 });
-    }, [errCount, isChallengeDone]);
+    const addAvance = () => {
+      if (!nuevoAvance.trim()) return;
+      const updated = [...avances, nuevoAvance.trim()];
+      setAvances(updated);
+      setNuevoAvance('');
+      onEvidence({ strategyId: strategy.id, erroresCorregidos: errCount, tareasCompletadas: updated.length });
+    };
     return (
       <div style={containerStyle}>
-        <div style={labelStyle}><i className="ti ti-trophy"></i>Monitor · Avances logrados</div>
+        <div style={labelStyle}><i className="ti ti-trophy"></i>Herramienta · Bloc de avances</div>
+        {metricRow('Victorias registradas', avances.length, 'ti-star', avances.length > 0)}
         {metricRow('Intentos realizados', totalRuns, 'ti-player-play')}
-        {metricRow(isCodeChallenge ? 'Errores detectados' : 'Intentos incorrectos', errCount, 'ti-bug', errCount > 0)}
-        {metricRow('Criterios alcanzados', isChallengeDone ? `${criteriaCount}/${criteriaCount}` : `0/${criteriaCount}`, 'ti-check', isChallengeDone)}
-        <div style={{ fontSize: '10px', color: 'var(--fb-text-muted)', marginTop: '6px' }}>
-          {isChallengeDone
-            ? <span style={{ color: '#5dcaa5', fontWeight: 700 }}>✓ Reto completado — evidencia registrada</span>
-            : errCount > 0 && totalRuns > 0
-            ? <span style={{ color: strategy.color }}>{isCodeChallenge ? 'Cada error corregido es un avance registrado' : 'Cada intento corregido es un avance registrado'}</span>
-            : 'Continúa trabajando para generar evidencias'}
+        <div style={{ marginTop: '8px' }}>
+          <div style={{ fontSize: '10px', color: 'var(--fb-text-muted)', marginBottom: '4px' }}>Anota cada logro pequeño:</div>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <input
+              style={{ ...inputStyle, flex: 1, padding: '4px 6px' }}
+              value={nuevoAvance}
+              onChange={e => setNuevoAvance(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addAvance()}
+              placeholder={placeholderHint ?? "Logré que… / Ya entiendo…"}
+            />
+            <button onClick={addAvance} style={{ ...btnStyle(), width: 'auto', padding: '4px 8px', marginTop: 0 }}>+</button>
+          </div>
+          {avances.map((a, i) => (
+            <div key={i} style={{ fontSize: '10px', color: 'var(--fb-text-muted)', padding: '3px 0', display: 'flex', gap: '5px' }}>
+              <i className="ti ti-trophy" style={{ color: strategy.color, fontSize: '9px', marginTop: '1px' }}></i>{a}
+            </div>
+          ))}
         </div>
+        {isChallengeDone && (
+          <div style={{ fontSize: '10px', color: '#5dcaa5', fontWeight: 700, marginTop: '6px' }}>✓ Reto completado — revisa tu lista de avances</div>
+        )}
       </div>
     );
   }
 
   // ─── EST7: Submetas visibles ──────────────────────────────────────────
   if (strategy.id === 'est7') {
-    const pct = isChallengeDone ? 100 : Math.min(95, isCodeChallenge ? Math.round((Math.min(totalRuns, criteriaCount) / criteriaCount) * 100) : Math.round((Math.min(clickCount, criteriaCount * 3) / (criteriaCount * 3 || 1)) * 100));
+    const toggleHito = (idx: number) => {
+      const next = [...hitosMarcados];
+      while (next.length <= idx) next.push(false);
+      next[idx] = !next[idx];
+      setHitosMarcados(next);
+      const marcados = next.filter(Boolean).length;
+      const pct = isChallengeDone ? 100 : Math.round((marcados / milestoneLabels.length) * 100);
+      onEvidence({ strategyId: strategy.id, porcentajeCompletado: pct, continuidadTrabajo: seconds > 60 });
+    };
+    const marcados = hitosMarcados.filter(Boolean).length;
+    const pct = isChallengeDone ? 100 : Math.round((marcados / Math.max(milestoneLabels.length, 1)) * 100);
     const continuidad = seconds > 60 && (isCodeChallenge ? editCount > 0 : clickCount > 3);
-    useEffect(() => {
-      onEvidence({ strategyId: strategy.id, porcentajeCompletado: pct, continuidadTrabajo: continuidad });
-    }, [pct, continuidad]);
     return (
       <div style={containerStyle}>
-        <div style={labelStyle}><i className="ti ti-stairs"></i>Monitor · Progreso gradual</div>
+        <div style={labelStyle}><i className="ti ti-stairs"></i>Herramienta · Checklist de hitos</div>
         <div style={{ marginBottom: '8px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--fb-text-muted)', marginBottom: '4px' }}>
-            <span>Progreso estimado</span>
-            <span style={{ color: strategy.color, fontWeight: 700 }}>{pct}%</span>
+            <span>Progreso</span>
+            <span style={{ color: strategy.color, fontWeight: 700 }}>{marcados}/{milestoneLabels.length} ({pct}%)</span>
           </div>
           <div style={{ background: `${strategy.color}22`, borderRadius: '6px', height: '8px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: strategy.color, width: `${pct}%`, borderRadius: '6px', transition: 'width 1s' }} />
+            <div style={{ height: '100%', background: strategy.color, width: `${pct}%`, borderRadius: '6px', transition: 'width 0.4s' }} />
           </div>
         </div>
-        {metricRow('Tiempo activo', `${Math.round(seconds / 60)} min`, 'ti-clock')}
-        {metricRow('Continuidad', continuidad ? 'Activa' : 'Iniciando', 'ti-activity', continuidad)}
-        {isCodeChallenge 
-          ? metricRow('Ediciones realizadas', editCount, 'ti-pencil', editCount > 5)
-          : metricRow('Clics en el tablero', clickCount, 'ti-hand-click', clickCount > 10)}
-        <div style={{ fontSize: '10px', marginTop: '6px', color: isChallengeDone ? '#5dcaa5' : strategy.color }}>
-          {isChallengeDone ? '🎉 ¡Todas las submetas completadas!' : `${criteriaCount} hitos por completar`}
+        <div style={{ marginTop: '6px' }}>
+          {milestoneLabels.map((label, i) => {
+            const done = hitosMarcados[i] || isChallengeDone;
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => toggleHito(i)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 8,
+                  width: '100%',
+                  padding: '6px 4px',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontSize: 10,
+                  color: done ? '#5dcaa5' : 'var(--fb-text-muted)',
+                }}
+              >
+                <i className={`ti ${done ? 'ti-circle-check-filled' : 'ti-circle'}`} style={{ fontSize: 12, flexShrink: 0, marginTop: 1, color: done ? '#5dcaa5' : strategy.color }} />
+                <span style={{ textDecoration: done ? 'line-through' : 'none', opacity: done ? 0.85 : 1 }}>{label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     );
@@ -417,7 +543,7 @@ export function StrategyMonitor({
               style={{ ...inputStyle, minHeight: '44px' }}
               value={reflexionActual}
               onChange={e => setReflexionActual(e.target.value)}
-              placeholder={isCodeChallenge ? "Este error me dice que..." : "Este fallo me indica que..."}
+              placeholder={placeholderHint ?? (isCodeChallenge ? "Este error me dice que..." : "Este fallo me indica que...")}
             />
             <button style={btnStyle(reflexionActual.trim().length > 5)} onClick={handleReflexion} disabled={reflexionActual.trim().length < 5}>
               Registrar reflexión

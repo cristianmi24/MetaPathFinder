@@ -20,6 +20,7 @@ export function MetacognitiveStrategies() {
     setCurrentChallengeId,
     addEvent,
     assignedStrategyId,
+    strategyAssignedRandomly,
     setAssignedStrategyId,
     events,
   } = useCognitiveStore();
@@ -48,7 +49,7 @@ export function MetacognitiveStrategies() {
 
   const handleConfirm = () => {
     if (!selectedId) return;
-    setAssignedStrategyId(selectedId);
+    setAssignedStrategyId(selectedId, false);
     addEvent('STRATEGY_SELECTED_FOR_NEXT_LEVEL', {
       nivel_completado: nivelLabel[currentLevel],
       estrategia_anterior: assignedStrategyId,
@@ -87,10 +88,10 @@ export function MetacognitiveStrategies() {
       }
     } else if (currentStrategy?.id === 'est2') {
       if (ev.jolInicial !== undefined) {
-        items.push({ label: 'JOL Inicial', value: `${ev.jolInicial.toFixed(1)}/10`, icon: 'ti-star' });
+        items.push({ label: 'Confianza inicial', value: `${ev.jolInicial.toFixed(1)}/10`, icon: 'ti-star' });
       }
       if (ev.jolMedioActividad !== undefined) {
-        items.push({ label: 'Confianza en checkpoint (JOL)', value: `${ev.jolMedioActividad}/10`, icon: 'ti-star-half' });
+        items.push({ label: 'Confianza en checkpoint', value: `${ev.jolMedioActividad}/10`, icon: 'ti-star-half' });
       }
     } else if (currentStrategy?.id === 'est3') {
       if (ev.prediccionEscrita) {
@@ -184,6 +185,38 @@ export function MetacognitiveStrategies() {
           {/* Resumen de monitoreo del nivel completado */}
           {currentStrategy && (
             <div style={{ marginBottom: '20px' }}>
+              <div style={{
+                padding: '14px 16px',
+                background: strategyAssignedRandomly ? 'rgba(56, 139, 253, 0.08)' : 'rgba(93, 202, 165, 0.08)',
+                borderRadius: '14px',
+                border: `1px solid ${strategyAssignedRandomly ? 'rgba(56, 139, 253, 0.28)' : 'rgba(93, 202, 165, 0.3)'}`,
+                marginBottom: '16px',
+                display: 'flex',
+                gap: '12px',
+                alignItems: 'flex-start',
+              }}>
+                <i className={`ti ${strategyAssignedRandomly ? 'ti-dice-5' : 'ti-hand-click'}`} style={{ color: strategyAssignedRandomly ? '#388bfd' : '#5dcaa5', fontSize: 18, flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.7px', color: strategyAssignedRandomly ? '#388bfd' : '#5dcaa5', marginBottom: '6px' }}>
+                    {strategyAssignedRandomly ? 'Estrategia que te tocó al azar' : 'Estrategia que tú elegiste'}
+                  </div>
+                  <p style={{ fontSize: '13px', color: 'var(--on-surface)', lineHeight: 1.6, margin: 0 }}>
+                    {strategyAssignedRandomly ? (
+                      <>
+                        En el Nivel {nivelLabel[currentLevel]}, el sistema te asignó <strong>{currentStrategy.nombre}</strong> al azar
+                        entre las 8 estrategias disponibles. No la seleccionaste — fue sorteo, como el reto.
+                        Abajo ves cómo la usaste durante la actividad.
+                      </>
+                    ) : (
+                      <>
+                        Para el Nivel {nivelLabel[currentLevel]} usaste <strong>{currentStrategy.nombre}</strong> porque
+                        <strong> tú la elegiste</strong> al terminar el nivel anterior. Abajo está el resumen de cómo la aplicaste.
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+
               <div className="em-section-header" style={{ marginBottom: '12px' }}>
                 <div className="em-section-title">
                   <i className="ti ti-activity" style={{ fontSize: '13px' }}></i>
@@ -247,14 +280,35 @@ export function MetacognitiveStrategies() {
           {/* Sección de selección para el próximo nivel */}
           {currentLevel < 3 && (
             <>
-              <div className="em-section-header" style={{ marginBottom: '12px' }}>
-                <div className="em-section-title">
-                  <i className="ti ti-sparkles" style={{ fontSize: '13px' }}></i>
-                  Elige tu estrategia para el Nivel {nivelNext[currentLevel]}
+              <div style={{
+                padding: '14px 16px',
+                background: 'var(--surface-container-low, rgba(0,0,0,0.03))',
+                borderRadius: '14px',
+                border: '1px solid var(--outline-variant, #e0e0e0)44',
+                marginBottom: '14px',
+              }}>
+                <div className="em-section-header" style={{ marginBottom: '8px' }}>
+                  <div className="em-section-title">
+                    <i className="ti ti-sparkles" style={{ fontSize: '13px' }}></i>
+                    Ahora tú eliges — Nivel {nivelNext[currentLevel]}
+                  </div>
                 </div>
-                <div style={{ fontSize: '10px', fontFamily: 'IBM Plex Mono, monospace', color: '#6e7681' }}>
-                  Puedes mantener la misma o elegir una diferente
-                </div>
+                <p style={{ fontSize: '13px', color: 'var(--on-surface)', lineHeight: 1.6, margin: '0 0 8px 0' }}>
+                  {strategyAssignedRandomly ? (
+                    <>
+                      En el Nivel {nivelLabel[currentLevel]} la estrategia te la asignó el sistema al azar.
+                      Para el Nivel {nivelNext[currentLevel]}, <strong>decides tú</strong>: puedes quedarte con la misma o probar otra de las 8 estrategias.
+                    </>
+                  ) : (
+                    <>
+                      Elige la estrategia con la que quieres trabajar en el Nivel {nivelNext[currentLevel]}.
+                      Puedes mantener <strong>{currentStrategy?.nombre}</strong> o cambiar a otra.
+                    </>
+                  )}
+                </p>
+                <p style={{ fontSize: '11px', color: 'var(--on-surface-variant)', margin: 0, fontStyle: 'italic' }}>
+                  Cada estrategia tiene herramientas distintas que verás durante el siguiente reto.
+                </p>
               </div>
 
               {/* Tooltip de teoría */}
@@ -300,6 +354,13 @@ export function MetacognitiveStrategies() {
                       <div className="em-estrat-name">{e.nombre}</div>
                       <div className="em-estrat-teoria" style={{ color: 'var(--on-surface-variant)', fontSize: '10px', marginBottom: '6px' }}>{e.teoria}</div>
                       <div className="em-estrat-desc">{e.desc}</div>
+                      <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {e.herramientas.map(h => (
+                          <span key={h.id} title={h.descripcion} style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '6px', background: `${e.color}12`, color: e.color, border: `1px solid ${e.color}33`, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <i className={`ti ${h.icon}`} style={{ fontSize: '9px' }} />{h.nombre}
+                          </span>
+                        ))}
+                      </div>
                       <div className="em-estrat-actions">
                         <button
                           className="em-btn-adoptar"
@@ -335,7 +396,7 @@ export function MetacognitiveStrategies() {
                 <i className="ti ti-pencil" style={{ fontSize: '12px' }}></i>
                 {currentLevel < 3
                   ? `Confirmación de estrategia para Nivel ${nivelNext[currentLevel]}`
-                  : 'Evaluación completada · Resumen final'}
+                  : 'Diagnóstico completado · Resumen final'}
               </div>
 
               {selectedStrategy && currentLevel < 3 && (
@@ -362,7 +423,7 @@ export function MetacognitiveStrategies() {
                   disabled={!selectedId && currentLevel < 3}
                 >
                   <i className="ti ti-check" style={{ fontSize: '14px' }}></i>
-                  {currentLevel < 3 ? `Confirmar y pasar a Nivel ${nivelNext[currentLevel]}` : 'Finalizar evaluación'}
+                  {currentLevel < 3 ? `Confirmar y pasar a Nivel ${nivelNext[currentLevel]}` : 'Finalizar diagnóstico'}
                 </button>
                 <span className="em-commit-hint">
                   {currentLevel < 3
@@ -380,7 +441,7 @@ export function MetacognitiveStrategies() {
             >
               <div style={{ fontSize: '40px', marginBottom: '12px' }}>🎯</div>
               <p style={{ fontSize: '16px', fontWeight: 700, color: '#5dcaa5', marginBottom: '8px' }}>
-                {currentLevel < 3 ? `¡Iniciando Nivel ${nivelNext[currentLevel]}!` : '¡Evaluación completada!'}
+                {currentLevel < 3 ? `¡Iniciando Nivel ${nivelNext[currentLevel]}!` : '¡Diagnóstico completado!'}
               </p>
               <p style={{ fontSize: '13px', color: '#6e7681' }}>
                 {isSameStrategy

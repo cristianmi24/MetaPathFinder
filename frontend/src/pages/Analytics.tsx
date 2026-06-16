@@ -66,7 +66,7 @@ export function Analytics() {
         light = "bg-secondary/20";
       } else {
         title = `Inicio de Fase: ${e.metadata.phase}`;
-        content = `Comenzaste la evaluación del nivel ${currentLevel || 1}.`;
+        content = `Comenzaste el diagnóstico del nivel ${currentLevel || 1}.`;
         tag = "Progreso";
         color = "bg-tertiary-container";
         light = "bg-tertiary-container/30";

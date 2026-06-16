@@ -523,7 +523,7 @@ export function AdvancedIcfesBoard({ challengeId, onValidation }: AdvancedIcfesB
             {/* Barra de Progreso */}
             <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant/30 space-y-3 shadow-sm">
               <div className="flex justify-between items-center text-xs font-bold text-on-surface-variant">
-                <span>Progreso de la Evaluación</span>
+                <span>Progreso del diagnóstico</span>
                 <span className="font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-md">
                   {confirmedCount} de {content.questions.length} respondidas
                 </span>

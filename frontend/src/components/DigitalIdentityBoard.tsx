@@ -114,7 +114,7 @@ body{font-family:var(--font-sans)}
     <div class="phase-tab active" id="tab0" onclick="goPhase(0)">1. Estructura SVG</div>
     <div class="phase-tab" id="tab1" onclick="goPhase(1)">2. Paleta de colores</div>
     <div class="phase-tab" id="tab2" onclick="goPhase(2)">3. Diseño de logo</div>
-    <div class="phase-tab" id="tab3" onclick="goPhase(3)">4. Evaluación</div>
+    <div class="phase-tab" id="tab3" onclick="goPhase(3)">4. Práctica</div>
     <div class="phase-tab" id="tab4" onclick="goPhase(4)">5. Resultado</div>
   </div>
 
@@ -295,13 +295,13 @@ body{font-family:var(--font-sans)}
     <div class="tip"><i class="ti ti-bulb" aria-hidden="true"></i> <strong>Tip:</strong> siempre define el <strong>viewBox</strong> con coordenadas desde 0,0. Evita usar <strong>width/height</strong> fijos en el SVG raíz — deja que CSS controle el tamaño real.</div>
     <div class="nav-btns">
       <button class="btn-back" onclick="goPhase(1)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Atrás</button>
-      <button class="btn-next" onclick="goPhase(3)">Ir a la evaluación <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+      <button class="btn-next" onclick="goPhase(3)">Ir a la práctica <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
     </div>
   </div>
 
-  <!-- PHASE 3: Evaluación -->
+  <!-- PHASE 3: Práctica -->
   <div class="phase" id="phase3">
-    <div class="section-title">Evaluación: Ordena los pasos</div>
+    <div class="section-title">Práctica: Ordena los pasos</div>
     <div class="section-sub">Arrastra los bloques al orden correcto para crear un logo SVG profesional.</div>
 
     <div class="eval-section" id="evalA">
@@ -339,15 +339,15 @@ body{font-family:var(--font-sans)}
   <!-- PHASE 4: Resultado -->
   <div class="phase" id="phase4">
     <div class="section-title">Resultado del módulo</div>
-    <div class="section-sub">Tu desempeño en la evaluación de SVG y diseño de logos.</div>
+    <div class="section-sub">Tu desempeño en la práctica de SVG y diseño de logos.</div>
     <div class="score-display" id="scoreDisplay">
       <div class="medal" id="medal">🏅</div>
       <div class="score-num" id="scoreNum">0 / 2</div>
-      <p style="font-size:14px;color:var(--color-text-secondary);margin-top:.5rem" id="scoreMsg">Completa la evaluación para ver tu puntaje.</p>
+      <p style="font-size:14px;color:var(--color-text-secondary);margin-top:.5rem" id="scoreMsg">Completa la práctica para ver tu puntaje.</p>
     </div>
     <div style="margin-top:1.5rem" id="reviewArea"></div>
     <div class="nav-btns">
-      <button class="btn-back" onclick="goPhase(3)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Revisar evaluación</button>
+      <button class="btn-back" onclick="goPhase(3)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Revisar práctica</button>
       <button class="btn-next" onclick="window.parent.postMessage({ type: 'EVAL_SUCCESS' }, '*')">Finalizar y enviar <i class="ti ti-check"></i></button>
     </div>
   </div>

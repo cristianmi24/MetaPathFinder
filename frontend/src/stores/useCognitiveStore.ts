@@ -104,7 +104,8 @@ interface CognitiveStore {
   currentSessionId: string | null;
   setCurrentSessionId: (id: string | null) => void;
   assignedStrategyId: string | null;
-  setAssignedStrategyId: (id: string | null) => void;
+  strategyAssignedRandomly: boolean;
+  setAssignedStrategyId: (id: string | null, randomlyAssigned?: boolean) => void;
   removeStudent: (id: string) => void;
   consolidateSession: () => void;
 }
@@ -129,10 +130,14 @@ export const useCognitiveStore = create<CognitiveStore>()(
       currentChallengeId: null,
       currentSessionId: null,
       assignedStrategyId: null,
+      strategyAssignedRandomly: false,
       setCurrentLevel: (level) => set({ currentLevel: level }),
       setCurrentChallengeId: (id) => set({ currentChallengeId: id }),
       setCurrentSessionId: (id) => set({ currentSessionId: id }),
-      setAssignedStrategyId: (id) => set({ assignedStrategyId: id }),
+      setAssignedStrategyId: (id, randomlyAssigned = false) => set({
+        assignedStrategyId: id,
+        strategyAssignedRandomly: randomlyAssigned,
+      }),
 
       setUser: (user) => set({ user }),
       setRole: (role) => set({ role }),

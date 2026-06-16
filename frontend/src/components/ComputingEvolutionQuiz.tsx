@@ -19,7 +19,7 @@ export function ComputingEvolutionQuiz({ challengeId, onValidation }: { challeng
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Evolución del Cómputo — Evaluación</title>
+<title>Evolución del Cómputo — Diagnóstico</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -812,7 +812,7 @@ function renderReflexion() {
     <div class="reflexion-body">
       La Ley de Moore —transistores por chip se duplican ~cada 2 años— describió con precisión la evolución de 1965 a ~2015. Sin embargo, <strong>hoy se está desacelerando</strong>: los transistores alcanzan límites físicos cuánticos a escalas de 2-3 nm. La computación cuántica no sigue la Ley de Moore clásica; su métrica es la calidad del cúbit y la corrección de errores, no solo la cantidad. El patrón real es más amplio: <em>cada era tecnológica es exponencial hasta chocar con una barrera física o de complejidad, y entonces nace un nuevo paradigma.</em>
     </div>
-    <button class="btn btn-main" onclick="next()">Ir a la evaluación →</button>
+    <button class="btn btn-main" onclick="next()">Ir al cuestionario →</button>
   \`);
 }
 
@@ -859,7 +859,7 @@ function renderResult() {
   const p = Math.round(score/QUESTIONS.length*100);
   const lvls = [
     {e:'📖', t:'Sigue estudiando', m:'Revisa cada hito con cuidado. Los detalles del texto y el razonamiento por comprensión son clave. ¡Puedes intentarlo de nuevo!'},
-    {e:'👍', t:'Buen avance', m:'Comprendiste una parte importante. Repasa los hitos donde vacilaste y vuelve a la evaluación.'},
+    {e:'👍', t:'Buen avance', m:'Comprendiste una parte importante. Repasa los hitos donde vacilaste y vuelve al cuestionario.'},
     {e:'🌟', t:'¡Casi perfecto!', m:'Gran dominio del contenido. Revisa la pregunta donde fallaste y alcanzarás el 100%.'},
     {e:'🏆', t:'¡Dominio total!', m:'Excelente comprensión histórica y analítica de la evolución del cómputo. Razonamiento sobresaliente.'},
   ];

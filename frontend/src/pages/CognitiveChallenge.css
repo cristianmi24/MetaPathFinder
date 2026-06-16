@@ -222,6 +222,11 @@
   border-radius: 0 0 2rem 2rem;
 }
 
+.fb-editor-zone > div:first-child {
+  margin: 10px 10px 0;
+  flex-shrink: 0;
+}
+
 .dark .fb-editor-zone {
   background: var(--fb-card, #161b22);
   border-color: var(--fb-border, #30363d);

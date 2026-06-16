@@ -177,13 +177,12 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Solución de problemas",
     "codigo_men": "C3",
     "titulo": "Instrucciones para hacer un sándwich (algoritmo cotidiano)",
-    "descripcion": "El pensamiento algorítmico comienza con actividades cotidianas. Escribe un algoritmo detallado paso a paso para preparar un sándwich de jamón y queso, como si se lo explicaras a un robot que no sabe nada de cocina. Usa estructura de pasos numerados, incluye condiciones (si no hay pan, entonces…) y considera al menos un ciclo repetitivo (repite hasta que…). Luego dibuja el diagrama de flujo correspondiente.",
+    "descripcion": "Practica el pensamiento algorítmico ordenando los pasos para preparar un sándwich de jamón y queso. En el simulador interactivo arrastrarás 7 bloques de acciones al orden correcto y descartarás pasos que no pertenecen al algoritmo (distractores). Así aprenderás qué es una secuencia lógica sin ambigüedades.",
     "criterios": [
-      "1. Algoritmo secuencial y completo.",
-      "2. Al menos 1 condición (if/else).",
-      "3. Al menos 1 ciclo (while/for).",
-      "4. Diagrama de flujo con símbolos correctos.",
-      "5. No hay ambigüedad en los pasos."
+      "1. Ordena los 7 pasos del algoritmo en secuencia lógica.",
+      "2. Excluye bloques distractores que no forman parte del proceso.",
+      "3. La secuencia va de tomar el pan hasta cerrar el sándwich.",
+      "4. Verifica el orden antes de enviar."
     ],
     "recursos": "Papel cuadriculado para diagrama de flujo<br>Símbolos de diagrama de flujo (referencia proporcionada)",
     "tiempo_estimado": "25",
@@ -228,13 +227,12 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Solución de problemas",
     "codigo_men": "C3",
     "titulo": "Diseña el sistema de préstamo de libros de la biblioteca",
-    "descripcion": "La biblioteca de tu colegio quiere digitalizar su sistema de préstamo. Diseña (sin código, usando diagrama de flujo y pseudocódigo) un sistema que: registre estudiantes y libros, permita prestar un libro (verifica disponibilidad), registre la devolución (calcula días de retraso si los hay) y genere un reporte de los libros más prestados. Considera qué datos necesitas guardar y cómo los organizarías.",
+    "descripcion": "Ordena el pseudocódigo del sistema de préstamo de la biblioteca escolar. Arrastra los bloques lógicos (Inicio, Leer datos, condicional de disponibilidad, Registrar préstamo, Fin) a la secuencia correcta y descarta pasos que no corresponden al flujo.",
     "criterios": [
-      "1. Diagrama de flujo completo del proceso.",
-      "2. Identificación de datos necesarios (entidades).",
-      "3. Lógica de préstamo y devolución correcta.",
-      "4. Cálculo de días de retraso.",
-      "5. Propuesta de reporte de uso."
+      "1. Ordena los 5 bloques de pseudocódigo en secuencia lógica.",
+      "2. Incluye lectura de ID de estudiante y código de libro.",
+      "3. Coloca el condicional SI libro disponible en el lugar correcto.",
+      "4. Excluye bloques distractores del flujo."
     ],
     "recursos": "Papel o herramienta de diagramas (draw.io)<br>Referencia de símbolos de flujo",
     "tiempo_estimado": "45",
@@ -254,7 +252,7 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
     "titulo": "Análisis digital: conectividad y acceso en el hogar",
-    "descripcion": "Lee atentamente los dos artículos breves sobre la realidad de la conectividad en el hogar y las consecuencias de la exclusión digital. Luego, responde la trivia de 3 preguntas de comprensión directa para evaluar tu nivel de análisis crítico sobre la brecha digital.",
+    "descripcion": "Lee atentamente los dos artículos breves sobre la realidad de la conectividad en el hogar y las consecuencias de la exclusión digital. Luego responde la trivia de 3 preguntas de comprensión: haz clic en la opción A, B o C que mejor responda según lo leído.",
     "criterios": [
       "1. Lee de forma comprensiva la información estadística sobre conectividad urbana y rural.",
       "2. Identifica correctamente la causa principal de la desconexión.",
@@ -328,7 +326,7 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
     "titulo": "Anatomía de un smartphone: disección virtual e interactiva",
-    "descripcion": "Explora la anatomía interna de un teléfono inteligente. Aprende sobre el funcionamiento y características de la batería de iones de litio, pantallas OLED frente a LCD, y la importancia de la memoria RAM. Al finalizar, responde de forma correcta las 3 preguntas de la trivia técnica para validar tu reto.",
+    "descripcion": "Explora la anatomía interna de un teléfono inteligente. Aprende sobre baterías de litio, pantallas OLED frente a LCD y memoria RAM. Al finalizar, responde las 3 preguntas de la trivia técnica seleccionando la opción correcta en cada una.",
     "criterios": [
       "1. Identifica correctamente la tecnología detrás de las baterías de smartphones modernos.",
       "2. Comprende la diferencia fundamental entre pantallas OLED y LCD.",
@@ -353,14 +351,14 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Naturaleza y evolución",
     "codigo_men": "C1",
     "titulo": "De la calculadora mecánica al procesador cuántico",
-    "descripcion": "Explora de forma interactiva la evolución del cómputo desde la calculadora mecánica de Pascal (1642) y el motor analítico de Babbage hasta la Ley de Moore y el procesador cuántico actual Sycamore. Lee las lecciones detalladas y completa la evaluación exhaustiva de 6 preguntas conceptuales sobre hitos históricos y patrones de la evolución tecnológica.",
+    "descripcion": "Explora de forma interactiva la evolución del cómputo desde la calculadora mecánica de Pascal (1642) y el motor analítico de Babbage hasta la Ley de Moore y el procesador cuántico Sycamore. Lee las lecciones de la línea de tiempo y responde las 6 preguntas conceptuales seleccionando la opción que mejor corresponda a cada hito histórico.",
     "criterios": [
       "1. Comprende el funcionamiento y fallas de computadores tempranos como el ENIAC.",
       "2. Identifica el contexto histórico de la invención del circuito integrado.",
       "3. Analiza la relación de Ada Lovelace y la computación teórica.",
       "4. Identifica patrones de evolución tecnológica (mecánica a electrónica).",
-      "5. Evalúa críticamente la Ley de Moore y el rendimiento de procesadores cuánticos.",
-      "6. Responde correctamente todas las preguntas de la evaluación interactiva."
+      "5. Relaciona la Ley de Moore con el rendimiento de procesadores actuales.",
+      "6. Responde las 6 preguntas del cuestionario interactivo."
     ],
     "recursos": "Línea de tiempo histórica y test interactivo de evolución de la computación",
     "tiempo_estimado": "45",
@@ -431,12 +429,12 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
     "titulo": "Diseño de identidad digital y logos en SVG",
-    "descripcion": "Aprende las bases de la creación de logos vectoriales escalables utilizando SVG. Explora la estructura de contenedores, formas primitivas y paletas de colores interactivas. Completa el módulo interactivo y la evaluación de 2 etapas (ordenar los pasos de construcción de un logo y la aplicación correcta de colores) para validar tu reto.",
+    "descripcion": "Aprende las bases de logos vectoriales en SVG. El módulo tiene 4 fases: (1) leer sobre estructura SVG, (2) ordenar los pasos de construcción de un logo arrastrándolos, (3) aplicar colores y estilos en la paleta interactiva, y (4) revisar tu resultado. Avanza con «Siguiente» en cada fase.",
     "criterios": [
       "1. Comprende la estructura jerárquica de un SVG (viewBox, shapes y defs).",
       "2. Domina el uso de fill, stroke, opacidad y gradientes en SVG.",
       "3. Ordena correctamente las etapas del proceso de construcción de un logo.",
-      "4. Resuelve sin errores el flujo de aplicación de colores en la evaluación interactiva."
+      "4. Aplica colores según la paleta sin errores en la práctica interactiva."
     ],
     "recursos": "Módulo interactivo de diseño y construcción de logos vectoriales en SVG incorporado",
     "tiempo_estimado": "40",
@@ -555,14 +553,13 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Auditoría de huella digital personal",
-    "descripcion": "Realiza una auditoría completa de tu presencia digital: (1) lista todos los servicios y redes donde tienes cuenta, (2) revisa los permisos que has concedido a apps (cámara, micrófono, ubicación, contactos), (3) analiza qué datos podrían estar siendo recopilados sobre ti y con qué fin, (4) aplica al menos 3 medidas de seguridad (contraseña fuerte, 2FA, configuración de privacidad) y documenta el antes y después. Entrega un informe en texto corto (mínimo 50 palabras).",
+    "titulo": "Reflexión sobre tu huella digital personal",
+    "descripcion": "Redacta en el editor un informe reflexivo sobre tu presencia digital (mínimo 50 palabras). Describe las cuentas y apps que usas, los riesgos de privacidad que identificas y al menos 3 medidas concretas de protección (contraseña segura, 2FA, ajustes de privacidad). No necesitas acceder a tus dispositivos reales: reflexiona con honestidad sobre tus hábitos.",
     "criterios": [
-      "1. Inventario completo de cuentas y permisos.",
-      "2. Análisis de datos recopilados por categoría.",
-      "3. Mínimo 3 medidas de seguridad aplicadas.",
-      "4. Documentación del antes y después.",
-      "5. Informe en formato de texto corto en el editor."
+      "1. Inventario de cuentas, redes o permisos que mencionas.",
+      "2. Análisis de riesgos de privacidad o datos recopilados.",
+      "3. Al menos 3 medidas de seguridad propuestas.",
+      "4. Texto de mínimo 50 palabras en el editor."
     ],
     "recursos": "Herramienta: Google My Activity · privacy.google.com<br>Guía de seguridad digital (proporcionada)",
     "tiempo_estimado": "50",
@@ -709,12 +706,12 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
     "titulo": "API REST para el sistema de notas del colegio",
-    "descripcion": "Completa el código Flask en el entorno de desarrollo simulado, rellenando los métodos GET y POST, y asegurando la lógica correcta de manejo de errores 404 en las búsquedas por ID.",
+    "descripcion": "En el IDE simulado completa el código Flask de una API REST de notas escolares. Rellena los métodos GET y POST y la lógica de error 404 al buscar por ID. Ejecuta las pruebas integradas con el botón «Ejecutar».",
     "criterios": [
-      "5 endpoints funcionales (CRUD).",
-      "Respuestas JSON correctas.",
-      "Manejo de errores (404, 400).",
-      "Pruebas documentadas."
+      "1. Completa correctamente los métodos GET y POST.",
+      "2. Las respuestas JSON son correctas.",
+      "3. Maneja errores 404 cuando el ID no existe.",
+      "4. Ejecuta sin errores en el simulador."
     ],
     "recursos": "Python 3.x, FastAPI o Flask, Postman (gratuito) / Insomnia / cURL.\n\n---",
     "tiempo_estimado": "80",
@@ -734,12 +731,12 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
     "titulo": "Dashboard interactivo de matrícula escolar",
-    "descripcion": "Completa el script interactivo de Pandas y Plotly Express rellenando la carga del archivo CSV, programando estadísticas descriptivas, configurando los ejes del gráfico y aplicando filtros booleanos por año.",
+    "descripcion": "En el IDE simulado completa el script de Pandas y Plotly Express: carga del CSV, estadísticas descriptivas, configuración de ejes del gráfico y filtros booleanos por año. Ejecuta el código y verifica que se generen los gráficos interactivos.",
     "criterios": [
-      "Datos reales de datos.gov.co usados.",
-      "Mínimo 3 tipos de gráficos interactivos.",
-      "Filtros dinámicos funcionales.",
-      "KPI destacado con lógica propia."
+      "1. Carga correctamente el archivo CSV.",
+      "2. Calcula estadísticas descriptivas.",
+      "3. Configura gráficos interactivos con Plotly.",
+      "4. Los filtros por año funcionan al ejecutar."
     ],
     "recursos": "datos.gov.co, Python (Pandas, Plotly, Dash) / Power BI Desktop / Tableau. Tutorial Dash básico (proporcionado).\n\n---",
     "tiempo_estimado": "90",
@@ -759,12 +756,12 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Apropiación y uso",
     "codigo_men": "C2",
     "titulo": "Chatbot de orientación vocacional para el colegio",
-    "descripcion": "Completa el flujo de decisiones estructurado del chatbot vocacional, asegurando guardar la sesión en formato JSON y capturando adecuadamente las entradas interactivas del usuario en la consola simulada.",
+    "descripcion": "En el IDE simulado completa el flujo del chatbot de orientación vocacional. Rellena los espacios para capturar respuestas del usuario, recomendar carreras y guardar la sesión en JSON. Ejecuta y prueba el flujo en la consola.",
     "criterios": [
-      "Flujo de conversación completo y lógico.",
-      "Mínimo 8 preguntas con variables.",
-      "Lógica de recomendación de 3 carreras.",
-      "Registro de sesión en archivo JSON."
+      "1. Flujo de conversación completo y lógico.",
+      "2. Captura entradas del usuario correctamente.",
+      "3. Recomienda carreras según las respuestas.",
+      "4. Guarda la sesión en formato JSON."
     ],
     "recursos": "Python 3.x, JSON, SNIES (datos de universidades colombianas), Diagrama de flujo del chatbot (creado por el joven antes de código).\n\n---",
     "tiempo_estimado": "100",
@@ -809,12 +806,12 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Solución de problemas",
     "codigo_men": "C3",
     "titulo": "Modelo de Machine Learning para predecir deserción escolar",
-    "descripcion": "Completa el pipeline de Machine Learning en Python implementando el preprocesamiento con Pandas, la división train_test_split, el entrenamiento de un clasificador de árbol de decisión y la obtención de métricas de precisión con scikit-learn.",
+    "descripcion": "En el IDE simulado completa el pipeline de Machine Learning en Python: preprocesamiento con Pandas, train_test_split, entrenamiento de árbol de decisión y métricas de precisión con scikit-learn. Ejecuta celda por celda y revisa la salida.",
     "criterios": [
-      "EDA completo con visualizaciones.",
-      "Preprocesamiento correcto de variables.",
-      "Dos modelos entrenados y comparados.",
-      "Métricas reportadas y acciones sugeridas."
+      "1. Preprocesa correctamente las variables del dataset.",
+      "2. Divide datos con train_test_split.",
+      "3. Entrena el clasificador de árbol de decisión.",
+      "4. Reporta métricas de precisión en la salida."
     ],
     "recursos": "Python (Pandas, Scikit-learn, Matplotlib, Seaborn), Dataset (proporcionado), Jupyter Notebook o Colab.\n\n---",
     "tiempo_estimado": "90",
@@ -834,12 +831,12 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "componente": "Solución de problemas",
     "codigo_men": "C3",
     "titulo": "Lógica de App de primeros auxilios",
-    "descripcion": "Completa la lógica de programación por bloques estructurada en formato de texto (app_inventor.txt) en la consola simulada, configurando la navegación entre pantallas, el sensor GPS y el disparador de llamadas de emergencia.",
+    "descripcion": "En el simulador completa la lógica de una app de primeros auxilios: navegación entre pantallas, sensor GPS y botón de llamada de emergencia. Rellena los espacios del código y ejecuta para verificar el flujo en la consola.",
     "criterios": [
-      "Mínimo 4 protocolos de primeros auxilios.",
-      "Botón de llamada de emergencia (llamada real).",
-      "Integración de geolocalización.",
-      "Funcionamiento offline para protocolos e interfaz amigable."
+      "1. Navegación entre pantallas configurada.",
+      "2. Integración de geolocalización (GPS).",
+      "3. Botón de llamada de emergencia funcional.",
+      "4. Flujo completo ejecuta sin errores."
     ],
     "recursos": "MIT App Inventor 2 / Thunkable / Kodular, Google Maps API (gratuita con límites), 123 Colombia.\n\n---",
     "tiempo_estimado": "100",
@@ -858,8 +855,8 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N1",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Evaluación interactiva: sesgo algorítmico y grupos vulnerables",
-    "descripcion": "Lee el texto de investigación sobre sesgos algorítmicos en sistemas cotidianos (ej. COMPAS, reconocimiento facial, recomendación en TikTok, PageRank de Google) y responde a las 4 preguntas de selección múltiple tipo ICFES para demostrar tu capacidad de razonamiento e inferencia crítica.",
+    "titulo": "Diagnóstico de lectura crítica: sesgo algorítmico y grupos vulnerables",
+    "descripcion": "Lee el texto de investigación sobre sesgos algorítmicos (COMPAS, reconocimiento facial, TikTok, PageRank de Google). Responde las 4 preguntas de selección múltiple tipo ICFES: haz clic en A, B, C o D según el texto y avanza con «Siguiente».",
     "criterios": [
       "1. Comprender la causa estructural del sesgo algorítmico en datos históricos.",
       "2. Identificar el impacto metodológico de algoritmos opacos en minorías.",
@@ -869,7 +866,7 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "recursos": "Fuentes de lectura crítica: Safiya Noble, Buolamwini & Gebru, ProPublica, The Markup, AI Now Institute.",
     "tiempo_estimado": "70",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro te sientes de resolver esta evaluación de sesgo algorítmico?",
+      "pregunta": "¿Qué tan seguro/a te sientes de analizar textos sobre sesgo algorítmico y responder preguntas de inferencia? (1=muy inseguro/a · 5=muy seguro/a)",
       "escala": "1-5"
     },
     "jol_esp_2": {
@@ -883,8 +880,8 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N2",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Evaluación interactiva: startups de impacto social en Colombia",
-    "descripcion": "Lee el texto sobre emprendimiento e innovación social con base tecnológica en Colombia. Luego responde a las 4 preguntas tipo ICFES sobre estructuración de propuestas de valor viables, unit economics, blindaje de misión legal (Sistema B) y métricas de escala de impacto.",
+    "titulo": "Diagnóstico de lectura crítica: startups de impacto social en Colombia",
+    "descripcion": "Lee el texto sobre emprendimiento e innovación social con base tecnológica en Colombia. Responde las 4 preguntas tipo ICFES sobre propuesta de valor, unit economics, Sistema B y mercado objetivo: selecciona A, B, C o D en cada una.",
     "criterios": [
       "1. Identificar propuestas de valor social viables sin depender de beneficencia.",
       "2. Comprender el encaje solución-impacto en unit economics escalables.",
@@ -894,7 +891,7 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "recursos": "Fuentes de lectura crítica: CONPES 3975 de Colombia, Hubs de Innovación Social en Medellín, Guías de Sistema B.",
     "tiempo_estimado": "80",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro te sientes de resolver esta evaluación de innovación social?",
+      "pregunta": "¿Qué tan seguro/a te sientes de interpretar textos sobre innovación social y negocios de impacto? (1=muy inseguro/a · 5=muy seguro/a)",
       "escala": "1-5"
     },
     "jol_esp_2": {
@@ -908,8 +905,8 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "sub_nivel": "N3",
     "componente": "Tecnología y sociedad",
     "codigo_men": "C4",
-    "titulo": "Evaluación interactiva: investigación cualitativa e impacto comunitario",
-    "descripcion": "Lee el texto guía sobre metodología de investigación de campo cualitativa y triangulación de hallazgos. Responde a las 4 preguntas de selección múltiple sobre diseño de entrevistas neutrales, saturación teórica de muestras, rigor en la triangulación de datos y ética del consentimiento.",
+    "titulo": "Diagnóstico de lectura crítica: investigación cualitativa e impacto comunitario",
+    "descripcion": "Lee el texto guía sobre metodología de investigación de campo cualitativa. Responde las 4 preguntas de selección múltiple sobre entrevistas neutrales, saturación teórica, triangulación y ética del consentimiento: haz clic en A, B, C o D.",
     "criterios": [
       "1. Detectar e invalidar preguntas inducidas en instrumentos de entrevista.",
       "2. Comprender el principio de saturación teórica cualitativa de campo.",
@@ -919,7 +916,7 @@ export const dynamicChallengeBank: DynamicChallenge[] = [
     "recursos": "Fuentes de lectura crítica: Metodología de la Investigación Social cualitativa, Principios de Consentimiento Informado.",
     "tiempo_estimado": "100",
     "jol_esp_1": {
-      "pregunta": "¿Qué tan seguro te sientes de resolver esta evaluación de investigación de campo?",
+      "pregunta": "¿Qué tan seguro/a te sientes de analizar textos sobre metodología cualitativa y ética de investigación? (1=muy inseguro/a · 5=muy seguro/a)",
       "escala": "1-5"
     },
     "jol_esp_2": {

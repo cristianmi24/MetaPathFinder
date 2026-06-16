@@ -6,6 +6,7 @@ import {
   FileText, Star, Eye, Compass, GraduationCap, X, Play, RefreshCw, Sparkles
 } from 'lucide-react';
 import { dynamicChallengeBank, DynamicChallenge } from '../data/dynamicChallengeBank';
+import { getChallengeInstructions } from '../data/challengeInstructions';
 import { useTheme } from '../ThemeContext';
 import { cn } from '../lib/utils';
 
@@ -44,9 +45,9 @@ const componentInfo: Record<string, { name: string; type: string; desc: string }
   'RB-C2-N1': { name: 'DriveFileSorter', type: 'Ordenador de Archivos', desc: 'Simulador visual de archivos Drive para ordenar por fecha de modificación.' },
   'RB-C2-N2': { name: 'DragAndDropBoard', type: 'Arrastrar Bloques', desc: 'Ordenar el plan de acción secuencial para realizar una videollamada escolar.' },
   'RB-C2-N3': { name: 'DragAndDropBoard', type: 'Arrastrar Bloques', desc: 'Ordenar fórmulas del presupuesto escolar de egresos e ingresos.' },
-  'RB-C3-N1': { name: 'SandwichAlgorithm', type: 'Algoritmo Interactivo', desc: 'Ordenar visualmente los bloques secuenciales para crear un algoritmo de sándwich.' },
+  'RB-C3-N1': { name: 'SandwichAlgorithm', type: 'Algoritmo Interactivo', desc: 'Arrastrar 7 pasos correctos al orden secuencial para preparar un sándwich; descartar bloques distractores.' },
   'RB-C3-N2': { name: 'AttendanceSimulator', type: 'Simulador de Asistencia', desc: 'Bloques lógicos visuales para controlar la asistencia y alertar sobre fallas.' },
-  'RB-C3-N3': { name: 'LibraryPseudocode', type: 'Pseudocódigo Interactivo', desc: 'Ordenar el pseudocódigo lógico del sistema de préstamo de libros.' },
+  'RB-C3-N3': { name: 'LibraryPseudocode', type: 'Pseudocódigo Interactivo', desc: 'Arrastrar 5 bloques de pseudocódigo al orden correcto del flujo de préstamo en biblioteca.' },
   'RB-C4-N1': { name: 'DigitalAccessQuiz', type: 'Módulo de Lectura', desc: 'Comprensión interactiva sobre la brecha digital y la conectividad escolar.' },
   'RB-C4-N2': { name: 'SocialMediaQuiz', type: 'Trivia Interactiva', desc: 'Cuestionario interactivo sobre hábitos saludables y bienestar en redes sociales.' },
   'RB-C4-N3': { name: 'EssayBoard', type: 'Editor de Ensayos', desc: 'Redacción crítica estructurada con rúbrica integrada sobre un problema de conectividad local.' },
@@ -61,7 +62,7 @@ const componentInfo: Record<string, { name: string; type: string; desc: string }
   'RM-C3-N1': { name: 'ArduinoBlockBoard', type: 'Simulador de Sensores', desc: 'Simulación de sensor de temperatura TMP36 y LEDs mediante lógica de bloques de código.' },
   'RM-C3-N2': { name: 'CodeBlockBoard', type: 'Completar Bloques (JS)', desc: 'Completar la lógica de persistencia de votos en localStorage usando bloques interactivos.' },
   'RM-C3-N3': { name: 'CodeBlockBoard', type: 'Completar Bloques (Python)', desc: 'Completar constructor y manejo de excepciones de WasteClassifier en Python.' },
-  'RM-C4-N1': { name: 'EssayBoard', type: 'Editor de Ensayos', desc: 'Redactar una auditoría de huella digital personal con recomendaciones de seguridad.' },
+  'RM-C4-N1': { name: 'EssayBoard', type: 'Editor de Ensayos', desc: 'Redactar un informe reflexivo sobre huella digital personal con riesgos y medidas de protección.' },
   'RM-C4-N2': { name: 'EssayBoard', type: 'Editor de Ensayos', desc: 'Redacción argumentativa sobre la necesidad de regulación de la IA por parte del Estado.' },
   'RM-C4-N3': { name: 'EssayBoard', type: 'Editor de Ensayos', desc: 'Estructurar una política institucional de uso ético de Inteligencia Artificial.' },
   
@@ -73,11 +74,11 @@ const componentInfo: Record<string, { name: string; type: string; desc: string }
   'RA-C2-N2': { name: 'CodingIDEBoard', type: 'IDE de Programación', desc: 'Cargar datos CSV con Pandas y crear gráficos interactivos con Plotly Express.' },
   'RA-C2-N3': { name: 'CodingIDEBoard', type: 'IDE de Programación', desc: 'Programar bucles de conversación y mapeo de respuestas en un chatbot de orientación.' },
   'RA-C3-N1': { name: 'ArduinoHuertaBoard', type: 'Guía y Simulación Interactiva', desc: 'Módulo interactivo de Arduino C++ y simulación de sensores en tiempo real de la huerta escolar.' },
-  'RA-C3-N2': { name: 'CodingIDEBoard', type: 'IDE de Programación', desc: 'Entrenar un modelo de predicción de riesgo escolar con Scikit-Learn y evaluar métricas.' },
+  'RA-C3-N2': { name: 'CodingIDEBoard', type: 'IDE de Programación', desc: 'Completar el pipeline ML en Python: preprocesamiento, train_test_split, árbol de decisión y métricas.' },
   'RA-C3-N3': { name: 'CodingIDEBoard', type: 'IDE de Programación', desc: 'Completar lógica móvil en App Inventor: navegación GPS, SMS y botones de emergencia.' },
-  'RA-C4-N1': { name: 'AdvancedIcfesBoard', type: 'Evaluación ICFES', desc: 'Evaluación interactiva tipo ICFES sobre sesgo algorítmico e impacto en grupos vulnerables.' },
-  'RA-C4-N2': { name: 'AdvancedIcfesBoard', type: 'Evaluación ICFES', desc: 'Evaluación interactiva tipo ICFES sobre startups de impacto social y pitch decks en Colombia.' },
-  'RA-C4-N3': { name: 'AdvancedIcfesBoard', type: 'Evaluación ICFES', desc: 'Evaluación interactiva tipo ICFES sobre metodologías cualitativas e investigación de campo en comunidad.' },
+  'RA-C4-N1': { name: 'AdvancedIcfesBoard', type: 'Lectura crítica ICFES', desc: 'Lectura de texto sobre sesgo algorítmico y 4 preguntas de selección múltiple (A/B/C/D).' },
+  'RA-C4-N2': { name: 'AdvancedIcfesBoard', type: 'Lectura crítica ICFES', desc: 'Lectura sobre startups de impacto social en Colombia y 4 preguntas de inferencia.' },
+  'RA-C4-N3': { name: 'AdvancedIcfesBoard', type: 'Lectura crítica ICFES', desc: 'Lectura sobre investigación cualitativa y 4 preguntas sobre metodología y ética.' },
 };
 
 // Mapa de colores e íconos por componente asignado para dar un look sumamente visual y ordenado
@@ -227,7 +228,7 @@ export function Activities() {
         <div>
           <h2 className="text-4xl font-bold tracking-tight">Catálogo de Actividades</h2>
           <p className="text-lg text-on-surface-variant mt-2 max-w-2xl font-medium">
-            Visualiza los 36 retos del sistema Meta-Pathfinder, sus componentes interactivos asociados y las rúbricas detalladas de evaluación.
+            Visualiza los 36 retos del sistema Meta-Pathfinder, sus componentes interactivos asociados y las rúbricas detalladas de cada actividad.
           </p>
         </div>
       </div>
@@ -483,6 +484,16 @@ export function Activities() {
                         </p>
                       </div>
 
+                      {/* Instrucciones paso a paso */}
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Instrucciones Paso a Paso</h4>
+                        <ol className="text-sm text-on-surface leading-relaxed bg-primary/5 p-4 rounded-2xl border border-primary/20 space-y-2 list-decimal list-inside">
+                          {getChallengeInstructions(selectedChallenge.id).map((step, i) => (
+                            <li key={i} className="font-medium">{step}</li>
+                          ))}
+                        </ol>
+                      </div>
+
                       {/* Funcionalidad del gameplay */}
                       <div className="space-y-2">
                         <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Funcionalidad del Gameplay</h4>
@@ -494,7 +505,7 @@ export function Activities() {
                       {/* Criterios */}
                       <div className="space-y-2">
                         <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-2">
-                          <Star className="w-4 h-4 text-yellow-500" /> Criterios de Evaluación y Rúbricas
+                          <Star className="w-4 h-4 text-yellow-500" /> Criterios del Reto y Rúbricas
                         </h4>
                         <div className="bg-surface-container/30 border border-outline-variant/20 rounded-2xl p-4 space-y-3">
                           {selectedChallenge.criterios.map((criterio, i) => (
@@ -577,7 +588,7 @@ export function Activities() {
                           </div>
                           <div className="flex-1 text-center pr-12">
                             <span className="text-[10px] font-mono text-on-surface-variant bg-surface-container-lowest px-4 py-1 rounded-md border border-outline-variant/30 inline-block w-full max-w-sm truncate select-all transition-colors">
-                              meta-pathfinder://evaluacion/reto/{selectedChallenge.id}
+                              meta-pathfinder://diagnostico/reto/{selectedChallenge.id}
                             </span>
                           </div>
                         </div>

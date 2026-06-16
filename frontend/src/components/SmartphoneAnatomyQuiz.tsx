@@ -19,7 +19,7 @@ export function SmartphoneAnatomyQuiz({ challengeId, onValidation }: { challenge
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Partes del Celular — Evaluación</title>
+<title>Partes del Celular — Diagnóstico</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -669,7 +669,7 @@ function showIntro() {
       <rect x="18" y="70" width="64" height="40" rx="8" fill="#1a56db" opacity=".1" stroke="#1a56db" stroke-width="1"/>
       <text x="50" y="95" font-family="monospace" font-size="20" fill="#1a56db" text-anchor="middle">📱</text>
     </svg>
-    <div class="intro-badge">📚 Evaluación interactiva</div>
+    <div class="intro-badge">📚 Diagnóstico interactivo</div>
     <div class="intro-title">Partes del<br><span>Celular</span></div>
     <div class="intro-desc">Aprende sobre cada componente del smartphone y pon a prueba tu comprensión con preguntas al final.</div>
     <div class="intro-meta">
