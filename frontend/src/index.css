@@ -131,3 +131,8 @@
 .bento-card:hover {
   @apply shadow-[0_8px_32px_rgba(103,75,181,0.1)] -translate-y-0.5;
 }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}

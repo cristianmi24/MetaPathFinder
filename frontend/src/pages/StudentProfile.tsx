@@ -6,15 +6,25 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from '../ThemeContext';
+import { api } from '../services/api';
 
 export function StudentProfile() {
-  const { cognitiveLoad, calibration, events, user, setUser, currentLevel } = useCognitiveStore();
+  const { cognitiveLoad, calibration, events, user, setUser, setRole, setToken, currentLevel, role, token } = useCognitiveStore();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+
+  const navigateEffect = useNavigate();
+
+  useEffect(() => {
+    if (role === 'admin' && user && token) {
+      navigateEffect('/admin', { replace: true });
+    }
+  }, [role, user, token, navigateEffect]);
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'recovery'>('login');
   const [isLoading, setIsLoading] = useState(false);
+  const [registerSuccess, setRegisterSuccess] = useState(false);
 
   // Form states
   const [email, setEmail] = useState('');
@@ -45,26 +55,38 @@ export function StudentProfile() {
       ? 'Continuar donde quedé'
       : 'Comenzar';
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate login
-    setTimeout(() => {
-      setUser({ name: 'Mateo', lastName: 'Andrade', email });
+    try {
+      const res = await api.login(email, password);
+      setUser({ name: res.user.name, lastName: res.user.last_name, email: res.user.email });
+      setRole(res.user.role as 'student' | 'admin');
+      setToken(res.access_token, res.user.id);
+      navigate(res.user.role === 'admin' ? '/admin' : '/profile');
+    } catch (err: any) {
+      alert(err.message || 'Error al iniciar sesión');
+    } finally {
       setIsLoading(false);
-      navigate('/student');
-    }, 1000);
+    }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate register
-    setTimeout(() => {
-      setUser({ name, lastName, email });
+    try {
+      await api.register({ name, last_name: lastName, email, password });
+      setRegisterSuccess(true);
+      setAuthMode('login');
+      setName('');
+      setLastName('');
+      setEmail('');
+      setPassword('');
+    } catch (err: any) {
+      alert(err.message || 'Error al registrarse');
+    } finally {
       setIsLoading(false);
-      navigate('/student');
-    }, 1500);
+    }
   };
 
   const handleRecovery = (e: React.FormEvent) => {
@@ -122,7 +144,7 @@ export function StudentProfile() {
               'mt-2 text-sm font-medium',
               theme === 'light' ? 'text-slate-500' : 'text-slate-300'
             )}>
-              {authMode === 'login' ? 'Accede a tu espacio de aprendizaje' : authMode === 'register' ? 'Crea tu cuenta y explora cómo aprendes' : 'Te ayudamos a recuperar tu acceso'}
+              {authMode === 'login' ? 'Accede a tu espacio de aprendizaje' : authMode === 'register' ? 'Crea tu cuenta para empezar' : 'Te ayudamos a recuperar tu acceso'}
             </p>
           </div>
 
@@ -137,6 +159,11 @@ export function StudentProfile() {
             >
               {authMode === 'login' && (
                 <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+                  {registerSuccess && (
+                    <div className="rounded-2xl border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-700 font-semibold text-center">
+                      Cuenta creada con éxito. Ahora inicia sesión.
+                    </div>
+                  )}
                   <div className="space-y-4">
                     <InputField 
                       icon={Mail} 
@@ -156,20 +183,20 @@ export function StudentProfile() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between text-xs font-bold">
+                  <div className="flex flex-col gap-2 text-xs font-bold">
                     <button 
                       type="button" 
                       onClick={() => setAuthMode('recovery')} 
-                      className="text-primary hover:text-primary-container transition-colors"
+                      className="text-primary hover:text-primary-container transition-colors text-left"
                     >
                       ¿Olvidaste tu contraseña?
                     </button>
                     <button 
                       type="button" 
-                      onClick={() => setAuthMode('register')} 
-                      className="text-secondary hover:text-secondary-container transition-colors"
+                      onClick={() => { setAuthMode('register'); setRegisterSuccess(false); }} 
+                      className="text-sm font-black text-on-primary bg-primary/90 hover:bg-primary py-3 px-4 rounded-2xl transition-all shadow-md text-center"
                     >
-                      Crear una cuenta
+                      Crear Cuenta Nueva
                     </button>
                   </div>
 
@@ -196,8 +223,8 @@ export function StudentProfile() {
               )}
 
               {authMode === 'register' && (
-                <form className="mt-8 space-y-4" onSubmit={handleRegister}>
-                  <div className="grid grid-cols-2 gap-4">
+                <form className="mt-8 space-y-6" onSubmit={handleRegister}>
+                  <div className="space-y-4">
                     <InputField 
                       icon={UserIcon} 
                       type="text" 
@@ -214,51 +241,39 @@ export function StudentProfile() {
                       onChange={setLastName} 
                       required 
                     />
+                    <InputField 
+                      icon={Mail} 
+                      type="email" 
+                      placeholder="Correo Electrónico" 
+                      value={email} 
+                      onChange={setEmail} 
+                      required 
+                    />
+                    <InputField 
+                      icon={Lock} 
+                      type="password" 
+                      placeholder="Contraseña" 
+                      value={password} 
+                      onChange={setPassword} 
+                      required 
+                    />
                   </div>
-                  <InputField 
-                    icon={Mail} 
-                    type="email" 
-                    placeholder="Correo Electrónico" 
-                    value={email} 
-                    onChange={setEmail} 
-                    required 
-                  />
-                  <InputField 
-                    icon={Lock} 
-                    type="password" 
-                    placeholder="Contraseña" 
-                    value={password} 
-                    onChange={setPassword} 
-                    required 
-                  />
 
-                  <div className="flex flex-col items-center gap-4 mt-6">
+                  <div className="space-y-3">
                     <button
                       disabled={isLoading}
-                      className="w-full flex justify-center py-4 px-4 border border-transparent rounded-2xl shadow-xl shadow-secondary/20 text-sm font-black text-on-secondary bg-secondary hover:scale-[1.02] transition-all active:scale-95 disabled:opacity-50"
+                      className="w-full flex justify-center py-4 px-4 border border-transparent rounded-2xl shadow-xl shadow-primary/20 text-sm font-black text-on-primary bg-primary hover:scale-[1.02] transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:scale-100"
                     >
-                      {isLoading ? 'Configurando...' : 'Crear mi Cuenta'}
+                      {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
                     </button>
 
-                    <div className="flex flex-col items-center gap-2">
-                      <button 
-                        type="button" 
-                        onClick={() => setAuthMode('login')} 
-                        className="text-xs font-bold text-slate-500 hover:text-primary transition-colors"
-                      >
-                        ¿Ya tienes cuenta? <span className="text-primary underline">Inicia Sesión</span>
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={() => {
-                          useCognitiveStore.getState().reset();
-                          navigate('/');
-                        }}
-                        className="w-full flex justify-center py-3 px-4 rounded-2xl text-xs font-black text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-md active:scale-95 uppercase tracking-widest"
-                      >
-                        Volver al inicio
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAuthMode('login')}
+                      className="w-full flex justify-center py-3 px-4 rounded-2xl text-xs font-black text-slate-500 hover:text-primary transition-all"
+                    >
+                      <LogIn className="w-3 h-3 mr-2" /> ¿Ya tienes cuenta? Inicia Sesión
+                    </button>
                   </div>
                 </form>
               )}

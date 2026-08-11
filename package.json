@@ -5,12 +5,14 @@
   "description": "Cognitive state tracking and adaptive learning system",
   "scripts": {
     "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ..",
-    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "start-all": "npm run install-all && npm run dev",
+    "dev": "concurrently --names \"express,frontend,python\" --prefix-colors \"yellow,cyan,green\" \"cd backend && npm run dev\" \"cd frontend && npm run dev\" \"cd backend-python && .venv\\Scripts\\python.exe run.py\"",
     "build": "cd frontend && npm run build",
-    "start": "cd backend && npm start"
+    "start": "cd backend && npm start",
+    "start:python": "cd backend-python && python run.py"
   },
   "devDependencies": {
-    "concurrently": "^9.1.0"
+    "concurrently": "^9.2.3"
   },
   "workspaces": [
     "backend",

@@ -6,21 +6,25 @@ import { useCognitiveStore } from '../stores/useCognitiveStore';
 
 export function Sidebar() {
   const role = useCognitiveStore((s) => s.role);
+  const token = useCognitiveStore((s) => s.token);
   const reset = useCognitiveStore((s) => s.reset);
   const isCollapsed = useCognitiveStore((s) => s.isSidebarCollapsed);
   const navigate = useNavigate();
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboards', path: '/admin', roles: ['admin'] },
-    { icon: Users, label: 'Usuarios Registrados', path: '/registered-users', roles: ['admin'] },
-    { icon: Compass, label: 'Actividades', path: '/activities', roles: ['admin'] },
+    { icon: LayoutDashboard, label: 'Dashboards', path: '/admin', roles: ['admin', 'teacher'] },
+    { icon: Users, label: 'Usuarios Registrados', path: '/registered-users', roles: ['admin', 'teacher'] },
+    { icon: Compass, label: 'Actividades', path: '/activities', roles: ['admin', 'teacher'] },
     { icon: User, label: 'Mi Perfil', path: '/profile', roles: ['student'] },
     { icon: GraduationCap, label: 'Tutorial', path: '/tutorial', roles: ['student'] },
     { icon: BarChart3, label: 'Analíticas', path: '/analytics', roles: ['student'] },
-    { icon: TestTube2, label: 'Experimentos', path: '/experiments', roles: ['admin'] },
   ];
 
-  const filteredItems = navItems.filter(item => !item.roles || (role && item.roles.includes(role)));
+  // Only show role-restricted items when the user has a valid token (authenticated)
+  const filteredItems = navItems.filter(item => {
+    if (!item.roles) return true;
+    return !!(role && token && item.roles.includes(role));
+  });
 
   const footerItems = [
     { icon: Settings, label: 'Configuración', path: '/settings' },
@@ -43,7 +47,7 @@ export function Sidebar() {
           >
             <h1 className="font-bold text-primary tracking-tight leading-none">Meta-Pathfinder</h1>
             <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mt-1">
-              {role === 'student' ? 'Estudiante' : 'Administrador'}
+              {token ? (role === 'student' ? 'Estudiante' : role === 'teacher' ? 'Profesor' : 'Administrador') : 'Invitado'}
             </p>
           </motion.div>
         )}

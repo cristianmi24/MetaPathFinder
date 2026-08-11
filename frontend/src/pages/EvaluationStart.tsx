@@ -8,6 +8,7 @@ import { jolGenerales } from '../data/jolGenerales';
 import { getChallengeBriefing } from '../data/challengeBriefings';
 import { getStrategyChallengeGuidance } from '../data/strategyChallengeGuidance';
 import { EvaluationTracker } from '../components/EvaluationTracker';
+import { usePhaseSync } from '../hooks/usePhaseSync';
 import { nuevasEstrategias, Estrategia } from '../data/metacognitiveStrategies';
 import './EvaluationStart.css';
 
@@ -49,15 +50,18 @@ export function EvaluationStart() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const { addEvent, currentLevel, currentChallengeId, setCurrentChallengeId, setCurrentSessionId, currentSessionId, assignedStrategyId, strategyAssignedRandomly, setAssignedStrategyId } = useCognitiveStore();
+  const { addEvent, currentLevel, currentChallengeId, setCurrentChallengeId, setCurrentSessionId, currentSessionId, assignedStrategyId, strategyAssignedRandomly, setAssignedStrategyId, user } = useCognitiveStore();
+  const { syncPhaseA } = usePhaseSync();
 
   // Asignar estrategia aleatoria en el nivel 1, o recuperar la del store
   const assignedStrategy: Estrategia | null = assignedStrategyId
     ? (nuevasEstrategias.find(e => e.id === assignedStrategyId) || null)
     : null;
 
+  const strategyAssignedRef = useRef(false);
   useEffect(() => {
-    if (!assignedStrategyId) {
+    if (!assignedStrategyId && !strategyAssignedRef.current) {
+      strategyAssignedRef.current = true;
       const randomIdx = Math.floor(Math.random() * nuevasEstrategias.length);
       setAssignedStrategyId(nuevasEstrategias[randomIdx].id, true);
     }
@@ -178,7 +182,8 @@ export function EvaluationStart() {
     return parseInt(currentChallenge?.tiempo_estimado || '0') || 0;
   };
 
-  const handleStart = () => {
+  const handleStart = async () => {
+    await syncPhaseA();
     setShowToast(true);
     const estimatedTime = getEstimatedMinutes();
     setTimeout(() => {

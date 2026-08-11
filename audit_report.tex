@@ -1,0 +1,113 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{booktabs}
+
+\geometry{margin=2.5cm}
+
+\definecolor{red}{HTML}{d73a49}
+\definecolor{orange}{HTML}{e36209}
+\definecolor{green}{HTML}{28a745}
+
+\title{\textbf{Auditoría de Sistemas}\\[0.5em]
+\large MetaPathFinder --- Concurrencia, Correctitud y Robustez}
+\author{Auditoría Automatizada}
+\date{2026-07-04}
+
+\begin{document}
+\maketitle
+
+\section{Resumen Ejecutivo}
+
+Se encontraron \textbf{21 problemas}: 8 críticos, 10 moderados, 3 menores.
+\textbf{21 corregidos} --- 0 pendientes.
+
+\section{Concurrencia y Múltiples Usuarios}
+
+\subsection{Correcciones aplicadas}
+
+\begin{itemize}
+  \item[\textcolor{red}{C}] \textbf{Registro TOCTOU} (auth.py:52-66) --- añadido \texttt{asyncio.Lock}
+  \item[\textcolor{red}{C}] \textbf{Asignación a experimento TOCTOU} (experiments.py:58-73) --- corregido indirectamente por lock de registro
+  \item[\textcolor{red}{C}] \textbf{Lost update en sesión} (sessions.py:36-50) --- añadido \texttt{.with\_for\_update()}
+  \item[\textcolor{red}{C}] \textbf{Phase A sin verificación de PK} (phase\_a.py:14-25) --- verificación de existencia antes de insertar
+  \item[\textcolor{red}{C}] \textbf{Sin locks en el backend} --- añadido \texttt{asyncio.Lock} en auth.py y \texttt{FOR UPDATE} en sessions.py
+  \item[\textcolor{red}{C}] \textbf{localStorage cross-tab} (usePhaseSync.ts:82-86) --- añadido \texttt{BroadcastChannel} + generation counter
+  \item[\textcolor{red}{C}] \textbf{Fuga de datos entre usuarios} (useCognitiveStore.ts:425-428) --- \texttt{reset()} completo
+  \item[\textcolor{red}{C}] \textbf{Conexiones stale} (database.py:6) --- \texttt{pool\_pre\_ping=True}, \texttt{pool\_recycle=3600}
+  \item[\textcolor{orange}{M}] \textbf{N+1 query en analytics} (analytics.py:70-170) --- reescrito con subqueries batch
+  \item[\textcolor{orange}{M}] \textbf{Stale closure reads en Zustand} (useCognitiveStore.ts:151-207) --- migrado a \texttt{set((state) => ...)}
+\end{itemize}
+
+\section{Correctitud de Cálculos}
+
+\begin{itemize}
+  \item[\textcolor{orange}{M}] \textbf{NaN silencioso} (ChallengeCalibration.tsx:74) --- filtro \texttt{.filter(v => typeof v === 'number')}
+  \item[\textcolor{orange}{M}] \textbf{Escala inconsistente} (ChallengeCalibration.tsx:75-77) --- normalización automática de rango 1-5 a 0-10
+  \item[\textcolor{orange}{M}] \textbf{normalize\_performance ambiguo} (calibration.py:52-54) --- ahora \texttt{if value > 10: /10}
+  \item[\textcolor{green}{m}] \textbf{Gap redondeo} (phase\_c.py:33-40) --- \texttt{raw\_gap} sin redondear para cluster
+  \item[\textcolor{green}{m}] \textbf{Radar chart falso} (ChallengeCalibration.tsx:86-107) --- reemplazado con métricas reales
+\end{itemize}
+
+\section{Manejo de Errores y Robustez}
+
+\begin{itemize}
+  \item[\textcolor{red}{C}] \textbf{Error handler sin traceback} (error\_handler.py:7-14) --- añadido \texttt{logging.exception(e)}
+  \item[\textcolor{orange}{M}] \textbf{401 destructivo} (api.ts:21-24) --- solo limpia token/user
+  \item[\textcolor{orange}{M}] \textbf{Session not found retorna 200} (phase\_b.py, phase\_c.py) --- ahora HTTP 404
+  \item[\textcolor{orange}{M}] \textbf{Estrategia aleatoria frágil} (EvaluationStart.tsx:61-65) --- \texttt{useRef} para idempotencia
+  \item[\textcolor{green}{m}] \textbf{user\_id string vs UUID} (schemas.py) --- cambiado a \texttt{UUID}
+\end{itemize}
+
+\section{Comportamiento Repetitivo / Bucles}
+
+\begin{itemize}
+  \item[\textcolor{orange}{M}] \textbf{consolidateSession antes de sync} (ChallengeCalibration.tsx:117-120) --- movido después de sync
+  \item[\textcolor{orange}{M}] \textbf{Fetch sin timeout} (api.ts:20) --- \texttt{AbortController} con 30s
+  \item[\textcolor{orange}{M}] \textbf{Crecimiento ilimitado localStorage} (useCognitiveStore.ts:340-350) --- límite 100 eventos/estudiante
+\end{itemize}
+
+\section{Resumen Final}
+
+\begin{center}
+\begin{tabular}{p{0.8cm}p{4.5cm}p{3cm}p{5cm}}
+\toprule
+\textbf{Prio} & \textbf{Problema} & \textbf{Estado} & \textbf{Archivo} \\
+\midrule
+\textcolor{red}{C} & Registro TOCTOU & CORREGIDO & auth.py \\
+\textcolor{red}{C} & Lost update sesión & CORREGIDO & sessions.py \\
+\textcolor{red}{C} & Phase A sin PK & CORREGIDO & phase\_a.py \\
+\textcolor{red}{C} & Sin locks backend & CORREGIDO & auth.py, sessions.py \\
+\textcolor{red}{C} & Cross-tab localStorage & CORREGIDO & usePhaseSync.ts \\
+\textcolor{red}{C} & Fuga datos usuarios & CORREGIDO & useCognitiveStore.ts \\
+\textcolor{red}{C} & Conexiones stale & CORREGIDO & database.py \\
+\textcolor{red}{C} & Error handler sin traceback & CORREGIDO & error\_handler.py \\
+\textcolor{orange}{M} & normalize\_performance & CORREGIDO & calibration.py \\
+\textcolor{orange}{M} & Gap redondeo & CORREGIDO & phase\_c.py \\
+\textcolor{orange}{M} & 401 destructivo & CORREGIDO & api.ts \\
+\textcolor{orange}{M} & Session not found 200 & CORREGIDO & phase\_b.py, phase\_c.py \\
+\textcolor{orange}{M} & Estrategia frágil & CORREGIDO & EvaluationStart.tsx \\
+\textcolor{orange}{M} & NaN en JOL & CORREGIDO & ChallengeCalibration.tsx \\
+\textcolor{orange}{M} & Fetch sin timeout & CORREGIDO & api.ts \\
+\textcolor{orange}{M} & Crecimiento localStorage & CORREGIDO & useCognitiveStore.ts \\
+\textcolor{orange}{M} & N+1 analytics & CORREGIDO & analytics.py \\
+\textcolor{orange}{M} & Stale closure Zustand & CORREGIDO & useCognitiveStore.ts \\
+\textcolor{green}{m} & Escala inconsistente & CORREGIDO & ChallengeCalibration.tsx \\
+\textcolor{green}{m} & Radar falso & CORREGIDO & ChallengeCalibration.tsx \\
+\textcolor{green}{m} & user\_id str vs UUID & CORREGIDO & schemas.py \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{1cm}
+\noindent\textbf{Leyenda:} C = Crítico, M = Moderado, m = Menor.
+
+\vspace{0.5cm}
+\noindent\textbf{Total: 21/21 problemas corregidos.}
+
+\end{document}

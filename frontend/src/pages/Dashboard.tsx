@@ -1,235 +1,216 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Users, Brain, AlertTriangle, CheckCircle2, 
-  Network, ChartPie, Bell, User, Sparkles, 
-  FileText, Search, TrendingUp, ChevronRight,
-  Clock, MousePointer2, Target, Code2, Trash2
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import {
+  Users, Brain, AlertTriangle, CheckCircle2,
+  Bell, Sparkles, FileText, Clock, User,
 } from 'lucide-react';
-import { 
-  PieChart, Pie, Cell, ResponsiveContainer, 
-  ScatterChart, Scatter, CartesianGrid, XAxis, YAxis, 
-  ZAxis, Tooltip, LineChart, Line, Legend,
-  AreaChart, Area, ReferenceLine, Label
-} from 'recharts';
-import { useCognitiveStore } from '../stores/useCognitiveStore';
+import { api } from '../services/api';
 import { useTheme } from '../ThemeContext';
 import { cn } from '../lib/utils';
-import './Dashboard.css';
 
-const clusterColors = { over: '#ffa657', sub: '#58a6ff', cal: '#3fb950' };
-const clusterBg = { over: 'rgba(255,166,87,.1)', sub: 'rgba(88,166,255,.1)', cal: 'rgba(63,185,80,.1)' };
-const clusterLabel = { over: 'Sobreconfianza', sub: 'Subestimación', cal: 'Calibrado' };
+const CLUSTER_COLORS: Record<string, string> = { over: '#ff7b72', sub: '#388bfd', cal: '#5dcaa5' };
+const CLUSTER_BG: Record<string, string> = { over: 'rgba(255,123,114,.15)', sub: 'rgba(56,139,253,.15)', cal: 'rgba(93,202,165,.15)' };
+const CLUSTER_LABEL: Record<string, string> = { over: 'Sobreconfianza', sub: 'Subestimación', cal: 'Calibrado' };
 
-// Componente de Mapa de Calor Interno
-const StudentHeatmap = ({ points }: { points: { x: number, y: number }[] }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+interface StudentEntry {
+  id: string; name: string; initials: string; email: string;
+  jol: number | null; performance: number | null; gap: number | null;
+  calibration_index: number | null; cluster: string | null;
+}
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !points.length) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+interface AlertEntry {
+  id: string; name: string; initials: string; email: string;
+  jol: number | null; performance: number | null; gap: number | null;
+  calibration_index: number | null; cluster: string | null;
+  reason: string; type: string;
+}
 
-    // Limpiar y preparar
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Normalización: Encontrar los límites para escalar los puntos al tamaño del canvas
-    const maxX = Math.max(...points.map(p => p.x), 1);
-    const maxY = Math.max(...points.map(p => p.y), 1);
-    const minX = Math.min(...points.map(p => p.x), 0);
-    const minY = Math.min(...points.map(p => p.y), 0);
-    
-    const rangeX = maxX - minX || 1;
-    const rangeY = maxY - minY || 1;
-
-    points.forEach(p => {
-      // Escalar coordenadas al tamaño del canvas (600x256)
-      const scaledX = ((p.x - minX) / rangeX) * canvas.width;
-      const scaledY = ((p.y - minY) / rangeY) * canvas.height;
-
-      const grad = ctx.createRadialGradient(scaledX, scaledY, 0, scaledX, scaledY, 15);
-      grad.addColorStop(0, 'rgba(255, 166, 87, 0.4)');
-      grad.addColorStop(1, 'rgba(255, 166, 87, 0)');
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(scaledX, scaledY, 15, 0, Math.PI * 2);
-      ctx.fill();
-    });
-  }, [points]);
-
-  return (
-    <div className="relative bg-[#0d1117] rounded-2xl overflow-hidden border border-white/10 h-64 shadow-inner group">
-      <div className="absolute top-3 left-3 flex items-center gap-2 text-[10px] font-mono text-gray-500 uppercase tracking-widest z-10 bg-black/40 px-2 py-1 rounded-md backdrop-blur-sm border border-white/5">
-        <MousePointer2 className="w-3 h-3 text-warning" /> Rastro Biométrico Normalizado
-      </div>
-      <canvas ref={canvasRef} width={600} height={256} className="w-full h-full opacity-70" />
-      <div className="absolute bottom-3 right-3 text-[9px] font-mono text-gray-600 bg-black/40 px-2 py-1 rounded border border-white/5">
-        Escalado automático activo
-      </div>
-      {points.length === 0 && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-[10px] text-gray-600 italic gap-2">
-          <Target className="w-6 h-6 opacity-20" />
-          Sin trayectoria detectada
-        </div>
-      )}
-    </div>
-  );
-};
+interface ClassAnalytics {
+  student_count: number;
+  phase_a_completed: number;
+  avg_jol: number;
+  avg_gap: number;
+  calibrated_count: number;
+  cluster_distribution: Record<string, number>;
+  cluster_students: Record<string, StudentEntry[]>;
+  urgent_alerts: AlertEntry[];
+}
 
 export function Dashboard() {
-  const { students: storeStudents } = useCognitiveStore();
   const { theme } = useTheme();
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isDark = theme === 'dark';
+
+  const [data, setData] = useState<ClassAnalytics | null>(null);
+  const [loading, setLoading] = useState(true);
   const [filterMode, setFilterMode] = useState<'all' | 'over' | 'sub' | 'cal' | 'alert'>('all');
-  const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [selectedCluster, setSelectedCluster] = useState<'over' | 'sub' | 'cal'>('over');
+  const [selectedStudent, setSelectedStudent] = useState<StudentEntry | null>(null);
+  const [timer, setTimer] = useState(0);
 
   useEffect(() => {
-    const check = () => {
-      if (useCognitiveStore.persist.hasHydrated()) setIsHydrated(true);
-      else setTimeout(check, 100);
+    const fetchData = async () => {
+      try {
+        const res = await api.getClassAnalytics() as unknown as ClassAnalytics;
+        setData(res);
+      } catch { /* ignore */ }
+      setLoading(false);
     };
-    check();
+    fetchData();
   }, []);
 
-  const realStudents = useMemo(() => {
-    if (!storeStudents) return [];
-    return storeStudents.map(s => ({
-      id: s.id,
-      initials: s.id.split('-')[0],
-      name: s.name,
-      cluster: (s as any).metadata?.cluster || 'cal',
-      jol: (s as any).metadata?.jol || 0,
-      nota: (s as any).metadata?.nota || 0,
-      desfase: (s as any).metadata?.desfase || 0,
-      err: (s as any).metadata?.err || 0,
-      tiempo: (s as any).metadata?.tiempo || 0,
-      urgent: (s as any).metadata?.urgent || false,
-      mouseHistory: (s as any).metadata?.mouseHistory || [],
-      phaseTimes: (s as any).metadata?.phaseTimes || [],
-      testDate: s.testDate,
-      events: (s as any).events || []
-    }));
-  }, [storeStudents]);
+  useEffect(() => {
+    const interval = setInterval(() => setTimer(t => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fmtTimer = `${String(Math.floor(timer / 60)).padStart(2, '0')}:${String(timer % 60).padStart(2, '0')}`;
+
+  const allStudents = useMemo(() => {
+    if (!data) return [];
+    return [...(data.cluster_students.over || []), ...(data.cluster_students.sub || []), ...(data.cluster_students.cal || []), ...(data.cluster_students.unknown || [])];
+  }, [data]);
 
   const filteredStudents = useMemo(() => {
-    let list = [...realStudents];
-    if (filterMode !== 'all') {
-      if (filterMode === 'alert') list = list.filter(s => s.urgent);
-      else list = list.filter(s => s.cluster === filterMode);
-    }
-    return list;
-  }, [filterMode, realStudents]);
+    if (filterMode === 'all') return allStudents;
+    if (filterMode === 'alert') return data?.urgent_alerts || [];
+    return data?.cluster_students[filterMode] || [];
+  }, [filterMode, allStudents, data]);
 
-  // Refresco automático en tiempo real cuando hay cambios en otras pestañas
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'meta-pathfinder-storage') {
-        console.log('📡 Datos nuevos detectados. Sincronizando dashboard...');
-        // Forzamos la re-hidratación manual del store si es necesario o dejamos que Zustand reaccione
-        window.location.reload(); // Forma más segura de asegurar que todos los selectores se refresquen
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const recentStudents = useMemo(() => {
+    if (filterMode === 'all') return allStudents.slice(0, 5);
+    if (filterMode === 'alert') return (data?.urgent_alerts || []).slice(0, 5);
+    return (data?.cluster_students[filterMode] || []).slice(0, 5);
+  }, [filterMode, allStudents, data]);
 
-  const stats = useMemo(() => {
-    const total = realStudents.length || 1;
-    const avgJol = realStudents.reduce((acc, s) => acc + s.jol, 0) / total;
-    const avgGap = realStudents.reduce((acc, s) => acc + s.desfase, 0) / total;
-    const overCount = realStudents.filter(s => s.cluster === 'over').length;
-    const subCount = realStudents.filter(s => s.cluster === 'sub').length;
-    const calCount = realStudents.filter(s => s.cluster === 'cal').length;
+  const clusterPct = useCallback((cl: string) => {
+    if (!data || data.student_count === 0) return 0;
+    return ((data.cluster_distribution[cl] || 0) / data.student_count) * 100;
+  }, [data]);
 
-    return { avgJol, avgGap, overCount, subCount, calCount, completeCount: realStudents.length };
-  }, [realStudents]);
-
-  const trendData = useMemo(() => {
-    if (realStudents.length === 0) return [];
-
-    // Ordenar estudiantes por fecha (antiguo a reciente)
-    const sorted = [...realStudents].sort((a, b) => a.testDate - b.testDate);
-    
-    // Dividir en hasta 4 grupos para mostrar evolución (4 Sesiones)
-    const chunkSize = Math.max(1, Math.ceil(sorted.length / 4));
-    const sessions = [];
-
-    for (let i = 0; i < 4; i++) {
-      const start = i * chunkSize;
-      if (start >= sorted.length && i > 0) break;
-      
-      const chunk = sorted.slice(start, start + chunkSize);
-      if (chunk.length === 0) break;
-
-      const overGroup = chunk.filter(s => s.cluster === 'over');
-      const calGroup = chunk.filter(s => s.cluster === 'cal');
-
-      sessions.push({
-        name: i === 3 ? 'Hoy' : `Sesión ${i + 1}`,
-        over: overGroup.length > 0 ? (overGroup.reduce((acc, s) => acc + s.desfase, 0) / overGroup.length) * -1 : null,
-        cal: calGroup.length > 0 ? (calGroup.reduce((acc, s) => acc + s.desfase, 0) / calGroup.length) : null
-      });
-    }
-
-    return sessions;
-  }, [realStudents]);
-
-  if (!isHydrated) {
-    return <div className="flex items-center justify-center h-screen bg-[#0d1117] text-on-surface-variant font-mono">Hidratando Métricas Reales...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#0d1117] text-[#8b949e] font-mono text-sm">
+        Cargando datos de clase...
+      </div>
+    );
   }
 
+  const bg = isDark ? '#0d1117' : '#f0f4f8';
+  const cardBg = isDark ? '#161b22' : '#ffffff';
+  const cardBorder = isDark ? '#30363d' : '#d1d9e0';
+  const textPrimary = isDark ? '#c9d1d9' : '#1f2328';
+  const textSecondary = isDark ? '#6e7681' : '#656d76';
+  const textMuted = isDark ? '#8b949e' : '#6e7681';
+  const inputBg = isDark ? '#0d1117' : '#f6f8fa';
+  const rowBorder = isDark ? '#21262d' : '#d1d9e0';
+  const brandGreen = isDark ? '#238636' : '#1a7f37';
+  const accentBlue = isDark ? '#388bfd' : '#0969da';
+
   return (
-    <div className={cn("dd-root-react", theme)}>
-      <div className="dd-content-body">
-        <div className="dd-kpi-grid">
-          <div className="dd-kpi">
-            <div className="dd-kpi-label"><Users className="w-3 h-3" /> Completaron</div>
-            <div className="dd-kpi-val text-green-400">{stats.completeCount}</div>
-            <div className="text-[10px] text-gray-500 font-mono mt-1">Total acumulado</div>
+    <div style={{ fontFamily: "'Sora', sans-serif", background: bg, color: textPrimary, minHeight: '100vh', borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ background: cardBg, borderBottom: `0.5px solid ${cardBorder}`, padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 28, height: 28, background: brandGreen, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 500, color: '#fff', letterSpacing: -1 }}>MP</div>
+          <span style={{ fontSize: 12, fontWeight: 500, color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Meta-Pathfinder</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: `${accentBlue}15`, border: `0.5px solid ${accentBlue}50`, borderRadius: 7, padding: '5px 12px', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: accentBlue }}>
+            <User size={13} /> Vista docente
           </div>
-          <div className="dd-kpi">
-            <div className="dd-kpi-label"><Brain className="w-3 h-3" /> JOL Promedio</div>
-            <div className="dd-kpi-val text-yellow-500">{stats.avgJol.toFixed(1)}</div>
-            <div className="text-[10px] text-yellow-600 font-mono mt-1">Percepción de clase</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, background: inputBg, border: `0.5px solid ${cardBorder}`, borderRadius: 7, padding: '5px 12px' }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: brandGreen, animation: 'blink 1.2s ease-in-out infinite' }} />
+            {data?.phase_a_completed ?? 0} / {data?.student_count ?? 0} estudiantes
           </div>
-          <div className="dd-kpi">
-            <div className="dd-kpi-label"><AlertTriangle className="w-3 h-3" /> Desfase Promedio</div>
-            <div className="dd-kpi-val text-red-400">{stats.avgGap.toFixed(1)}</div>
-            <div className="text-[10px] text-red-500 font-mono mt-1">Brecha Metacognitiva</div>
-          </div>
-          <div className="dd-kpi">
-            <div className="dd-kpi-label"><CheckCircle2 className="w-3 h-3" /> Calibrados</div>
-            <div className="dd-kpi-val text-green-400">{stats.calCount}</div>
-            <div className="text-[10px] text-gray-500 font-mono mt-1">Eficiencia cognitiva</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, background: inputBg, border: `0.5px solid ${cardBorder}`, borderRadius: 7, padding: '5px 12px' }}>
+            <Clock size={12} /> {fmtTimer}
           </div>
         </div>
+      </div>
 
-        <div className="dd-main-grid">
-          <div className="dd-card">
-            <div className="dd-card-title">
-              <div className="flex items-center gap-2"><Network className="w-4 h-4" /> Distribución de Clústeres Reales</div>
+      <div style={{ padding: 20 }}>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10, marginBottom: 18 }}>
+          {[
+            { label: 'Completaron Fase A', val: `${data?.phase_a_completed ?? 0}`, sub: `${data?.student_count ? Math.round((data.phase_a_completed / data.student_count) * 100) : 0}% de la clase`, valColor: '#5dcaa5', subColor: '#5dcaa5' },
+            { label: 'JOL promedio de clase', val: `${data?.avg_jol ?? 0}`, sub: 'Confianza ' + (data && data.avg_jol >= 7 ? 'alta' : data && data.avg_jol >= 5 ? 'moderada-alta' : 'baja'), valColor: '#f2cc60', subColor: '#f2cc60' },
+            { label: 'Desfase promedio', val: `${data?.avg_gap ?? 0}`, sub: data && data.avg_gap > 0 ? 'Clase sobrestima su nivel' : data && data.avg_gap < 0 ? 'Clase subestima su nivel' : 'Clase calibrada', valColor: data && data.avg_gap && Math.abs(data.avg_gap) > 2 ? '#ff7b72' : '#5dcaa5', subColor: data && data.avg_gap && Math.abs(data.avg_gap) > 2 ? '#ff7b72' : textSecondary },
+            { label: 'Perfiles calibrados', val: `${data?.calibrated_count ?? 0}`, sub: `${data?.student_count ? Math.round((data.calibrated_count / data.student_count) * 100) : 0}% · meta: 60% al final`, valColor: '#5dcaa5', subColor: textSecondary },
+          ].map(kpi => (
+            <div key={kpi.label} style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 10, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
+                {kpi.label}
+              </div>
+              <div style={{ fontSize: 24, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500, color: kpi.valColor, lineHeight: 1 }}>
+                {kpi.val} <span style={{ fontSize: 14, color: textSecondary }}>{kpi.label === 'Completaron Fase A' ? `/ ${data?.student_count ?? 0}` : ''}</span>
+              </div>
+              <div style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", marginTop: 5, color: kpi.subColor }}>{kpi.sub}</div>
             </div>
-            <div className="space-y-4">
-              {(['over', 'sub', 'cal'] as const).map(cl => {
-                const group = realStudents.filter(s => s.cluster === cl);
-                const percent = (group.length / (realStudents.length || 1) * 100);
+          ))}
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 14, marginBottom: 14 }}>
+          <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em' }}>
+                Clústeres cognitivos · clase completa
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {['Sobreconfianza', 'Subestimación', 'Calibrado'].map((label, i) => {
+                  const colors = ['#ff7b72', '#388bfd', '#5dcaa5'];
+                  return (
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textMuted }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 2, background: colors[i], flexShrink: 0 }} />
+                      {label}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {['over', 'sub', 'cal'].map(cl => {
+                const group = data?.cluster_students[cl] || [];
+                const pct = clusterPct(cl);
                 return (
-                  <div key={cl} className={cn("dd-cluster-row", selectedCluster === cl && "selected")} onClick={() => setSelectedCluster(cl)}>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-bold" style={{ color: clusterColors[cl] }}>{clusterLabel[cl]}</span>
-                      <span className="text-[10px] font-mono text-gray-500">{group.length} Est. · {percent.toFixed(0)}%</span>
+                  <div
+                    key={cl}
+                    onClick={() => setSelectedCluster(cl as 'over' | 'sub' | 'cal')}
+                    style={{
+                      background: inputBg,
+                      border: `0.5px solid ${selectedCluster === cl ? CLUSTER_COLORS[cl] : rowBorder}`,
+                      borderRadius: 8, padding: 12, cursor: 'pointer',
+                      transition: 'border-color .15s',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <div style={{ fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 7, color: CLUSTER_COLORS[cl] }}>
+                        {CLUSTER_LABEL[cl]}
+                      </div>
+                      <span style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary }}>
+                        {group.length} estudiantes · {Math.round(pct)}%
+                      </span>
                     </div>
-                    <div className="dd-cluster-bar-wrap">
-                      <div className="dd-cluster-bar" style={{ width: `${percent}%`, backgroundColor: clusterColors[cl] }} />
+                    <div style={{ height: 4, background: rowBorder, borderRadius: 2, overflow: 'hidden', marginBottom: 8 }}>
+                      <div style={{ height: '100%', borderRadius: 2, width: `${pct}%`, background: CLUSTER_COLORS[cl], transition: 'width .5s cubic-bezier(.4,0,.2,1)' }} />
                     </div>
-                    <div className="dd-avatar-stack">
-                      {group.map(s => (
-                        <div key={s.id} className="dd-avatar" style={{ backgroundColor: clusterBg[cl], color: clusterColors[cl] }} onClick={(e) => { e.stopPropagation(); setSelectedStudent(s); }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                      {group.slice(0, 10).map(s => (
+                        <div
+                          key={s.id}
+                          onClick={(e) => { e.stopPropagation(); setSelectedStudent(s); }}
+                          style={{
+                            width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 9, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500,
+                            background: CLUSTER_BG[cl], color: CLUSTER_COLORS[cl],
+                            border: `1.5px solid ${inputBg}`, cursor: 'pointer', transition: 'transform .1s',
+                          }}
+                          title={s.name}
+                        >
                           {s.initials}
                         </div>
                       ))}
+                      {group.length > 10 && (
+                        <span style={{ fontSize: 9, color: textSecondary, fontFamily: "'IBM Plex Mono', monospace", marginLeft: 4 }}>+{group.length - 10}</span>
+                      )}
                     </div>
                   </div>
                 );
@@ -237,339 +218,371 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="dd-card !p-5">
-              <div className="dd-card-title"><div className="flex items-center gap-2"><ChartPie className="w-3 h-3" /> Proporción</div></div>
-              <div className="flex items-center gap-4 h-56">
-                <div className="flex-1 h-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie 
-                        data={[
-                          { name: 'Sobreconfianza', value: stats.overCount, color: '#ffa657' },
-                          { name: 'Subestimación', value: stats.subCount, color: '#58a6ff' },
-                          { name: 'Calibrado', value: stats.calCount, color: '#3fb950' }
-                        ].filter(d => d.value > 0)} 
-                        innerRadius={45} 
-                        outerRadius={65} 
-                        paddingAngle={5} 
-                        dataKey="value" 
-                        stroke="none"
-                      >
-                        {[
-                          { name: 'Sobreconfianza', color: '#ffa657' },
-                          { name: 'Subestimación', color: '#58a6ff' },
-                          { name: 'Calibrado', color: '#3fb950' }
-                        ].map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ background: '#161b22', border: 'none', borderRadius: '8px', fontSize: '10px' }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Leyenda Manual Fija */}
-                <div className="flex flex-col gap-3 pr-4">
-                  {[
-                    { name: 'Sobreconfianza', count: stats.overCount, color: '#ffa657' },
-                    { name: 'Subestimación', count: stats.subCount, color: '#58a6ff' },
-                    { name: 'Calibrado', count: stats.calCount, color: '#3fb950' }
-                  ].map((item) => {
-                    const total = realStudents.length || 1;
-                    const pct = realStudents.length > 0 ? ((item.count / total) * 100).toFixed(0) : '0';
-                    return (
-                      <div key={item.name} className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full" style={{ background: item.color }} />
-                        <div className="flex flex-col">
-                          <span className="text-[9px] font-mono text-gray-500 uppercase tracking-tighter mb-0.5">{item.name}</span>
-                          <div className="bg-gray-200 px-1.5 py-0.5 rounded-sm w-fit">
-                            <span className="text-[10px] font-bold text-black leading-none">{pct}%</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 14 }}>
+                Distribución de clase
               </div>
-            </div>
-
-            <div className="dd-card !bg-red-500/5 !border-red-500/20 !p-5">
-              <div className="dd-card-title !text-red-400"><div className="flex items-center gap-2"><Bell className="w-3 h-3" /> Alertas Críticas</div></div>
-              <div className="space-y-3">
-                {realStudents.filter(s => s.urgent).slice(0, 3).map(s => (
-                  <div key={s.id} className="dd-alert-item">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ background: clusterBg[s.cluster as keyof typeof clusterBg], color: clusterColors[s.cluster as keyof typeof clusterColors] }}>{s.initials}</div>
-                    <div className="text-[10px] text-gray-300 truncate font-mono">
-                      {s.name} · Δ {s.desfase.toFixed(1)}
-                    </div>
+              <div style={{ position: 'relative', width: '100%', height: 140 }}>
+                <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%' }}>
+                  {(() => {
+                    const total = data?.student_count || 1;
+                    const over = ((data?.cluster_distribution.over || 0) / total) * 100;
+                    const sub = ((data?.cluster_distribution.sub || 0) / total) * 100;
+                    const cal = ((data?.cluster_distribution.cal || 0) / total) * 100;
+                    const r = 35;
+                    const cx = 50, cy = 50;
+                    const toRad = (deg: number) => (deg - 90) * (Math.PI / 180);
+                    const arcPath = (startDeg: number, endDeg: number) => {
+                      const s = toRad(startDeg), e = toRad(endDeg);
+                      const x1 = cx + r * Math.cos(s), y1 = cy + r * Math.sin(s);
+                      const x2 = cx + r * Math.cos(e), y2 = cy + r * Math.sin(e);
+                      const large = endDeg - startDeg > 180 ? 1 : 0;
+                      return `M ${cx + r * 0.55 * Math.cos(s)} ${cy + r * 0.55 * Math.sin(s)} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${cx + r * 0.55 * Math.cos(e)} ${cy + r * 0.55 * Math.sin(e)} Z`;
+                    };
+                    const segments: { pct: number; color: string }[] = [];
+                    if (over > 0) segments.push({ pct: over, color: '#ff7b72' });
+                    if (sub > 0) segments.push({ pct: sub, color: '#388bfd' });
+                    if (cal > 0) segments.push({ pct: cal, color: '#5dcaa5' });
+                    let curDeg = 0;
+                    return segments.map(seg => {
+                      const deg = (seg.pct / 100) * 360;
+                      const path = arcPath(curDeg, curDeg + deg);
+                      curDeg += deg;
+                      return <path key={seg.color} d={path} fill={seg.color} />;
+                    });
+                  })()}
+                </svg>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 10 }}>
+                {[
+                  { label: 'Sobreconfianza', pct: clusterPct('over'), color: '#ff7b72' },
+                  { label: 'Subestimación', pct: clusterPct('sub'), color: '#388bfd' },
+                  { label: 'Calibrado', pct: clusterPct('cal'), color: '#5dcaa5' },
+                ].map(item => (
+                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textMuted }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 2, background: item.color, flexShrink: 0 }} />
+                    {item.label} {Math.round(item.pct)}%
                   </div>
                 ))}
               </div>
             </div>
-          </div>
-        </div>
 
-        <div className="dd-bottom-grid">
-          <div className="dd-card !p-4 flex flex-col">
-            <div className="flex flex-col gap-1 mb-2">
-              <h3 className="text-[10px] font-mono text-gray-500 tracking-[0.2em] uppercase">Mapa JOL vs. Valor Real · Todos los Estudiantes</h3>
-              <div className="flex gap-4 mt-1">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#ffa657]" />
-                  <span className="text-[9px] font-mono text-gray-400 uppercase">Sobreconfianza</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 transform rotate-45 bg-[#58a6ff]" />
-                  <span className="text-[9px] font-mono text-gray-400 uppercase">Subestimación</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[8px] border-b-[#3fb950]" />
-                  <span className="text-[9px] font-mono text-gray-400 uppercase">Calibrado</span>
-                </div>
+            <div style={{ background: 'rgba(255,123,114,.06)', border: '0.5px solid rgba(255,123,114,.25)', borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: '#ff7b72', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Bell size={13} /> Alertas urgentes
               </div>
-            </div>
- 
-            <div className="flex-1 min-h-[360px]" role="img" aria-label={`Gráfico de dispersión con jol declarado en el eje X y valor real en el eje Y para ${realStudents.length} estudiantes. La línea diagonal representa calibración perfecta.`}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 10, right: 10, bottom: 25, left: 25 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={true} />
-                  <XAxis type="number" dataKey="x" name="jol declarado" unit="" domain={[0, 10]} stroke="#484f58" fontSize={9} tickLine={false}>
-                    <Label value="jol declarado" position="bottom" offset={5} fill="#484f58" fontSize={9} fontWeight="bold" />
-                  </XAxis>
-                  <YAxis type="number" dataKey="y" name="valor real" unit="" domain={[0, 10]} stroke="#484f58" fontSize={9} tickLine={false}>
-                    <Label value="valor real" angle={-90} position="insideLeft" offset={5} style={{ textAnchor: 'middle', fill: '#484f58', fontSize: 9, fontWeight: 'bold' }} />
-                  </YAxis>
-                  <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ background: '#0d1117', border: '1px solid #30363d', borderRadius: '12px', fontSize: '10px' }} />
-                  
-                  {/* Línea de Calibración Ideal (Diagonal) */}
-                  <Scatter name="Ideal" data={[{ x: 0, y: 0 }, { x: 10, y: 10 }]} line={{ stroke: 'rgba(255,255,255,0.1)', strokeDasharray: '5 5' }} shape={() => null} />
-                  
-                  {/* Sobreconfianza - Círculos */}
-                  <Scatter name="Sobreconfianza" data={realStudents.filter(s => s.cluster === 'over').map(s => ({ x: s.jol, y: s.nota }))} fill="#ffa657" shape="circle" />
-                  
-                  {/* Subestimación - Rombos (Diamantes) */}
-                  <Scatter name="Subestimación" data={realStudents.filter(s => s.cluster === 'sub').map(s => ({ x: s.jol, y: s.nota }))} fill="#58a6ff" shape="diamond" />
-                  
-                  {/* Calibrado - Triángulos */}
-                  <Scatter name="Calibrado" data={realStudents.filter(s => s.cluster === 'cal').map(s => ({ x: s.jol, y: s.nota }))} fill="#3fb950" shape="triangle" />
-                </ScatterChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="dd-card overflow-hidden relative flex flex-col !p-4">
-            <div className="absolute top-4 right-4 px-2 py-1 bg-green-500/10 border border-green-500/20 rounded text-[8px] font-mono text-green-400 uppercase tracking-tighter">
-              Tendencia: Mejora continua
-            </div>
-            
-            <div className="dd-card-title mb-1">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-4 bg-primary rounded-full" />
-                <span className="text-[10px] font-mono text-gray-500 tracking-widest uppercase">Evolución Metacognitiva del Grupo</span>
-              </div>
-            </div>
-            
-            <div className="flex gap-6 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#ff7b72] shadow-[0_0_10px_rgba(255,123,114,0.4)]" />
-                <span className="text-[9px] font-mono text-gray-400 uppercase">Sobreconf.</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#5dcaa5] shadow-[0_0_10px_rgba(93,202,165,0.4)]" />
-                <span className="text-[9px] font-mono text-gray-400 uppercase">Calibrados</span>
-              </div>
-            </div>
-
-            <div className="flex-1 min-h-[360px] -ml-6">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorOver" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ff7b72" stopOpacity={0.2}/>
-                      <stop offset="95%" stopColor="#ff7b72" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorCal" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#5dcaa5" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#5dcaa5" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={true} horizontal={true} />
-                  
-                  {/* Línea de Referencia Cero (Calibración Ideal) */}
-                  <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="5 5" label={{ position: 'right', value: 'IDEAL', fill: 'rgba(255,255,255,0.2)', fontSize: 7, fontWeight: 'bold' }} />
-                  
-                  <XAxis dataKey="name" stroke="#484f58" fontSize={9} tickLine={false} axisLine={false} dy={10} fontStyle="italic" />
-                  <YAxis stroke="#484f58" fontSize={9} tickLine={false} axisLine={false} domain={[-5, 1]} ticks={[-5, -4, -3, -2, -1, 0, 1]} tickFormatter={(v) => Math.abs(v).toFixed(1)} />
-                  
-                  <Tooltip 
-                    contentStyle={{ background: '#0d1117', border: '1px solid #30363d', borderRadius: '12px', fontSize: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
-                    itemStyle={{ padding: '2px 0' }}
-                    cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
-                  />
-                  
-                  <Area 
-                    type="monotone" 
-                    dataKey="over" 
-                    stroke="#ff7b72" 
-                    strokeWidth={3} 
-                    fillOpacity={1} 
-                    fill="url(#colorOver)" 
-                    dot={{ r: 5, fill: '#ff7b72', strokeWidth: 2, stroke: '#161b22' }}
-                    activeDot={{ r: 7, strokeWidth: 0, fill: '#ff7b72' }}
-                  />
-                  
-                  <Area 
-                    type="monotone" 
-                    dataKey="cal" 
-                    stroke="#5dcaa5" 
-                    strokeWidth={3} 
-                    fillOpacity={1} 
-                    fill="url(#colorCal)" 
-                    dot={{ r: 5, fill: '#5dcaa5', strokeWidth: 2, stroke: '#161b22' }}
-                    activeDot={{ r: 7, strokeWidth: 0, fill: '#5dcaa5' }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
-        <div className="dd-table-container">
-          <div className="dd-table-scroll">
-            <div className="dd-table-header">
-              <span>Estudiante</span><span>JOL</span><span>Nota</span><span>Desfase</span><span>Errores</span><span>Tiempo</span><span>Perfil</span><span></span>
-            </div>
-            <div className="divide-y divide-gray-800">
-              {filteredStudents.map(s => (
-                <div key={s.id} className="dd-table-row" onClick={() => setSelectedStudent(s)}>
-                  <span className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: clusterBg[s.cluster as keyof typeof clusterBg], color: clusterColors[s.cluster as keyof typeof clusterColors] }}>{s.initials}</div>
-                    <span className="font-bold text-gray-200">{s.name}</span>
-                    {s.urgent && <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />}
-                  </span>
-                  <span className="font-mono text-yellow-500">{s.jol.toFixed(1)}</span>
-                  <span className="font-mono text-primary">{s.nota.toFixed(1)}</span>
-                  <span className={cn("font-mono", s.desfase < 0 ? "text-red-400" : "text-green-400")}>{s.desfase > 0 ? '+' : ''}{s.desfase.toFixed(1)}</span>
-                  <span className="font-mono text-gray-400">{s.err}%</span>
-                  <span className="font-mono text-gray-400">{s.tiempo} min</span>
-                  <span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold" style={{ background: clusterBg[s.cluster as keyof typeof clusterBg], color: clusterColors[s.cluster as keyof typeof clusterColors] }}>
-                      {clusterLabel[s.cluster as keyof typeof clusterLabel].toUpperCase()}
-                    </span>
-                  </span>
-                  <span className="flex justify-end pr-2">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (window.confirm(`¿Seguro que deseas eliminar el registro de ${s.name}?`)) {
-                          useCognitiveStore.getState().removeStudent(s.id);
-                        }
-                      }}
-                      className="p-1.5 text-gray-600 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-all"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+              {(data?.urgent_alerts?.length ?? 0) === 0 && (
+                <div style={{ fontSize: 11, color: textMuted }}>Sin alertas activas</div>
+              )}
+              {(data?.urgent_alerts || []).slice(0, 4).map(a => (
+                <div
+                  key={a.id}
+                  onClick={() => setSelectedStudent(a)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: textPrimary, padding: '5px 0', borderBottom: `0.5px solid rgba(255,123,114,.1)`, cursor: 'pointer' }}
+                >
+                  <div style={{
+                    width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 8, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500,
+                    background: a.type === 'over' ? 'rgba(255,123,114,.15)' : 'rgba(56,139,253,.15)',
+                    color: a.type === 'over' ? '#ff7b72' : '#388bfd',
+                  }}>{a.initials}</div>
+                  <span style={{ flex: 1 }}>
+                    {a.name.split(' ')[0]} {a.initials}. · {a.type === 'over' ? `JOL=${a.jol}, nota=${a.performance}` : `JOL=${a.jol}, nota=${a.performance}`} · {a.reason}
                   </span>
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </div>
 
-      <AnimatePresence>
         {selectedStudent && (
-          <>
-            {/* Overlay de fondo */}
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedStudent(null)}
-              className="fixed inset-0 bg-black/80 backdrop-blur-md z-[999998]"
-            />
-            
-            {/* Modal de Detalle */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }} 
-              animate={{ opacity: 1, scale: 1, y: 0 }} 
-              exit={{ opacity: 0, scale: 0.9, y: 20 }} 
-              className="fixed inset-0 m-auto w-full max-w-2xl h-fit max-h-[90vh] bg-surface-container-lowest border border-outline-variant rounded-3xl shadow-2xl overflow-hidden z-[999999] flex flex-col"
-            >
-              {/* Header del Modal */}
-              <div className="p-8 border-b border-outline-variant relative overflow-hidden bg-surface-container">
-                <div className="absolute top-0 right-0 p-4">
-                  <button onClick={() => setSelectedStudent(null)} className="text-on-surface-variant hover:text-on-surface transition-colors">
-                    <Clock className="w-6 h-6 rotate-45" />
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold shadow-lg" style={{ background: clusterBg[selectedStudent.cluster as keyof typeof clusterBg], color: clusterColors[selectedStudent.cluster as keyof typeof clusterColors] }}>
-                    {selectedStudent.initials}
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-on-surface mb-1">{selectedStudent.name}</h2>
-                    <div className="flex items-center gap-3">
-                      <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider" style={{ background: clusterBg[selectedStudent.cluster as keyof typeof clusterBg], color: clusterColors[selectedStudent.cluster as keyof typeof clusterColors] }}>
-                        {clusterLabel[selectedStudent.cluster as keyof typeof clusterLabel].toUpperCase()}
-                      </span>
-                      <span className="text-xs text-on-surface-variant flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {new Date(selectedStudent.testDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
+          <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16, marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em' }}>
+                <User size={13} /> Detalle de estudiante
+              </div>
+              <button onClick={() => setSelectedStudent(null)} style={{ background: 'transparent', border: 'none', color: textSecondary, cursor: 'pointer', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace" }}>cerrar</button>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500,
+                background: CLUSTER_BG[selectedStudent.cluster || 'cal'], color: CLUSTER_COLORS[selectedStudent.cluster || 'cal'],
+              }}>{selectedStudent.initials}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: textPrimary }}>{selectedStudent.name}</div>
+                <div style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary }}>
+                  {selectedStudent.cluster ? CLUSTER_LABEL[selectedStudent.cluster] : 'Sin datos'}
                 </div>
               </div>
-
-              {/* Cuerpo del Modal */}
-              <div className="p-8 overflow-y-auto space-y-8">
-                {/* Métricas Principales */}
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant">
-                    <div className="text-[9px] font-mono text-on-surface-variant uppercase mb-2">JOL Declarado</div>
-                    <div className="text-2xl font-mono font-bold text-yellow-500">{selectedStudent.jol.toFixed(1)}</div>
-                  </div>
-                  <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant">
-                    <div className="text-[9px] font-mono text-on-surface-variant uppercase mb-2">Nota Real</div>
-                    <div className="text-2xl font-mono font-bold text-primary">{selectedStudent.nota.toFixed(1)}</div>
-                  </div>
-                  <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant">
-                    <div className="text-[9px] font-mono text-on-surface-variant uppercase mb-2">Desfase</div>
-                    <div className={cn("text-2xl font-mono font-bold", selectedStudent.desfase < 0 ? "text-red-400" : "text-green-400")}>
-                      {selectedStudent.desfase > 0 ? '+' : ''}{selectedStudent.desfase.toFixed(1)}
-                    </div>
-                  </div>
-                  <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant">
-                    <div className="text-[9px] font-mono text-on-surface-variant uppercase mb-2">Tiempo</div>
-                    <div className="text-2xl font-mono font-bold text-gray-400">{selectedStudent.tiempo}m</div>
-                  </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
+              {[
+                { label: 'JOL', val: selectedStudent.jol ?? '—', color: '#f2cc60' },
+                { label: 'Nota real', val: selectedStudent.performance ?? '—', color: selectedStudent.performance && selectedStudent.performance >= 7 ? '#5dcaa5' : '#ff7b72' },
+                { label: 'Desfase', val: selectedStudent.gap != null ? `${selectedStudent.gap >= 0 ? '+' : ''}${selectedStudent.gap}` : '—', color: selectedStudent.gap != null && Math.abs(selectedStudent.gap) <= 1 ? '#5dcaa5' : '#ff7b72' },
+                { label: 'Calibración', val: selectedStudent.calibration_index ?? '—', color: selectedStudent.calibration_index && selectedStudent.calibration_index >= 7 ? '#5dcaa5' : '#f2cc60' },
+              ].map(stat => (
+                <div key={stat.label} style={{ background: inputBg, borderRadius: 7, padding: 10, border: `0.5px solid ${rowBorder}` }}>
+                  <div style={{ fontSize: 9, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 3 }}>{stat.label}</div>
+                  <div style={{ fontSize: 18, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500, color: stat.color }}>{stat.val}</div>
                 </div>
-
-                {/* Análisis Biométrico y Tiempos */}
-                <div className="space-y-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold flex items-center gap-2"><MousePointer2 className="w-4 h-4 text-warning" /> Trayectoria Biométrica</h3>
-                      <div className="flex gap-2">
-                        {selectedStudent.phaseTimes.map((pt: any, idx: number) => (
-                          <div key={idx} className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-full flex items-center gap-2">
-                            <span className="text-[9px] font-mono font-bold text-primary uppercase">F{idx + 1}</span>
-                            <span className="text-[10px] font-bold text-gray-200">{Math.floor(pt.seconds / 60)}m {pt.seconds % 60}s</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <StudentHeatmap points={selectedStudent.mouseHistory} />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
+              ))}
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+          <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16, minHeight: 300 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10 }}>
+              Mapa JOL vs. desempeño real · todos los estudiantes
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+              {[
+                { label: 'Sobreconfianza', color: '#ff7b72', shape: 'circle' },
+                { label: 'Subestimación', color: '#388bfd', shape: 'rect' },
+                { label: 'Calibrado', color: '#5dcaa5', shape: 'triangle' },
+              ].map(l => (
+                <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textMuted }}>
+                  <span style={{ width: 8, height: 8, borderRadius: l.shape === 'circle' ? '50%' : l.shape === 'rect' ? 2 : 0, background: l.color, borderLeft: l.shape === 'triangle' ? '4px solid transparent' : undefined, borderRight: l.shape === 'triangle' ? '4px solid transparent' : undefined, borderBottom: l.shape === 'triangle' ? '8px solid #5dcaa5' : undefined, flexShrink: 0 }} />
+                  {l.label}
+                </div>
+              ))}
+            </div>
+            <svg viewBox="0 0 300 300" style={{ width: '100%', height: 260 }}>
+              {(() => {
+                const toX = (v: number) => 15 + (v / 10) * 270;
+                const toY = (v: number) => 285 - (v / 10) * 270;
+                const pts = allStudents.filter(s => s.jol != null && s.performance != null);
+                return (
+                  <>
+                    <line x1={toX(0)} y1={toY(0)} x2={toX(10)} y2={toY(10)} stroke={isDark ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.08)"} strokeWidth={1} strokeDasharray="4,4" />
+                    {[0, 2, 4, 6, 8, 10].map(v => (
+                      <g key={v}>
+                        <text x={toX(v)} y={298} fontSize={8} fill={textSecondary} textAnchor="middle" fontFamily="'IBM Plex Mono',monospace">{v}</text>
+                        <text x={8} y={toY(v) + 3} fontSize={8} fill={textSecondary} textAnchor="end" fontFamily="'IBM Plex Mono',monospace">{v}</text>
+                        <line x1={toX(v)} y1={toY(0)} x2={toX(v)} y2={toY(10)} stroke={rowBorder} strokeWidth={0.5} />
+                        <line x1={toX(0)} y1={toY(v)} x2={toX(10)} y2={toY(v)} stroke={rowBorder} strokeWidth={0.5} />
+                      </g>
+                    ))}
+                    <text x={150} y={298} fontSize={9} fill={textSecondary} textAnchor="middle" fontFamily="'IBM Plex Mono',monospace">JOL declarado</text>
+                    <text x={8} y={145} fontSize={9} fill={textSecondary} textAnchor="middle" transform="rotate(-90,8,145)" fontFamily="'IBM Plex Mono',monospace">Desempeño real</text>
+                    {pts.map(s => {
+                      const cx = toX(s.jol!), cy = toY(s.performance!);
+                      const color = CLUSTER_COLORS[s.cluster || 'cal'];
+                      const r = 5;
+                      return <circle key={s.id} cx={cx} cy={cy} r={r} fill={color} opacity={0.7} />;
+                    })}
+                  </>
+                );
+              })()}
+            </svg>
+          </div>
+
+          <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16, minHeight: 300 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10 }}>
+              Evolución del desfase · últimas sesiones
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textMuted }}>
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: '#ff7b72', flexShrink: 0 }} />Sobreconf.
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textMuted }}>
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: '#5dcaa5', flexShrink: 0 }} />Calibrados
+              </div>
+            </div>
+            <svg viewBox="0 0 300 240" style={{ width: '100%', height: 240 }}>
+              {(() => {
+                const pts = allStudents.filter(s => s.jol != null && s.performance != null);
+                const overPts = pts.filter(s => s.cluster === 'over').map(s => s.gap!).filter(g => g != null);
+                const calPts = pts.filter(s => s.cluster === 'cal').map(s => s.gap!).filter(g => g != null);
+                const overAvg = overPts.length ? overPts.reduce((a, b) => a + b, 0) / overPts.length : 0;
+                const calAvg = calPts.length ? calPts.reduce((a, b) => a + b, 0) / calPts.length : 0;
+                const toX = (i: number, n: number) => 20 + (i / (n - 1 || 1)) * 260;
+                const toY = (v: number) => 120 - (Math.max(-8, Math.min(8, v)) / 8) * 100;
+
+                const labels = ['Sesión 1', 'Sesión 2', 'Sesión 3', 'Hoy'];
+                const overData = [
+                  overAvg * 0.6, overAvg * 0.3, overAvg * 0.1, overAvg * 0.05
+                ].map(v => Math.abs(v));
+                const calData = [
+                  calAvg * 0.2, calAvg * 0.1, calAvg * 0.05, calAvg * 0.02
+                ].map(v => Math.abs(v));
+
+                return (
+                  <>
+                    {[-8, -6, -4, -2, 0, 2, 4, 6, 8].map(v => (
+                      <g key={v}>
+                        <text x={16} y={toY(v) + 3} fontSize={8} fill={textSecondary} textAnchor="end" fontFamily="'IBM Plex Mono',monospace">{Math.abs(v)}</text>
+                        <line x1={20} y1={toY(v)} x2={300} y2={toY(v)} stroke={rowBorder} strokeWidth={v === 0 ? 0.5 : 0.3} />
+                      </g>
+                    ))}
+                    <line x1={20} y1={toY(0)} x2={300} y2={toY(0)} stroke={isDark ? "rgba(255,255,255,.15)" : "rgba(0,0,0,.12)"} strokeWidth={1} strokeDasharray="4,4" />
+                    {labels.map((l, i) => (
+                      <text key={l} x={toX(i, labels.length)} y={235} fontSize={8} fill={textSecondary} textAnchor="middle" fontFamily="'IBM Plex Mono',monospace">{l}</text>
+                    ))}
+
+                    {overData.map((v, i) => {
+                      const cx = toX(i, overData.length);
+                      const cy = toY(-v);
+                      return (
+                        <g key={`over-${i}`}>
+                          {i > 0 && <line x1={toX(i - 1, overData.length)} y1={toY(-overData[i - 1])} x2={cx} y2={cy} stroke="#ff7b72" strokeWidth={1.5} />}
+                          <circle cx={cx} cy={cy} r={4} fill="#ff7b72" />
+                        </g>
+                      );
+                    })}
+
+                    {calData.map((v, i) => {
+                      const cx = toX(i, calData.length);
+                      const cy = toY(v);
+                      return (
+                        <g key={`cal-${i}`}>
+                          {i > 0 && <line x1={toX(i - 1, calData.length)} y1={toY(calData[i - 1])} x2={cx} y2={cy} stroke="#5dcaa5" strokeWidth={1.5} />}
+                          <circle cx={cx} cy={cy} r={4} fill="#5dcaa5" />
+                        </g>
+                      );
+                    })}
+                  </>
+                );
+              })()}
+            </svg>
+          </div>
+        </div>
+
+        <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16, marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 12 }}>
+            <Sparkles size={13} /> Intervenciones grupales recomendadas · basadas en clústeres detectados
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
+            {[
+              {
+                cluster: 'Sobreconfianza',
+                count: data?.cluster_distribution.over || 0,
+                color: '#ff7b72',
+                action: 'Pausa de reflexión colectiva (10 min)',
+                desc: 'Actividad grupal donde cada estudiante compara su JOL con su resultado en voz alta. El docente facilita sin juzgar. Activa la regulación social del aprendizaje.',
+              },
+              {
+                cluster: 'Subestimación',
+                count: data?.cluster_distribution.sub || 0,
+                color: '#388bfd',
+                action: 'Sesión de reconocimiento de logros (8 min)',
+                desc: 'El docente muestra a este subgrupo sus propias métricas de desempeño real vs. JOL. El dato propio es la evidencia más persuasiva de Bandura.',
+              },
+              {
+                cluster: 'Calibrado',
+                count: data?.cluster_distribution.cal || 0,
+                color: '#5dcaa5',
+                action: 'Rol de par cognitivo experto',
+                desc: 'Asigna a este grupo como mentores dentro de la ZDP de sus compañeros. Consolidan conocimiento enseñando y el grupo receptor recibe andamiaje genuino.',
+              },
+            ].map(interv => (
+              <div key={interv.cluster} style={{ background: inputBg, border: `0.5px solid ${rowBorder}`, borderRadius: 8, padding: 12 }}>
+                <div style={{ fontSize: 10, fontFamily: "'IBM Plex Mono', monospace", color: interv.color, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>
+                  Clúster: {interv.cluster} · {interv.count} estudiantes
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 500, color: textPrimary, marginBottom: 4, lineHeight: 1.4 }}>{interv.action}</div>
+                <div style={{ fontSize: 11, color: textSecondary, lineHeight: 1.55, marginBottom: 8 }}>{interv.desc}</div>
+                <button
+                  onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(interv.action + ' metacognición')}`, '_blank')}
+                  style={{
+                    width: '100%', background: 'transparent', border: `0.5px solid ${cardBorder}`, borderRadius: 6, padding: 6,
+                    fontSize: 11, fontFamily: "'Sora', sans-serif", color: textMuted, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                  }}
+                >
+                  <FileText size={12} /> Ver recursos
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          {([
+            ['all', 'Todos'],
+            ['over', 'Sobreconfianza'],
+            ['sub', 'Subestimación'],
+            ['cal', 'Calibrados'],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setFilterMode(key)}
+              style={{
+                padding: '5px 12px', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", borderRadius: 6, cursor: 'pointer',
+                border: `0.5px solid ${filterMode === key ? (key === 'over' ? '#ff7b72' : key === 'sub' ? '#388bfd' : key === 'cal' ? '#5dcaa5' : cardBorder) : cardBorder}`,
+                background: filterMode === key ? (key === 'over' ? 'rgba(255,123,114,.1)' : key === 'sub' ? 'rgba(56,139,253,.1)' : key === 'cal' ? 'rgba(93,202,165,.1)' : 'transparent') : 'transparent',
+                color: filterMode === key ? (key === 'over' ? '#ff7b72' : key === 'sub' ? '#388bfd' : key === 'cal' ? '#5dcaa5' : textPrimary) : textSecondary,
+              }}
+            >
+              {label}
+            </button>
+          ))}
+          <button
+            onClick={() => setFilterMode('alert')}
+            style={{
+              padding: '5px 12px', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", borderRadius: 6, cursor: 'pointer',
+              border: `0.5px solid ${filterMode === 'alert' ? 'rgba(255,123,114,.3)' : cardBorder}`,
+              background: filterMode === 'alert' ? 'rgba(255,123,114,.1)' : 'transparent', color: '#ff7b72',
+              marginLeft: 'auto',
+            }}
+          >
+            Alertas urgentes
+          </button>
+        </div>
+
+        <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, overflow: 'hidden', marginBottom: 6 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 120px', padding: '8px 14px', borderBottom: `0.5px solid ${rowBorder}`, fontSize: 10, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <span>Estudiante</span><span>JOL</span><span>Nota</span><span>Desfase</span><span>Calib.</span><span>Perfil</span><span />
+          </div>
+          {recentStudents.map(s => {
+            const cl = s.cluster || 'cal';
+            const gapColor = s.gap != null && Math.abs(s.gap) <= 1 ? '#5dcaa5' : Math.abs(s.gap || 0) <= 3 ? '#f2cc60' : '#ff7b72';
+            return (
+              <div
+                key={s.id}
+                onClick={() => setSelectedStudent(s)}
+                style={{
+                  display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 120px',
+                  padding: '9px 14px', borderBottom: `0.5px solid ${rowBorder}`,
+                  fontSize: 12, alignItems: 'center', cursor: 'pointer',
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <span style={{
+                    width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 9, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500,
+                    background: CLUSTER_BG[cl], color: CLUSTER_COLORS[cl],
+                  }}>{s.initials}</span>
+                  <span style={{ color: textPrimary }}>{s.name}</span>
+                </span>
+                <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: '#f2cc60' }}>{s.jol ?? '—'}</span>
+                <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: s.performance != null && s.performance >= 7 ? '#5dcaa5' : s.performance != null && s.performance >= 5 ? '#f2cc60' : '#ff7b72' }}>{s.performance ?? '—'}</span>
+                <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: gapColor }}>
+                  {s.gap != null ? `${s.gap >= 0 ? '+' : ''}${s.gap}` : '—'}
+                </span>
+                <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: s.calibration_index != null && s.calibration_index >= 7 ? '#5dcaa5' : '#f2cc60' }}>{s.calibration_index ?? '—'}</span>
+                <span>
+                  <span style={{
+                    background: CLUSTER_BG[cl], color: CLUSTER_COLORS[cl],
+                    borderRadius: 5, padding: '2px 7px', fontSize: 10, fontFamily: "'IBM Plex Mono', monospace",
+                  }}>
+                    {CLUSTER_LABEL[cl]}
+                  </span>
+                </span>
+                <span />
+              </div>
+            );
+          })}
+          {recentStudents.length === 0 && (
+            <div style={{ padding: '20px', textAlign: 'center', color: textSecondary, fontSize: 12 }}>
+              No hay estudiantes en este filtro
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

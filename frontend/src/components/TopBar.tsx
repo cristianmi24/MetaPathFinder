@@ -1,4 +1,4 @@
-import { Search, Bell, Menu, LogOut, User, Settings, LayoutDashboard, GraduationCap, BarChart3, TestTube2, Sun, Moon, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Search, Bell, Menu, LogOut, User, Users, Compass, Settings, LayoutDashboard, GraduationCap, BarChart3, TestTube2, Sun, Moon, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useRef, useEffect } from 'react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
@@ -15,8 +15,8 @@ export function TopBar() {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
 
-  const userName = user ? `${user.name} ${user.lastName}` : (role === 'student' ? 'Mateo Reatiga' : 'Dra. Silva');
-  const userInitials = user ? `${user.name[0]}${user.lastName[0]}`.toUpperCase() : (role === 'student' ? 'MR' : 'DS');
+  const userName = user ? `${user.name} ${user.lastName}` : (role === 'student' ? 'Mateo Reatiga' : role === 'teacher' ? 'Prof. García' : 'Dra. Silva');
+  const userInitials = user ? `${user.name[0]}${user.lastName[0]}`.toUpperCase() : (role === 'student' ? 'MR' : role === 'teacher' ? 'PG' : 'DS');
 
   const avatarUrl = user 
     ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random&color=fff&bold=true`
@@ -30,8 +30,16 @@ export function TopBar() {
         { icon: GraduationCap, label: 'Tutorial', path: '/tutorial' },
         { icon: BarChart3, label: 'Analíticas', path: '/analytics' },
       ]
+    : role === 'teacher'
+    ? [
+        { icon: LayoutDashboard, label: 'Dashboards', path: '/admin' },
+        { icon: Users, label: 'Usuarios Registrados', path: '/registered-users' },
+        { icon: Compass, label: 'Actividades', path: '/activities' },
+      ]
     : [
-        { icon: LayoutDashboard, label: 'Dashboards', path: '/' },
+        { icon: LayoutDashboard, label: 'Dashboards', path: '/admin' },
+        { icon: Users, label: 'Usuarios Registrados', path: '/registered-users' },
+        { icon: Compass, label: 'Actividades', path: '/activities' },
         { icon: TestTube2, label: 'Experimentos', path: '/experiments' },
       ];
 
@@ -132,7 +140,7 @@ export function TopBar() {
                 >
                   <div className="p-3 border-b border-outline-variant/20 mb-2">
                     <p className="font-bold text-on-surface truncate">{userName}</p>
-                    <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">{role === 'student' ? 'Estudiante' : 'Administrador'}</p>
+                    <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">{role === 'student' ? 'Estudiante' : role === 'teacher' ? 'Profesor' : 'Administrador'}</p>
                     {userId && <p className="text-[9px] text-outline mt-1 font-mono">{userId}</p>}
                   </div>
 
@@ -180,7 +188,7 @@ export function TopBar() {
                 </div>
                 <div>
                   <p className="font-bold text-xl leading-tight tracking-tight">Meta-Pathfinder</p>
-                  <p className="text-[11px] uppercase tracking-[.24em] text-on-surface-variant mt-1">{role === 'student' ? 'Estudiante' : 'Administrador'}</p>
+                  <p className="text-[11px] uppercase tracking-[.24em] text-on-surface-variant mt-1">{role === 'student' ? 'Estudiante' : role === 'teacher' ? 'Profesor' : 'Administrador'}</p>
                 </div>
               </div>
 

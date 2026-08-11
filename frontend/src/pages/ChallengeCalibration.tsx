@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { EvaluationTracker } from '../components/EvaluationTracker';
+import { usePhaseSync } from '../hooks/usePhaseSync';
 import './ChallengeCalibration.css';
 
 ChartJS.register(
@@ -44,7 +45,8 @@ export function ChallengeCalibration() {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useTheme();
-  const { currentLevel, setCurrentLevel, setCurrentChallengeId, addEvent, user, events, consolidateSession } = useCognitiveStore();
+  const { currentLevel, setCurrentLevel, setCurrentChallengeId, addEvent, user, events, consolidateSession, currentSessionId } = useCognitiveStore();
+  const { syncPhaseC, syncSessionComplete } = usePhaseSync();
   
   const metrics = useMemo(() => {
     if (location.state) return location.state;
@@ -69,8 +71,10 @@ export function ChallengeCalibration() {
   const wordCount = reflection.trim().split(/\s+/).filter(w => w.length > 0).length;
 
   // Cálculos de Calibración
-  const jolValues = Object.values(metrics.jolAnswers || {}) as number[];
-  const jolAvg = jolValues.length > 0 ? jolValues.reduce((a, b) => a + b, 0) / jolValues.length : 5;
+  const jolValues = Object.values(metrics.jolAnswers || {}).filter(v => typeof v === 'number') as number[];
+  const rawAvg = jolValues.length > 0 ? jolValues.reduce((a, b) => a + b, 0) / jolValues.length : 5;
+  const maxVal = jolValues.length > 0 ? Math.max(...jolValues) : 10;
+  const jolAvg = maxVal <= 5 ? ((rawAvg - 1) / 4) * 10 : maxVal > 10 ? rawAvg / 10 : rawAvg;
   const performance = (metrics.технические_метрики?.score || 0) / 10;
   const gap = Number((jolAvg - performance).toFixed(1));
   
@@ -80,12 +84,22 @@ export function ChallengeCalibration() {
     return { type: 'calibrated', label: 'Perfil Calibrado', icon: CheckCircle2, desc: 'Excelente autoconocimiento. Tu percepción coincide con tus capacidades técnicas.' };
   }, [gap]);
 
+  // Real metrics for radar chart
+  const tech = metrics.технические_метрики || {};
+  const bio = metrics.biometricas || {};
+  const maxRuns = 10;
+  const maxHints = 5;
+  const eficiencia = Math.max(0, Math.min(10, 10 - (tech.runs || 0) / maxRuns * 10));
+  const independencia = Math.max(0, Math.min(10, 10 - (tech.hints || 0) / maxHints * 10));
+  const velocidad = bio.total_time ? Math.max(0, Math.min(10, 10 - (bio.total_time / 600) * 10)) : 5;
+  const interaccion = bio.clicks ? Math.max(0, Math.min(10, 10 - (bio.clicks / 50) * 10)) : 5;
+
   const radarData = {
-    labels: ['Dominio', 'Planificación', 'Depuración', 'Errores', 'Velocidad'],
+    labels: ['Precisión', 'Eficiencia', 'Independencia', 'Interacción', 'Velocidad'],
     datasets: [
       {
         label: 'JOL Declarado',
-        data: [jolAvg, jolAvg - 1, jolAvg, jolAvg + 1, 8],
+        data: [jolAvg, jolAvg, jolAvg, jolAvg, jolAvg],
         borderColor: '#f2cc60',
         backgroundColor: 'rgba(242,204,96,0.1)',
         pointBackgroundColor: '#f2cc60',
@@ -93,7 +107,7 @@ export function ChallengeCalibration() {
       },
       {
         label: 'Desempeño Real',
-        data: [performance, performance - 1, performance + 1, performance - 2, 4],
+        data: [performance, eficiencia, independencia, interaccion, velocidad],
         borderColor: '#ff7b72',
         backgroundColor: 'rgba(255,123,114,0.1)',
         pointBackgroundColor: '#ff7b72',
@@ -132,7 +146,7 @@ export function ChallengeCalibration() {
     maintainAspectRatio: false
   };
 
-  const handleFinishReflection = () => {
+  const handleFinishReflection = async () => {
     console.log('📝 Click en Registrar Reflexión. Palabras:', wordCount);
     if (wordCount < 20) {
       console.warn('⚠️ Reflexión muy corta.');
@@ -144,7 +158,10 @@ export function ChallengeCalibration() {
       gap, 
       profile: profile.label 
     });
-    console.log('✅ Llamando a consolidateSession()...');
+
+    await syncPhaseC();
+    await syncSessionComplete();
+    console.log('✅ Llamando a consolidateSession() después del sync...');
     consolidateSession();
   };
 

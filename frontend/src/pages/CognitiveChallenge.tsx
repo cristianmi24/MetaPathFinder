@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
+import { usePhaseSync } from '../hooks/usePhaseSync';
 import { useTheme } from '../ThemeContext';
 import { DynamicChallenge } from '../data/dynamicChallengeBank';
 import { EvaluationTracker } from '../components/EvaluationTracker';
@@ -45,7 +46,8 @@ export function CognitiveChallenge() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const { addEvent, currentLevel, assignedStrategyId } = useCognitiveStore();
+  const { addEvent, currentLevel, assignedStrategyId, currentSessionId, user } = useCognitiveStore();
+  const { syncPhaseB } = usePhaseSync();
 
   // Obtener estrategia activa (desde location state o desde el store)
   const activeStrategyId = location.state?.assignedStrategyId || assignedStrategyId;
@@ -156,6 +158,9 @@ export function CognitiveChallenge() {
   
   const [showHint, setShowHint] = useState(false);
   const [boardSuccess, setBoardSuccess] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [resultScore, setResultScore] = useState(0);
+  const [resultPassed, setResultPassed] = useState(false);
 
   const secondsRef = useRef(seconds);
   const clickCountRef = useRef(clickCount);
@@ -314,9 +319,33 @@ export function CognitiveChallenge() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleVerify = () => {
+    let score = 0;
+    let passed = false;
+
+    if (boardSuccess) {
+      score = Math.max(60, 100 - errCount * 10 - hintCount * 5 - Math.floor(seconds / 120) * 5);
+      passed = true;
+    } else {
+      const hasOk = consoleMessages.some(m => m.type === 'ok');
+      if (hasOk) {
+        score = Math.max(60, 100 - errCount * 10 - hintCount * 5 - Math.floor(seconds / 120) * 5);
+        passed = true;
+      } else if (code.length > 30 || totalRuns > 0) {
+        score = Math.max(0, 30 - errCount * 10);
+        passed = false;
+      }
+    }
+
+    setResultScore(Math.round(Math.max(0, Math.min(100, score))));
+    setResultPassed(passed);
+    setShowResultModal(true);
+  };
+
+  const handleSubmit = async () => {
     const isSuccess = boardSuccess || consoleMessages.some(m => m.type === 'ok');
-    
+    const finalScore = resultScore > 0 ? resultScore : (isSuccess ? 80 : 20);
+
     const payload = {
       challengeId: challenge.id,
       level: currentLevel,
@@ -326,11 +355,12 @@ export function CognitiveChallenge() {
       estrategia_monitoreada: activeStrategyId,
       evidencias_estrategia: strategyEvidence,
       технические_метрики: {
-        score: isSuccess ? 100 : 0,
+        score: finalScore,
         runs: totalRuns,
         hints: hintCount,
         edits: editCount,
         final_code: code,
+        passed: isSuccess,
       },
       biometricas: {
         clicks: clickCount,
@@ -342,6 +372,7 @@ export function CognitiveChallenge() {
 
     console.log('🚀 Enviando métricas reales a Fase C:', payload);
     addEvent('CHALLENGE_COMPLETED', payload);
+    await syncPhaseB();
     navigate('/calibration', { state: payload });
   };
 
@@ -727,7 +758,21 @@ export function CognitiveChallenge() {
             })}
           </div>
 
-          <div className="fb-submit-zone">
+          <div className="fb-submit-zone" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button 
+              className="fb-btn-verify" 
+              onClick={handleVerify}
+              style={{
+                width: '100%', padding: '12px', borderRadius: '12px',
+                background: 'var(--primary, #4f378b)', color: '#fff',
+                border: 'none', fontWeight: 800, fontSize: '13px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', gap: '8px'
+              }}
+            >
+              <i className="ti ti-check" aria-hidden="true"></i>
+              Verificar Respuesta
+            </button>
             <button 
               className={`fb-btn-submit ${isChallengeDone ? 'ready' : ''}`} 
               id="submitBtn" 
@@ -742,6 +787,74 @@ export function CognitiveChallenge() {
           </div>
         </div>
       </div>
+
+      {/* Result Modal */}
+      <AnimatePresence>
+        {showResultModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 9999,
+              background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '20px'
+            }}
+            onClick={() => setShowResultModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'var(--fb-surface, #1c1c1e)',
+                borderRadius: '24px', padding: '32px',
+                maxWidth: '400px', width: '100%',
+                textAlign: 'center', border: resultPassed ? '2px solid #238636' : '2px solid #ff7b72'
+              }}
+            >
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+                {resultPassed ? '✅' : '❌'}
+              </div>
+              <h3 style={{ fontSize: '22px', fontWeight: 900, color: resultPassed ? '#238636' : '#ff7b72', marginBottom: '8px' }}>
+                {resultPassed ? '¡Correcto!' : 'Incorrecto'}
+              </h3>
+              <p style={{ fontSize: '14px', color: 'var(--fb-text-muted, #8b949e)', marginBottom: '20px' }}>
+                {resultPassed
+                  ? 'Tu respuesta es correcta. Puedes continuar a la calibración.'
+                  : 'Tu respuesta no es correcta. Revisa los criterios e intenta de nuevo.'}
+              </p>
+              <div style={{
+                background: 'rgba(255,255,255,0.05)', borderRadius: '16px',
+                padding: '20px', marginBottom: '20px'
+              }}>
+                <div style={{ fontSize: '11px', color: 'var(--fb-text-muted, #8b949e)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                  Puntaje
+                </div>
+                <div style={{ fontSize: '42px', fontWeight: 900, color: resultPassed ? '#238636' : '#ff7b72' }}>
+                  {resultScore}<span style={{ fontSize: '18px', color: 'var(--fb-text-muted, #8b949e)' }}>/100</span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowResultModal(false);
+                  if (resultPassed) handleSubmit();
+                }}
+                style={{
+                  width: '100%', padding: '14px', borderRadius: '14px',
+                  background: resultPassed ? '#238636' : '#ff7b72', color: '#fff',
+                  border: 'none', fontWeight: 800, fontSize: '14px',
+                  cursor: 'pointer'
+                }}
+              >
+                {resultPassed ? 'Continuar a Calibración' : 'Cerrar e Intentar de Nuevo'}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

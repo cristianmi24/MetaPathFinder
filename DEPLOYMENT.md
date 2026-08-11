@@ -64,18 +64,38 @@ Esto compilará el frontend a `frontend/dist/`
 
 ## 🚂 Deploy en Railway
 
-### Backend
-1. Conectar el repositorio a Railway
-2. Seleccionar carpeta raíz
-3. Variables de entorno:
-   - `PORT` = 3000 (o dejar vacío para auto)
-   - `NODE_ENV` = production
-4. Build command: `cd backend && npm install`
-5. Start command: `cd backend && npm start`
+### Opción A: Docker (Recomendada)
+1. Conectar el repositorio a Railway con Dockerfile detectado
+2. Variables de entorno necesarias:
+   - `PORT` = 3000
+   - `DATABASE_URL` = URL de PostgreSQL (Neon o Railway provided)
+   - `SECRET_KEY` = tu clave secreta
+3. Railway usa automáticamente el `Dockerfile`
+4. El entrypoint inicia Python (FastAPI via Unix socket) y Express en el puerto 3000
 
-### Frontend
-1. El frontend se construye y sirve desde el backend
-2. El `backend/server.ts` sirve los archivos estáticos desde `../frontend/dist/`
+### Opción B: Sin Docker (Build desde el backend)
+1. Crear un servicio **Backend** en Railway
+2. Configuración:
+   - **Root Directory**: dejar vacío (raíz del repo)
+   - **Build Command**:
+     ```bash
+     cd frontend && npm install && npm run build && cd ../backend && npm install
+     ```
+   - **Start Command**:
+     ```bash
+     cd backend && npm start
+     ```
+3. Variables de entorno:
+   - `PORT` = 3000
+   - `NODE_ENV` = production
+   - `DATABASE_URL` = URL de PostgreSQL
+   - `SECRET_KEY` = tu clave secreta
+   - `CORS_ORIGINS` = https://tudominio.railway.app (opcional)
+
+### Notas
+- El frontend se sirve como estático desde Express (`/frontend/dist/`), no necesita servicio separado
+- El backend Python (FastAPI) se comunica con Express via **Unix socket** (`/tmp/mp-python.sock`) en Docker, o directo a `localhost:8000` en dev local
+- No olvidar configurar la base de datos PostgreSQL (Neon cloud o Railway plugin)
 
 ## 🔗 Variables de Entorno
 

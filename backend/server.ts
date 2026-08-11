@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import http from "http";
 import { fileURLToPath } from "url";
 import cors from "cors";
 
@@ -12,22 +13,9 @@ async function startServer() {
 
   app.use(express.json());
 
-  const allowedOrigins = [
-    "https://metapathfinder-frontend-production.up.railway.app",
-    "http://localhost:5173",
-    "http://localhost:4173",
-  ];
-
   app.use(
     cors({
-      origin: (origin, callback) => {
-        // Allow requests with no origin (e.g. curl, Postman, server-to-server)
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error(`CORS policy: origin '${origin}' not allowed`));
-        }
-      },
+      origin: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
@@ -55,6 +43,54 @@ async function startServer() {
         calibration: 0.82
       }
     });
+  });
+
+  // Proxy /api/* al backend Python via Unix socket
+  const SOCKET_PATH = process.env.PYTHON_SOCKET_PATH || "/tmp/mp-python.sock";
+
+  app.use("/api", (req, res) => {
+    const body = ["GET", "HEAD"].includes(req.method)
+      ? undefined
+      : JSON.stringify(req.body ?? {});
+
+    const headers: Record<string, string> = {
+      "content-type": "application/json",
+      accept: (req.headers.accept as string) || "application/json",
+      authorization: (req.headers.authorization as string) || "",
+    };
+
+    if (body !== undefined) {
+      headers["content-length"] = Buffer.byteLength(body).toString();
+    }
+
+    const proxyReq = http.request(
+      {
+        socketPath: SOCKET_PATH,
+        path: req.originalUrl,
+        method: req.method,
+        headers,
+      },
+      (proxyRes) => {
+        const status = proxyRes.statusCode ?? 500;
+        const chunks: Buffer[] = [];
+        proxyRes.on("data", (c: Buffer) => chunks.push(c));
+        proxyRes.on("end", () => {
+          const raw = Buffer.concat(chunks).toString("utf-8");
+          try {
+            res.status(status).json(JSON.parse(raw));
+          } catch {
+            res.status(status).send(raw);
+          }
+        });
+      }
+    );
+
+    proxyReq.on("error", () => {
+      res.status(502).json({ error: "Backend unavailable" });
+    });
+
+    if (body !== undefined) proxyReq.write(body);
+    proxyReq.end();
   });
 
   // Servir archivos estáticos del frontend compilado

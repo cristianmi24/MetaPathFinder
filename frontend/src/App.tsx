@@ -17,9 +17,13 @@ import { RegisteredUsers } from './pages/RegisteredUsers';
 import { Activities } from './pages/Activities';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCognitiveTracking } from './hooks/useCognitiveTracking';
+import { usePageLeaveSave } from './hooks/usePhaseSync';
 import { CognitiveBrain } from './components/CognitiveBrain';
 import { Home } from './pages/Home';
+import { AdminLogin } from './pages/Admin';
 import { useCognitiveStore } from './stores/useCognitiveStore';
+import { useEffect } from 'react';
+import { api } from './services/api';
 import { cn } from './lib/utils';
 
 import { BackgroundNetwork } from './components/BackgroundNetwork';
@@ -126,18 +130,75 @@ function RootRedirect() {
   );
 }
 
+function ProtectedRoute({ children, requiredRole, redirectTo = '/profile' }: { children: React.ReactNode; requiredRole?: 'admin' | 'student' | 'teacher'; redirectTo?: string; }) {
+  const token = useCognitiveStore((s) => s.token);
+  const user = useCognitiveStore((s) => s.user);
+  const role = useCognitiveStore((s) => s.role);
+
+  if (!user || !token) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  if (requiredRole === 'admin' && role !== 'admin' && role !== 'teacher') {
+    const fallback = role === 'student' ? '/student' : redirectTo;
+    return <Navigate to={fallback} replace />;
+  }
+
+  if (requiredRole && requiredRole !== 'admin' && role !== requiredRole) {
+    const fallback = role === 'admin' || role === 'teacher' ? '/admin' : role === 'student' ? '/student' : redirectTo;
+    return <Navigate to={fallback} replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const role = useCognitiveStore((s) => s.role);
   const user = useCognitiveStore((s) => s.user);
+  const token = useCognitiveStore((s) => s.token);
+  const setUser = useCognitiveStore((s) => s.setUser);
+  const setRole = useCognitiveStore((s) => s.setRole);
+  const setToken = useCognitiveStore((s) => s.setToken);
+  const resetStore = useCognitiveStore((s) => s.reset);
+
+  const authPaths = ['/profile', '/admin-login'];
+  const isAuthPath = authPaths.includes(location.pathname);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!token) return;
+    api.getMe()
+      .then((me) => {
+        if (!mounted) return;
+        setUser({ name: me.name, lastName: me.last_name, email: me.email });
+        setRole(me.role as any);
+      })
+      .catch(() => {
+        setToken(null, null);
+        setUser(null);
+        setRole(null);
+      });
+    return () => { mounted = false; };
+  }, [token, setUser, setRole, setToken, resetStore]);
+
   useCognitiveTracking(true);
+  usePageLeaveSave();
 
   if (location.pathname === '/') return <>{children}</>;
 
-  if (role === 'admin') return <AdminLayout>{children}</AdminLayout>;
+  if (!user || !token) {
+    if (isAuthPath) return <AuthLayout>{children}</AuthLayout>;
+    if (location.pathname === '/admin') return <Navigate to="/admin-login" replace />;
+    return <Navigate to="/profile" replace />;
+  }
 
-  if (!user) return <AuthLayout>{children}</AuthLayout>;
+  if (role === 'admin' || role === 'teacher') {
+    if (location.pathname === '/profile' || location.pathname === '/admin-login') return <Navigate to="/admin" replace />;
+    return <AdminLayout>{children}</AdminLayout>;
+  }
 
+  if (location.pathname === '/admin' || location.pathname === '/admin-login') return <Navigate to="/student" replace />;
   return <StudentLayout>{children}</StudentLayout>;
 }
 
@@ -147,20 +208,22 @@ export default function App() {
       <AppLayout>
         <Routes>
           <Route path="/" element={<RootRedirect />} />
-          <Route path="/student" element={<StudentDashboard />} />
-          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/student" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><StudentDashboard /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute requiredRole="admin" redirectTo="/admin-login"><Dashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<StudentProfile />} />
-          <Route path="/registered-users" element={<RegisteredUsers />} />
-          <Route path="/activities" element={<Activities />} />
-          <Route path="/experiments" element={<Experiments />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/tutorial" element={<Tutorial />} />
-          <Route path="/evaluation-prep" element={<EvaluationStart />} />
-          <Route path="/pretest" element={<PreTest />} />
-          <Route path="/challenge" element={<CognitiveChallenge />} />
-          <Route path="/calibration" element={<ChallengeCalibration />} />
-          <Route path="/metacognitive-strategies" element={<MetacognitiveStrategies />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/registered-users" element={<ProtectedRoute requiredRole="admin" redirectTo="/admin-login"><RegisteredUsers /></ProtectedRoute>} />
+          <Route path="/activities" element={<ProtectedRoute requiredRole="admin" redirectTo="/admin-login"><Activities /></ProtectedRoute>} />
+
+          <Route path="/experiments" element={<ProtectedRoute redirectTo="/profile"><Experiments /></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><Analytics /></ProtectedRoute>} />
+          <Route path="/tutorial" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><Tutorial /></ProtectedRoute>} />
+          <Route path="/evaluation-prep" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><EvaluationStart /></ProtectedRoute>} />
+          <Route path="/pretest" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><PreTest /></ProtectedRoute>} />
+          <Route path="/challenge" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><CognitiveChallenge /></ProtectedRoute>} />
+          <Route path="/calibration" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><ChallengeCalibration /></ProtectedRoute>} />
+          <Route path="/metacognitive-strategies" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><MetacognitiveStrategies /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute redirectTo="/profile"><SettingsPage /></ProtectedRoute>} />
           <Route path="*" element={<RootRedirect />} />
         </Routes>
       </AppLayout>
