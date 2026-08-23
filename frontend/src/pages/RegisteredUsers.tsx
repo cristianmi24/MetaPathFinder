@@ -3,6 +3,7 @@ import { Users, Shield, GraduationCap, Calendar, UserPlus, X, Eye, EyeOff, Schoo
 import { api } from '../services/api';
 import { useTheme } from '../ThemeContext';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
+import { TermsCheckbox } from '../components/TermsAndConditions';
 
 interface UserEntry {
   id: string;
@@ -43,6 +44,8 @@ export function RegisteredUsers() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [createTermsAccepted, setCreateTermsAccepted] = useState(false);
 
   const textPrimary = isDark ? '#e6edf3' : '#1f2328';
   const textSecondary = isDark ? '#8b949e' : '#656d76';
@@ -55,14 +58,19 @@ export function RegisteredUsers() {
   const students = users.filter(u => u.role === 'student');
   const admins = users.filter(u => u.role === 'admin' || u.role === 'teacher');
 
+  const fetchUsers = async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const res = await api.listUsers() as unknown as UserEntry[];
+      setUsers(res);
+    } catch (err: any) {
+      setLoadError(err?.message || 'No se pudo conectar con el servidor');
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await api.listUsers() as unknown as UserEntry[];
-        setUsers(res);
-      } catch { /* ignore */ }
-      setLoading(false);
-    };
     fetchUsers();
   }, []);
 
@@ -79,12 +87,17 @@ export function RegisteredUsers() {
       setError('Todos los campos son obligatorios');
       return;
     }
+    if (!createTermsAccepted) {
+      setError('Debes confirmar la aceptación de los Términos y Condiciones y el Tratamiento de Datos Personales por parte del usuario.');
+      return;
+    }
     setCreating(true);
     try {
-      await api.register(createForm);
+      await api.register({ ...createForm, terms_accepted: createTermsAccepted });
       setShowCreateForm(false);
       setCreateForm({ name: '', last_name: '', email: '', password: '', role: 'student' });
       setShowPassword(false);
+      setCreateTermsAccepted(false);
       const res = await api.listUsers() as unknown as UserEntry[];
       setUsers(res);
     } catch (err: any) {
@@ -176,6 +189,21 @@ export function RegisteredUsers() {
     return <div style={{ padding: 40, textAlign: 'center', color: textSecondary, fontSize: 13 }}>Cargando usuarios...</div>;
   }
 
+  if (loadError) {
+    return (
+      <div style={{ padding: 40, textAlign: 'center' }}>
+        <div style={{ fontSize: 14, color: '#ff7b72', marginBottom: 12 }}>
+          No se pudo cargar la lista de usuarios. Revisa la conexión con el servidor o la base de datos.
+        </div>
+        <div style={{ fontSize: 11, color: textSecondary, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 16 }}>{loadError}</div>
+        <button onClick={fetchUsers}
+          style={{ padding: '8px 18px', borderRadius: 8, background: '#238636', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          Reintentar
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Header */}
@@ -252,9 +280,12 @@ export function RegisteredUsers() {
                 <option value="admin">Administrador</option>
               </select>
             </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <TermsCheckbox checked={createTermsAccepted} onChange={setCreateTermsAccepted} dark={isDark} />
+            </div>
             <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <button type="submit" disabled={creating}
-                style={{ width: '100%', padding: '10px', borderRadius: 8, background: '#238636', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: creating ? 'not-allowed' : 'pointer', opacity: creating ? 0.6 : 1 }}>
+              <button type="submit" disabled={creating || !createTermsAccepted}
+                style={{ width: '100%', padding: '10px', borderRadius: 8, background: '#238636', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: (creating || !createTermsAccepted) ? 'not-allowed' : 'pointer', opacity: (creating || !createTermsAccepted) ? 0.6 : 1 }}>
                 {creating ? 'Creando...' : 'Crear Usuario'}
               </button>
             </div>

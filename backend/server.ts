@@ -22,31 +22,11 @@ async function startServer() {
     })
   );
 
-  // API: Registro de eventos cognitivos
-  app.post("/api/tracking/events", (req, res) => {
-    const { userId, eventType, timestamp, metadata } = req.body;
-    // Aquí se integraría el motor de ML (FastAPI proxy o lógica interna)
-    // Por ahora, simulamos el procesamiento
-    console.log(`[Cognitive Tracker] Event: ${eventType} from User: ${userId}`);
-    res.json({ status: "received", analyzed: true });
-  });
-
-  // API: Obtener estado cognitivo (Inferencia)
-  app.get("/api/cognitive/state/:userId", (req, res) => {
-    // Simulación de respuesta del motor Isolation Forest / SVM
-    res.json({
-      userId: req.params.userId,
-      state: "Flow", // Flow, Frustration, Boredom, Confusion
-      metrics: {
-        frustrationLevel: 0.12,
-        cognitiveLoad: 0.45,
-        calibration: 0.82
-      }
-    });
-  });
-
-  // Proxy /api/* al backend Python via Unix socket
-  const SOCKET_PATH = process.env.PYTHON_SOCKET_PATH || "/tmp/mp-python.sock";
+  // Proxy /api/* al backend Python via Unix socket o TCP HTTP
+  const PYTHON_HOST = process.env.PYTHON_HOST || "127.0.0.1";
+  const PYTHON_PORT = parseInt(process.env.PYTHON_PORT || "8000", 10);
+  const SOCKET_PATH = process.env.PYTHON_SOCKET_PATH;
+  const isWindows = process.platform === "win32";
 
   app.use("/api", (req, res) => {
     const body = ["GET", "HEAD"].includes(req.method)
@@ -63,30 +43,38 @@ async function startServer() {
       headers["content-length"] = Buffer.byteLength(body).toString();
     }
 
-    const proxyReq = http.request(
-      {
-        socketPath: SOCKET_PATH,
-        path: req.originalUrl,
-        method: req.method,
-        headers,
-      },
-      (proxyRes) => {
-        const status = proxyRes.statusCode ?? 500;
-        const chunks: Buffer[] = [];
-        proxyRes.on("data", (c: Buffer) => chunks.push(c));
-        proxyRes.on("end", () => {
-          const raw = Buffer.concat(chunks).toString("utf-8");
-          try {
-            res.status(status).json(JSON.parse(raw));
-          } catch {
-            res.status(status).send(raw);
-          }
-        });
-      }
-    );
+    const requestOptions: http.RequestOptions = SOCKET_PATH && !isWindows
+      ? {
+          socketPath: SOCKET_PATH,
+          path: req.originalUrl,
+          method: req.method,
+          headers,
+        }
+      : {
+          hostname: PYTHON_HOST,
+          port: PYTHON_PORT,
+          path: req.originalUrl,
+          method: req.method,
+          headers,
+        };
 
-    proxyReq.on("error", () => {
-      res.status(502).json({ error: "Backend unavailable" });
+    const proxyReq = http.request(requestOptions, (proxyRes) => {
+      const status = proxyRes.statusCode ?? 500;
+      const chunks: Buffer[] = [];
+      proxyRes.on("data", (c: Buffer) => chunks.push(c));
+      proxyRes.on("end", () => {
+        const raw = Buffer.concat(chunks).toString("utf-8");
+        try {
+          res.status(status).json(JSON.parse(raw));
+        } catch {
+          res.status(status).send(raw);
+        }
+      });
+    });
+
+    proxyReq.on("error", (err) => {
+      console.error("[Express Proxy Error]", err.message);
+      res.status(502).json({ error: "Backend unavailable", detail: err.message });
     });
 
     if (body !== undefined) proxyReq.write(body);

@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from sqlalchemy import select
+from sqlalchemy import select, text
 from passlib.context import CryptContext
 
 from fastapi import Depends, FastAPI
@@ -19,6 +19,15 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # No hay migraciones de Alembic en uso todavía (el esquema se crea via create_all,
+        # que no altera tablas ya existentes) — se agregan columnas nuevas de forma idempotente
+        # para que también se apliquen en bases de datos ya desplegadas.
+        await conn.execute(text(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted BOOLEAN NOT NULL DEFAULT FALSE"
+        ))
+        await conn.execute(text(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ"
+        ))
 
     async with async_session_factory() as session:
         result = await session.execute(select(User).where(User.email == "admin@gmail.com"))
@@ -34,8 +43,9 @@ async def lifespan(app: FastAPI):
             session.add(admin)
             await session.commit()
             print("[Seed] Admin creado: admin@gmail.com / admin")
-        else:
-            # Ensure admin has the expected test credentials/name for local testing
+        elif settings.environment != "production":
+            # Ensure admin has the expected test credentials/name for local testing only —
+            # never reset a real admin's password on every restart in production.
             updated = False
             if admin.name != "Cristian":
                 admin.name = "Cristian"
@@ -43,13 +53,12 @@ async def lifespan(app: FastAPI):
             if admin.last_name != "":
                 admin.last_name = ""
                 updated = True
-            # Force test password to 'admin' for convenience in local dev
             admin.password_hash = pwd_context.hash("admin")
             updated = True
             if updated:
                 session.add(admin)
                 await session.commit()
-                print("[Seed] Admin actualizado: admin@gmail.com / admin")
+                print("[Seed] Admin actualizado (dev): admin@gmail.com / admin")
 
     yield
     await engine.dispose()

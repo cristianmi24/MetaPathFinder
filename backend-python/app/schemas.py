@@ -10,6 +10,7 @@ class UserCreate(BaseModel):
     email: str = Field(..., max_length=255)
     password: str = Field(..., min_length=4, max_length=128)
     role: str = "student"
+    terms_accepted: bool = False
 
 
 class UserResponse(BaseModel):

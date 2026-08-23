@@ -41,19 +41,25 @@ export function Dashboard() {
 
   const [data, setData] = useState<ClassAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [filterMode, setFilterMode] = useState<'all' | 'over' | 'sub' | 'cal' | 'alert'>('all');
   const [selectedCluster, setSelectedCluster] = useState<'over' | 'sub' | 'cal'>('over');
   const [selectedStudent, setSelectedStudent] = useState<StudentEntry | null>(null);
   const [timer, setTimer] = useState(0);
 
+  const fetchData = async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const res = await api.getClassAnalytics() as unknown as ClassAnalytics;
+      setData(res);
+    } catch (err: any) {
+      setLoadError(err?.message || 'No se pudo conectar con el servidor');
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await api.getClassAnalytics() as unknown as ClassAnalytics;
-        setData(res);
-      } catch { /* ignore */ }
-      setLoading(false);
-    };
     fetchData();
   }, []);
 
@@ -90,6 +96,19 @@ export function Dashboard() {
     return (
       <div className="flex items-center justify-center h-screen bg-[#0d1117] text-[#8b949e] font-mono text-sm">
         Cargando datos de clase...
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-[#0d1117] font-mono text-sm gap-3" style={{ padding: 24, textAlign: 'center' }}>
+        <div style={{ color: '#ff7b72', fontSize: 14 }}>No se pudo cargar el panel de clase. Revisa la conexión con el servidor o la base de datos.</div>
+        <div style={{ color: '#8b949e', fontSize: 11 }}>{loadError}</div>
+        <button onClick={fetchData}
+          style={{ padding: '8px 18px', borderRadius: 8, background: '#238636', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          Reintentar
+        </button>
       </div>
     );
   }

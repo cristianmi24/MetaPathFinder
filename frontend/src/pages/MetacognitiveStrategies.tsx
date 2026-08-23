@@ -41,7 +41,7 @@ export function MetacognitiveStrategies() {
   // Resumen de monitoreo de Fase B (métricas capturadas)
   const lastChallenge = [...events].reverse().find(e => e.type === 'CHALLENGE_COMPLETED');
   const biometricas = lastChallenge?.metadata?.biometricas || {};
-  const tecnicas = lastChallenge?.metadata?.технические_метрики || {};
+  const tecnicas = lastChallenge?.metadata?.metricas_tecnicas || {};
   const totalTime = biometricas.total_time || 0;
   const clicks = biometricas.clicks || 0;
   const errores = tecnicas.runs || 0;

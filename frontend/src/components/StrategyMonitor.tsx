@@ -265,8 +265,8 @@ export function StrategyMonitor({
         {metricRow('JOL inicial (Fase A)', jolInicial !== undefined ? `${jolInicial.toFixed(1)}/10` : '—', 'ti-star')}
         {metricRow('JOL checkpoint', jolCheckpoint !== null ? `${jolCheckpoint}/10` : '—', 'ti-star', jolCheckpoint !== null)}
         {jolCheckpoint !== null && jolInicial !== undefined && (
-          <div style={{ fontSize: '10px', marginTop: '6px', padding: '4px 8px', borderRadius: '6px', background: Math.abs(jolCheckpoint - jolInicial * 2) > 2 ? 'rgba(255,123,114,0.1)' : 'rgba(93,202,165,0.1)', color: Math.abs(jolCheckpoint - jolInicial * 2) > 2 ? '#ff7b72' : '#5dcaa5' }}>
-            {Math.abs(jolCheckpoint - jolInicial * 2) > 2 ? '⚠ Variación alta de confianza detectada' : '✓ Confianza estable'}
+          <div style={{ fontSize: '10px', marginTop: '6px', padding: '4px 8px', borderRadius: '6px', background: Math.abs(jolCheckpoint - jolInicial) > 2 ? 'rgba(255,123,114,0.1)' : 'rgba(93,202,165,0.1)', color: Math.abs(jolCheckpoint - jolInicial) > 2 ? '#ff7b72' : '#5dcaa5' }}>
+            {Math.abs(jolCheckpoint - jolInicial) > 2 ? '⚠ Variación alta de confianza detectada' : '✓ Confianza estable'}
           </div>
         )}
         {jolReminder && (

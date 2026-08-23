@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTheme } from '../ThemeContext';
 import { api } from '../services/api';
+import { TermsCheckbox } from '../components/TermsAndConditions';
 
 export function StudentProfile() {
   const { cognitiveLoad, calibration, events, user, setUser, setRole, setToken, currentLevel, role, token } = useCognitiveStore();
@@ -31,6 +32,7 @@ export function StudentProfile() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const phase1Complete = events.some(e => e.type === 'PHASE_COMPLETED' && e.metadata?.phase === 'Juicio_Pretest');
   const phase2Complete = events.some(e => e.type === 'PHASE_COMPLETED' && e.metadata?.phase === 'Desafío_Cognitivo');
@@ -73,15 +75,20 @@ export function StudentProfile() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!termsAccepted) {
+      alert('Debes aceptar los Términos y Condiciones y la Política de Tratamiento de Datos Personales para crear una cuenta.');
+      return;
+    }
     setIsLoading(true);
     try {
-      await api.register({ name, last_name: lastName, email, password });
+      await api.register({ name, last_name: lastName, email, password, terms_accepted: termsAccepted });
       setRegisterSuccess(true);
       setAuthMode('login');
       setName('');
       setLastName('');
       setEmail('');
       setPassword('');
+      setTermsAccepted(false);
     } catch (err: any) {
       alert(err.message || 'Error al registrarse');
     } finally {
@@ -100,7 +107,7 @@ export function StudentProfile() {
     }, 1200);
   };
 
-  if (!user) {
+  if (!user || !token) {
     return (
       <div className={cn(
         "h-screen w-full flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300",
@@ -259,9 +266,11 @@ export function StudentProfile() {
                     />
                   </div>
 
+                  <TermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} dark={theme !== 'light'} />
+
                   <div className="space-y-3">
                     <button
-                      disabled={isLoading}
+                      disabled={isLoading || !termsAccepted}
                       className="w-full flex justify-center py-4 px-4 border border-transparent rounded-2xl shadow-xl shadow-primary/20 text-sm font-black text-on-primary bg-primary hover:scale-[1.02] transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:scale-100"
                     >
                       {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}

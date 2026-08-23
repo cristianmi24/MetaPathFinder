@@ -1,63 +1,14 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { api } from '../services/api';
-import { jolGenerales } from '../data/jolGenerales';
+import { normalizeJolValue } from '../lib/jolNormalization';
 
 const syncChannel = typeof BroadcastChannel !== 'undefined'
   ? new BroadcastChannel('mp-sync')
   : null;
 
-// Map for known general JOL capacity options (4 options each → evenly distributed 1-10)
-const CAPACITY_OPTIONS: Record<string, number[]> = {
-  'JG-B3': [1, 3.3, 6.6, 10],
-  'JG-M3': [2.5, 5, 7.5, 10],
-  'JG-A3': [1, 3.3, 6.6, 10],
-};
-
 function normalizeJolForSync(jolId: string, value: number | string, tiempoEstimado?: number): { tipo: 'escala'; valor: number } {
-  if (typeof value === 'string') {
-    // Check if it has a "N=Texto" pattern (challenge-specific radio options)
-    const numMatch = value.match(/^(\d+)=/);
-    if (numMatch) {
-      const n = parseInt(numMatch[1]);
-      const maxOpts = value.split('=').length > 0 ? Math.max(n, 4) : 5;
-      return { tipo: 'escala', valor: Math.round(((n - 1) / (maxOpts - 1)) * 10 * 100) / 100 };
-    }
-    // General JOL options (JG-B3, JG-M3, JG-A3) - full text stored
-    const opts = CAPACITY_OPTIONS[jolId];
-    if (opts) {
-      const idx = jolGenerales
-        .find(j => j.id === jolId)
-        ?.escala.split('·')
-        .map(s => s.trim())
-        .findIndex(o => o.toLowerCase() === value.toLowerCase().trim());
-      if (idx !== undefined && idx >= 0 && idx < opts.length) return { tipo: 'escala', valor: opts[idx] };
-    }
-    return { tipo: 'escala', valor: 5 };
-  }
-
-  const general = jolGenerales.find(j => j.id === jolId);
-  if (general) {
-    if (/min/i.test(general.escala)) {
-      const maxTime = tiempoEstimado || 15;
-      return { tipo: 'escala', valor: Math.max(0, Math.min(10, Math.round((10 - (value / maxTime) * 10) * 100) / 100)) };
-    }
-    if (/intentos/i.test(general.escala)) {
-      const maxAttempts = 10;
-      return { tipo: 'escala', valor: Math.max(0, Math.min(10, Math.round((10 - (value / maxAttempts) * 10) * 100) / 100)) };
-    }
-    if (/%/.test(general.escala)) {
-      return { tipo: 'escala', valor: Math.round((value / 10) * 100) / 100 };
-    }
-  }
-
-  if (value <= 5) {
-    return { tipo: 'escala', valor: Math.round(((value - 1) / 4) * 10 * 100) / 100 };
-  }
-  if (value <= 10) {
-    return { tipo: 'escala', valor: value };
-  }
-  return { tipo: 'escala', valor: Math.round((value / 10) * 100) / 100 };
+  return { tipo: 'escala', valor: Math.round(normalizeJolValue(jolId, value, tiempoEstimado) * 100) / 100 };
 }
 
 const SYNCED_SESSIONS_KEY = 'mp-synced-sessions';
@@ -217,7 +168,7 @@ export function usePhaseSync() {
       if (!lastChallengeEvent?.metadata) return;
 
       const meta = lastChallengeEvent.metadata;
-      const score = (meta as any)?.технические_метрики?.score || 0;
+      const score = (meta as any)?.metricas_tecnicas?.score || 0;
       const biometricas = (meta as any)?.biometricas || {};
 
       await api.completePhaseB({
@@ -229,8 +180,8 @@ export function usePhaseSync() {
           time_spent_seconds: biometricas.total_time || 0,
           clicks: biometricas.clicks || 0,
           mouse_distance: biometricas.mouse_distance || 0,
-          attempts: (meta as any)?.технические_метрики?.runs || 1,
-          hints_used: (meta as any)?.технические_метрики?.hints || 0,
+          attempts: (meta as any)?.metricas_tecnicas?.runs || 1,
+          hints_used: (meta as any)?.metricas_tecnicas?.hints || 0,
           passed: score >= 60,
         },
         cognitive_events: state.events
@@ -270,7 +221,7 @@ export function usePhaseSync() {
       if (entries.length === 0) return;
 
       const jolInputs = entries.map(([key, value]) => normalizeJolForSync(key, value, estimatedTime));
-      const performanceScore = ((meta as any)?.технические_метрики?.score ?? 50) / 10;
+      const performanceScore = ((meta as any)?.metricas_tecnicas?.score ?? 50) / 10;
 
       await api.completePhaseC({
         session_id: currentSessionId,
@@ -297,7 +248,7 @@ export function usePhaseSync() {
       const lastMeta = lastEvents[lastEvents.length - 1]?.metadata;
       const totalTime = (lastMeta as any)?.biometricas?.total_time || 0;
       const totalClicks = (lastMeta as any)?.biometricas?.clicks || 0;
-      const score = (lastMeta as any)?.технические_метрики?.score || 0;
+      const score = (lastMeta as any)?.metricas_tecnicas?.score || 0;
 
       const dbUser = await api.getUserByEmail(user.email).catch(() => null);
       if (!dbUser) return;

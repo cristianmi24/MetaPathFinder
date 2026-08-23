@@ -20,6 +20,7 @@ import { useCognitiveTracking } from './hooks/useCognitiveTracking';
 import { usePageLeaveSave } from './hooks/usePhaseSync';
 import { CognitiveBrain } from './components/CognitiveBrain';
 import { Home } from './pages/Home';
+import { NotFound } from './pages/NotFound';
 import { AdminLogin } from './pages/Admin';
 import { useCognitiveStore } from './stores/useCognitiveStore';
 import { useEffect } from 'react';
@@ -152,6 +153,12 @@ function ProtectedRoute({ children, requiredRole, redirectTo = '/profile' }: { c
   return <>{children}</>;
 }
 
+const KNOWN_PATHS = [
+  '/', '/admin-login', '/student', '/admin', '/profile', '/registered-users', '/activities',
+  '/experiments', '/analytics', '/tutorial', '/evaluation-prep', '/pretest', '/challenge',
+  '/calibration', '/metacognitive-strategies', '/settings',
+];
+
 function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const role = useCognitiveStore((s) => s.role);
@@ -167,7 +174,16 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    if (!token) return;
+    if (!token) {
+      // Sesión inconsistente: quedó user/role persistido de una sesión anterior sin token
+      // (p.ej. token expirado). Sin esto, la app queda "medio logueada" con datos de un
+      // usuario fantasma en vez de mostrar el login.
+      if (user || role) {
+        setUser(null);
+        setRole(null);
+      }
+      return;
+    }
     api.getMe()
       .then((me) => {
         if (!mounted) return;
@@ -180,12 +196,14 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         setRole(null);
       });
     return () => { mounted = false; };
-  }, [token, setUser, setRole, setToken, resetStore]);
+  }, [token, user, role, setUser, setRole, setToken, resetStore]);
 
   useCognitiveTracking(true);
   usePageLeaveSave();
 
   if (location.pathname === '/') return <>{children}</>;
+
+  if (!KNOWN_PATHS.includes(location.pathname)) return <NotFound />;
 
   if (!user || !token) {
     if (isAuthPath) return <AuthLayout>{children}</AuthLayout>;
@@ -224,7 +242,7 @@ export default function App() {
           <Route path="/calibration" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><ChallengeCalibration /></ProtectedRoute>} />
           <Route path="/metacognitive-strategies" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><MetacognitiveStrategies /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute redirectTo="/profile"><SettingsPage /></ProtectedRoute>} />
-          <Route path="*" element={<RootRedirect />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </AppLayout>
     </Router>

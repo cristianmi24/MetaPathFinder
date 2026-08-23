@@ -30,6 +30,7 @@ import {
 import { useTheme } from '../ThemeContext';
 import { EvaluationTracker } from '../components/EvaluationTracker';
 import { usePhaseSync } from '../hooks/usePhaseSync';
+import { normalizeJolAverage, clamp010 } from '../lib/jolNormalization';
 import './ChallengeCalibration.css';
 
 ChartJS.register(
@@ -61,7 +62,7 @@ export function ChallengeCalibration() {
       jolAnswers: {},
       jolTimes: {},
       estimatedTime: 5,
-      технические_метрики: { score: 0, runs: 0, hints: 0, edits: 0 },
+      metricas_tecnicas: { score: 0, runs: 0, hints: 0, edits: 0 },
       biometricas: { clicks: 0, mouse_distance: 0, total_time: 0 },
     };
   }, [location.state, events]);
@@ -70,12 +71,10 @@ export function ChallengeCalibration() {
   const [isReflected, setIsReflected] = useState(false);
   const wordCount = reflection.trim().split(/\s+/).filter(w => w.length > 0).length;
 
-  // Cálculos de Calibración
-  const jolValues = Object.values(metrics.jolAnswers || {}).filter(v => typeof v === 'number') as number[];
-  const rawAvg = jolValues.length > 0 ? jolValues.reduce((a, b) => a + b, 0) / jolValues.length : 5;
-  const maxVal = jolValues.length > 0 ? Math.max(...jolValues) : 10;
-  const jolAvg = maxVal <= 5 ? ((rawAvg - 1) / 4) * 10 : maxVal > 10 ? rawAvg / 10 : rawAvg;
-  const performance = (metrics.технические_метрики?.score || 0) / 10;
+  // Cálculos de Calibración — cada JOL se normaliza según su propia escala (1-10, minutos,
+  // intentos, porcentaje, opciones) antes de promediar, y el resultado siempre queda en [0, 10].
+  const jolAvg = normalizeJolAverage(metrics.jolAnswers || {}, metrics.estimatedTime);
+  const performance = clamp010((metrics.metricas_tecnicas?.score || 0) / 10);
   const gap = Number((jolAvg - performance).toFixed(1));
   
   const profile = useMemo(() => {
@@ -85,7 +84,7 @@ export function ChallengeCalibration() {
   }, [gap]);
 
   // Real metrics for radar chart
-  const tech = metrics.технические_метрики || {};
+  const tech = metrics.metricas_tecnicas || {};
   const bio = metrics.biometricas || {};
   const maxRuns = 10;
   const maxHints = 5;
@@ -214,8 +213,8 @@ export function ChallengeCalibration() {
             </div>
             <div className="fc-stat-card">
               <div className="fc-stat-label">Runs / Errores</div>
-              <div className="fc-stat-val text-red-400">{metrics.технические_метрики.runs} <span className="fc-stat-unit">intentos</span></div>
-              <div className="fc-stat-delta text-gray-500">{metrics.технические_метрики.hints} pistas usadas</div>
+              <div className="fc-stat-val text-red-400">{metrics.metricas_tecnicas.runs} <span className="fc-stat-unit">intentos</span></div>
+              <div className="fc-stat-delta text-gray-500">{metrics.metricas_tecnicas.hints} pistas usadas</div>
             </div>
           </div>
 
@@ -310,7 +309,7 @@ export function ChallengeCalibration() {
             </div>
             <div className="fc-vector-row">
               <span className="fc-vector-key">ediciones</span>
-              <span className="fc-vector-val">{metrics.технические_метрики.edits}</span>
+              <span className="fc-vector-val">{metrics.metricas_tecnicas.edits}</span>
             </div>
           </div>
 

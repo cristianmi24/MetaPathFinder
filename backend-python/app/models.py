@@ -23,6 +23,8 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     role = Column(String(20), nullable=False, default="student")
     password_hash = Column(String(255))
+    terms_accepted = Column(Boolean, nullable=False, default=False)
+    terms_accepted_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
     updated_at = Column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
 

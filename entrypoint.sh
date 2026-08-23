@@ -2,12 +2,13 @@
 set -e
 
 SOCKET_PATH=/tmp/mp-python.sock
+WORKERS=${WEB_CONCURRENCY:-3}
 
 # Iniciar Python FastAPI en segundo plano (Unix socket)
 cd /app/backend-python
 rm -f "$SOCKET_PATH"
-echo "[entrypoint] Iniciando Python FastAPI..."
-uvicorn app.main:app --uds "$SOCKET_PATH" --no-access-log 2>&1 &
+echo "[entrypoint] Iniciando Python FastAPI con ${WORKERS} workers..."
+uvicorn app.main:app --uds "$SOCKET_PATH" --workers "$WORKERS" --no-access-log 2>&1 &
 PYTHON_PID=$!
 
 # Esperar a que el socket exista

@@ -73,21 +73,52 @@ def compute_calibration(
     if len(jols) != len(actual_scores):
         raise ValueError("JOLs and actual scores must have the same length")
 
+    if not jols:
+        return {
+            "confianzas_normalizadas": [],
+            "resultados_normalizados": [],
+            "diferencias_por_item": [],
+            "error_promedio": 0.0,
+            "calibracion": 5.0,
+            "bias_index": 0.0,
+            "cluster": "cal",
+            "nivel": "Sin suficientes observaciones",
+        }
+
     confidences = [normalize_jol(j) for j in jols]
     performances = [normalize_performance(s) for s in actual_scores]
 
-    diffs = [abs(c - p) for c, p in zip(confidences, performances)]
-    avg_error = sum(diffs) / len(diffs) if diffs else 0.0
+    avg_c = sum(confidences) / len(confidences)
+    avg_p = sum(performances) / len(performances)
 
+    diffs = [abs(c - p) for c, p in zip(confidences, performances)]
+    avg_error = sum(diffs) / len(diffs)
+
+    bias_index = round(avg_c - avg_p, 2)
     calibration = max(0.0, min(10.0, 10.0 - avg_error))
+
+    # Cluster determination based on Bias Index
+    if bias_index > 2.0:
+        cluster = "over"
+    elif bias_index < -2.0:
+        cluster = "sub"
+    else:
+        cluster = "cal"
+
+    # Edge case: zero performance and zero confidence (0,0)
+    is_zero_attempt = (avg_c < 1.0 and avg_p < 1.0)
+    nivel = _classify_calibration(calibration, bias_index, is_zero_attempt)
 
     return {
         "confianzas_normalizadas": [round(c, 2) for c in confidences],
         "resultados_normalizados": [round(p, 2) for p in performances],
         "diferencias_por_item": [round(d, 2) for d in diffs],
         "error_promedio": round(avg_error, 2),
+        "bias_index": bias_index,
         "calibracion": round(calibration, 2),
-        "nivel": _classify_calibration(calibration),
+        "cluster": cluster,
+        "nivel": nivel,
+        "is_zero_attempt": is_zero_attempt,
     }
 
 
@@ -103,13 +134,19 @@ def _classify_confidence(avg: float) -> str:
     return "Confianza muy baja"
 
 
-def _classify_calibration(cal: float) -> str:
+def _classify_calibration(cal: float, bias: float, is_zero_attempt: bool = False) -> str:
+    if is_zero_attempt:
+        return "Reconocimiento de falta de dominio (Desempeño Nulo)"
+
+    if bias > 2.0:
+        return f"Sobreconfianza Marcada (Sesgo +{bias})"
+    elif bias < -2.0:
+        return f"Subestimación Cognitiva (Sesgo {bias})"
+
     if cal >= 9:
-        return "Excelente calibración"
+        return "Excelente Calibración Metacognitiva"
     elif cal >= 7:
-        return "Buena calibración"
+        return "Buena Calibración"
     elif cal >= 5:
-        return "Calibración regular"
-    elif cal >= 3:
-        return "Baja calibración (sobreconfianza o subconfianza)"
-    return "Muy baja calibración"
+        return "Calibración Regular"
+    return "Baja Calibración Metacognitiva"

@@ -13,7 +13,7 @@ export function Analytics() {
   
   const calibrationData = challengeEvents.length > 0 
     ? challengeEvents.slice(-6).map((e, i) => {
-        const score = e.metadata.технические_метрики?.score || 0;
+        const score = e.metadata.metricas_tecnicas?.score || 0;
         const jolAnswers = e.metadata.jolAnswers || {};
         const jolValues = Object.values(jolAnswers) as number[];
         const jolAvg = jolValues.length > 0 ? (jolValues.reduce((a, b) => a + b, 0) / jolValues.length) * 10 : 50;
@@ -54,7 +54,7 @@ export function Analytics() {
 
       if (isChallenge) {
         title = `Reto: ${e.metadata.challengeId}`;
-        content = `Completaste el reto con un score de ${e.metadata.технические_метрики?.score}%. Latencia: ${e.metadata.biometricas?.total_time}s.`;
+        content = `Completaste el reto con un score de ${e.metadata.metricas_tecnicas?.score}%. Latencia: ${e.metadata.biometricas?.total_time}s.`;
         tag = "Desempeño";
         color = "bg-primary";
         light = "bg-primary/20";

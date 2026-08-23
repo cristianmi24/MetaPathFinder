@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
+import { normalizeJolAverage } from '../lib/jolNormalization';
 
 export type CognitiveState = 'Flow' | 'Frustration' | 'Boredom' | 'Confusion' | 'Focus' | 'Distraction' | 'Metacognitive_Mismatch';
 export type UserRole = 'student' | 'admin' | 'teacher' | null;
@@ -339,9 +340,8 @@ export const useCognitiveStore = create<CognitiveStore>()(
         // Tomamos el último evento para tener las métricas más actuales
         const lastChallenge = challengeEvents[challengeEvents.length - 1].metadata;
         const jolAnswers = lastChallenge.jolAnswers || lastChallenge.jol_answers || {};
-        const jolValues = Object.values(jolAnswers).filter(v => typeof v === 'number') as number[];
-        const jolAvg = jolValues.length > 0 ? jolValues.reduce((a, b) => a + b, 0) / jolValues.length : 5;
-        const score = lastChallenge.технические_метрики?.score || 0;
+        const jolAvg = normalizeJolAverage(jolAnswers, lastChallenge.estimatedTime);
+        const score = lastChallenge.metricas_tecnicas?.score || 0;
         const performance = score / 10;
         const gap = jolAvg - performance;
 

@@ -64,6 +64,9 @@ async def register(
         raise HTTPException(status_code=403, detail="Cannot create admin accounts via registration")
     if payload.role not in ("student", "teacher"):
         raise HTTPException(status_code=400, detail="Invalid role. Must be student or teacher")
+    if not payload.terms_accepted:
+        raise HTTPException(status_code=400, detail="Debes aceptar los Términos y Condiciones y la Política de Tratamiento de Datos Personales")
+    password_hash = await asyncio.to_thread(pwd_context.hash, payload.password)
     async with _registration_lock:
         result = await db.execute(select(User).where(User.email == payload.email))
         if result.scalar_one_or_none():
@@ -73,7 +76,9 @@ async def register(
             last_name=payload.last_name,
             email=payload.email,
             role=payload.role,
-            password_hash=pwd_context.hash(payload.password),
+            password_hash=password_hash,
+            terms_accepted=True,
+            terms_accepted_at=datetime.now(timezone.utc),
         )
         db.add(user)
         await db.commit()
@@ -88,7 +93,8 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
     if not user or not user.password_hash:
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    if not pwd_context.verify(payload.password, user.password_hash):
+    password_ok = await asyncio.to_thread(pwd_context.verify, payload.password, user.password_hash)
+    if not password_ok:
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     token = create_access_token({"sub": str(user.id), "role": user.role})

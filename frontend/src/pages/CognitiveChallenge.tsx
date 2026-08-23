@@ -39,6 +39,7 @@ import { getChallengeBriefing } from '../data/challengeBriefings';
 import { getStrategyChallengeGuidance } from '../data/strategyChallengeGuidance';
 import { StrategyEvidence } from '../components/StrategyMonitor';
 import { StrategyHelpToolkit } from '../components/StrategyHelpToolkit';
+import { normalizeJolAverage } from '../lib/jolNormalization';
 
 import './CognitiveChallenge.css';
 
@@ -209,10 +210,12 @@ export function CognitiveChallenge() {
     setClickCount(p => p + 1);
   };
 
-  // JOL promedio de Fase A (escala 1-5 → normalizado a 10)
-  const jolValues = Object.values(initialJolAnswers).filter(v => typeof v === 'number') as number[];
-  const jolInicial = jolValues.length > 0 ? (jolValues.reduce((a,b) => a+b, 0) / jolValues.length) * 2 : undefined;
+  // JOL promedio de Fase A, normalizado a 0-10 según la escala real de cada pregunta
+  // (mezclar minutos/intentos/porcentajes/1-10 sin normalizar produce valores fuera de rango, p.ej. "27/10")
   const estimatedMinutes = typeof estimatedTime === 'number' ? estimatedTime : parseInt(estimatedTime) || 0;
+  const jolInicial = Object.keys(initialJolAnswers).length > 0
+    ? normalizeJolAverage(initialJolAnswers, estimatedMinutes)
+    : undefined;
   const [consoleMessages, setConsoleMessages] = useState([
     { type: 'sys', text: '> Entorno preparado.' }
   ]);
@@ -354,7 +357,7 @@ export function CognitiveChallenge() {
       estimatedTime,
       estrategia_monitoreada: activeStrategyId,
       evidencias_estrategia: strategyEvidence,
-      технические_метрики: {
+      metricas_tecnicas: {
         score: finalScore,
         runs: totalRuns,
         hints: hintCount,
@@ -377,12 +380,8 @@ export function CognitiveChallenge() {
   };
 
   const getJolDisplay = () => {
-    const values = Object.values(initialJolAnswers).filter(v => typeof v === 'number') as number[];
-    if (values.length > 0) {
-      const val = values[0];
-      return `JOL inicial: ${val * 2}/10`;
-    }
-    return 'JOL inicial: 8/10';
+    if (jolInicial === undefined) return 'JOL inicial: 8/10';
+    return `JOL inicial: ${jolInicial.toFixed(1)}/10`;
   };
 
   const getDynamicAlert = () => {
