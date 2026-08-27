@@ -1,0 +1,59 @@
+# MetaPathFinder — stack completo (app todo-en-uno + PostgreSQL)
+#
+#   docker compose up -d --build         → levanta db + app
+#   docker compose build                 → construye la imagen cristianmi2404/metapathfinder
+#   docker compose push                  → la sube a Docker Hub (requiere docker login)
+#
+# La app (Express) sirve el frontend compilado y hace proxy a FastAPI por
+# socket Unix dentro del mismo contenedor. Solo se expone el puerto 3000.
+#
+# Copia .env.docker.example a .env para sobrescribir cualquier valor.
+
+name: metapathfinder
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-}
+    image: cristianmi2404/metapathfinder:${TAG:-latest}
+    container_name: metapathfinder-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      PORT: "3000"
+      # Express usa este socket para hablar con FastAPI (mismo contenedor)
+      PYTHON_SOCKET_PATH: /tmp/mp-python.sock
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-3}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      SECRET_KEY: ${SECRET_KEY:-cambia-esta-clave-en-produccion}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://metapath:metapath@db:5432/metapathfinder}
+      DATABASE_URL_SYNC: ${DATABASE_URL_SYNC:-postgresql://metapath:metapath@db:5432/metapathfinder}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: metapathfinder-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-metapath}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-metapath}
+      POSTGRES_DB: ${POSTGRES_DB:-metapathfinder}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-metapath} -d ${POSTGRES_DB:-metapathfinder}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  pgdata:

@@ -24,11 +24,13 @@ export function EvaluationTracker({
   jolDisplay
 }: EvaluationTrackerProps) {
   const phases = [
-    { id: 'A', label: 'Fase A', description: 'Pre-test' },
-    { id: 'B', label: 'Fase B', description: 'Ejecución' },
-    { id: 'C', label: 'Fase C', description: 'Calibración' },
-    { id: 'Estrategias', label: 'Estrategias metacognitivas', description: 'Transferencia' },
+    { id: 'A', label: 'Antes', description: 'Autopercepción' },
+    { id: 'B', label: 'Durante', description: 'Actividad' },
+    { id: 'C', label: 'Después', description: 'Calibración' },
+    { id: 'Estrategias', label: 'Estrategia', description: 'Siguiente nivel' },
   ];
+
+  const currentIndex = phases.findIndex(p => p.id === currentPhase);
 
   const getPhaseStatus = (phaseId: string) => {
     const currentIndex = phases.findIndex(p => p.id === currentPhase);
@@ -55,16 +57,19 @@ export function EvaluationTracker({
         <span className="em-logo-text">Meta-Pathfinder</span>
       </div>
 
-      <div className="em-phase-track">
-        {phases.map((phase) => (
-          <div 
-            key={phase.id} 
-            className={cn("em-phase-item", getPhaseStatus(phase.id))}
-          >
-            <span className="em-pd"></span>
-            {phase.label}
-          </div>
-        ))}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="em-phase-track">
+          {phases.map((phase) => (
+            <div
+              key={phase.id}
+              className={cn("em-phase-item", getPhaseStatus(phase.id))}
+            >
+              <span className="em-pd"></span>
+              {phase.label}
+            </div>
+          ))}
+        </div>
+        <span className="em-step-count">Paso {currentIndex + 1} de {phases.length}</span>
       </div>
 
       {profileLabel && (
@@ -81,7 +86,7 @@ export function EvaluationTracker({
       {!profileLabel && currentPhase === 'Estrategias' && (
         <div className="em-perfil-chip calibrated">
           <Trophy className="w-3.5 h-3.5" />
-          <span>Diagnóstico Completado</span>
+          <span>Análisis completado</span>
         </div>
       )}
 

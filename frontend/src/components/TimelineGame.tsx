@@ -92,6 +92,7 @@ export default function TimelineGame({ onValidation }: { onValidation?: (success
       draggingId=null; draggingFrom=null;
       const rb=document.getElementById("result-bar"); if(rb) rb.classList.remove("show");
       renderPool(); renderSlots();
+      checkOrder();
     }
 
     function dropToPool(){
@@ -101,15 +102,18 @@ export default function TimelineGame({ onValidation }: { onValidation?: (success
       draggingId=null; draggingFrom=null;
       const rb=document.getElementById("result-bar"); if(rb) rb.classList.remove("show");
       renderPool(); renderSlots();
+      checkOrder();
     }
 
     function checkOrder(){
       const placed = slots.filter(Boolean);
       const bar=document.getElementById("result-bar");
-      if(!bar) return;
       if(placed.length<8){
-        bar.className="result-bar show partial";
-        bar.textContent = "Faltan tarjetas por colocar. ¡Pon las "+(8-placed.length)+" que quedan!";
+        if(bar){
+          bar.className="result-bar show partial";
+          bar.textContent = "Coloca las tarjetas en la línea de tiempo (" + placed.length + "/8 colocadas)";
+        }
+        if((window as any).__onValidationCb) (window as any).__onValidationCb(false);
         return;
       }
       let correct=0;
@@ -123,15 +127,15 @@ export default function TimelineGame({ onValidation }: { onValidation?: (success
         el.appendChild(tick);
       });
       if(correct===8){
-        bar.className="result-bar show win"; bar.textContent = "🎉 ¡Perfecto! Ordenaste todos los artefactos correctamente. ¡Eres un genio de la historia!";
+        if(bar){
+          bar.className="result-bar show win"; bar.textContent = "🎉 ¡Perfecto! Ordenaste todos los artefactos correctamente.";
+        }
         if((window as any).__onValidationCb) (window as any).__onValidationCb(true);
       }
-      else if(correct>=5){
-        bar.className="result-bar show partial"; bar.textContent = "🌟 ¡Casi! Tienes "+correct+" de 8 en el lugar correcto. ¡Inténtalo de nuevo!";
-        if((window as any).__onValidationCb) (window as any).__onValidationCb(false);
-      }
       else {
-        bar.className="result-bar show lose"; bar.textContent = "😅 Solo "+correct+" correctos. ¡No te rindas, vuelve a intentarlo!";
+        if(bar){
+          bar.className="result-bar show partial"; bar.textContent = "🌟 Tienes "+correct+" de 8 en el orden correcto.";
+        }
         if((window as any).__onValidationCb) (window as any).__onValidationCb(false);
       }
     }
@@ -142,9 +146,9 @@ export default function TimelineGame({ onValidation }: { onValidation?: (success
       const bar=document.getElementById("result-bar"); if(bar) bar.classList.remove("show");
       document.querySelectorAll(".tick").forEach(t=>t.remove());
       renderPool(); renderSlots();
+      if((window as any).__onValidationCb) (window as any).__onValidationCb(false);
     }
 
-    (window as any).__checkOrder = checkOrder;
     (window as any).__resetGame = resetGame;
     (window as any).__onValidationCb = onValidation;
 
@@ -153,27 +157,16 @@ export default function TimelineGame({ onValidation }: { onValidation?: (success
     return ()=>{
       delete (window as any).__onDragStart;
       delete (window as any).__onDragEnd;
-      delete (window as any).__checkOrder;
       delete (window as any).__resetGame;
       delete (window as any).__onValidationCb;
     };
-  },[]);
+  },[onValidation]);
 
   return (
-    <div>
+    <div className="timeline-app w-full h-full p-4 overflow-auto relative">
       <style>{`
-.timeline-game-scoped .page{padding:1.2rem 1rem 2rem;background:var(--color-surface);color:var(--color-on-surface)}
+.timeline-game-scoped .page{padding:1rem;background:transparent;color:var(--color-on-surface);font-family:inherit;}
 .timeline-game-scoped .hero{text-align:center;margin-bottom:1.2rem}
-.timeline-game-scoped .hero h1{font-size:21px;font-weight:500;margin:0}
-.timeline-game-scoped .hero p{font-size:13px;color:var(--color-on-surface-variant);margin-top:3px}
-.timeline-game-scoped .section-label{font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--color-on-surface-variant);text-transform:uppercase;margin-bottom:.6rem}
-.timeline-game-scoped .pool{display:flex;flex-wrap:wrap;gap:10px;min-height:120px;padding:12px;border:2px dashed var(--color-outline-variant);border-radius:12px;background:var(--color-surface-container-low);margin-bottom:1.4rem;transition:border-color .2s}
-.timeline-game-scoped .pool.drag-over{border-color:var(--color-primary)}
-.timeline-game-scoped .card{width:120px;min-height:152px;cursor:grab;border-radius:10px;border:1px solid var(--color-outline-variant);background:var(--color-surface-container);overflow:hidden;transition:transform .15s,box-shadow .15s;user-select:none;margin:0}
-.timeline-game-scoped .card:hover{transform:scale(1.04);box-shadow:0 12px 24px rgba(0,0,0,.06)}
-.timeline-game-scoped .card.dragging{opacity:.4;transform:scale(.97)}
-.timeline-game-scoped .card img{width:100%;height:76px;object-fit:cover;display:block;background:var(--color-surface)}
-.timeline-game-scoped .card-foot{padding:8px 8px}
 .timeline-game-scoped .card-name{font-size:12px;font-weight:500;color:var(--color-on-surface);line-height:1.3}
 .timeline-game-scoped .card-year{font-size:11px;color:var(--color-on-surface-variant);margin-top:4px}
 .timeline-game-scoped .tl-wrap{position:relative}
@@ -214,15 +207,11 @@ export default function TimelineGame({ onValidation }: { onValidation?: (success
           <div className="tl-axis"><div className="tl-arrow"></div></div>
           <div className="tl-labels"><span>Más antiguo</span><span>Más reciente</span></div>
           <div className="tl-slots" id="tl-slots"></div>
-        </div>
-
-        <div className="check-row">
-          <button className="check-btn" onClick={()=>{(window as any).__checkOrder && (window as any).__checkOrder()}}>Verificar orden</button>
-        </div>
-
         <div className="result-bar" id="result-bar"></div>
+        </div>
       </div>
       </div>
     </div>
   );
 }
+

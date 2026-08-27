@@ -105,16 +105,57 @@ export default function LibraryPseudocode({ onValidation }: { onValidation?: (su
     newSlots[index] = block;
     setSlotContents(newSlots);
     setDragItem(null);
-    setFeedback({ ...feedback, show: false });
-    setSlotStates(Array(5).fill(''));
+    evalSlots(newSlots);
   };
 
   const handleRemoveFromSlot = (index: number) => {
     const newSlots = [...slotContents];
     newSlots[index] = null;
     setSlotContents(newSlots);
-    setFeedback({ ...feedback, show: false });
-    setSlotStates(Array(5).fill(''));
+    evalSlots(newSlots);
+  };
+
+  const evalSlots = (slots: (Block | null)[]) => {
+    let correct = 0;
+    let filled = 0;
+    const newStates = Array(5).fill('');
+
+    slots.forEach((b, i) => {
+      if (!b) return;
+      filled++;
+      if (b.id === CORRECT_ORDER[i].id) {
+        newStates[i] = 'checking correct-mark';
+        correct++;
+      } else {
+        newStates[i] = 'checking wrong';
+      }
+    });
+
+    setSlotStates(newStates);
+
+    if (filled < 5) {
+      setFeedback({
+        show: true,
+        type: 'fail',
+        text: <>Colocados: {filled} de 5 bloques. ¡Completa los 5 pasos del pseudocódigo!</>
+      });
+      if (onValidation) onValidation(false);
+    } else if (correct === 5) {
+      setFeedback({
+        show: true,
+        type: 'success',
+        text: <>¡Excelente! Has ordenado el pseudocódigo del préstamo de libros de forma correcta.</>
+      });
+      throwConfetti();
+      if (onValidation) onValidation(true);
+    } else {
+      setFeedback({
+        show: true,
+        type: 'partial',
+        text: <>Tienes {correct} de 5 correctos.</>
+      });
+      if (onValidation) onValidation(false);
+    }
   };
 
   const throwConfetti = () => {
@@ -132,49 +173,6 @@ export default function LibraryPseudocode({ onValidation }: { onValidation?: (su
       `;
       document.body.appendChild(p);
       setTimeout(() => p.remove(), 2500);
-    }
-  };
-
-  const checkAnswer = () => {
-    let correct = 0;
-    let filled = 0;
-    const newStates = Array(5).fill('');
-
-    slotContents.forEach((b, i) => {
-      if (!b) return;
-      filled++;
-      if (b.id === CORRECT_ORDER[i].id) {
-        newStates[i] = 'checking correct-mark';
-        correct++;
-      } else {
-        newStates[i] = 'checking wrong';
-      }
-    });
-
-    setSlotStates(newStates);
-
-    if (filled < 5) {
-      setFeedback({
-        show: true,
-        type: 'fail',
-        text: <>Aún faltan bloques por colocar. ¡Completa los 5 pasos del pseudocódigo!</>
-      });
-      if (onValidation) onValidation(false);
-    } else if (correct === 5) {
-      setFeedback({
-        show: true,
-        type: 'success',
-        text: <>¡Excelente! Has ordenado el pseudocódigo del préstamo de libros de forma correcta.</>
-      });
-      throwConfetti();
-      if (onValidation) onValidation(true);
-    } else {
-      setFeedback({
-        show: true,
-        type: 'partial',
-        text: <>Tienes {correct} de 5 correctos. Los bloques en rojo están en posición incorrecta. ¡Inténtalo de nuevo!</>
-      });
-      if (onValidation) onValidation(false);
     }
   };
 
@@ -252,12 +250,6 @@ export default function LibraryPseudocode({ onValidation }: { onValidation?: (su
             ))}
           </div>
         </div>
-      </div>
-
-      <div className="check-row">
-        <button className="btn-check" onClick={checkAnswer}>
-          Verificar resultado
-        </button>
       </div>
 
       <div className={`feedback-bar ${feedback.show ? 'show' : ''} ${feedback.type}`}>

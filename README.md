@@ -25,10 +25,10 @@ MetaPathFinder es una plataforma educativa avanzada que utiliza inteligencia art
 - Detección automática de estados: **Flujo Óptimo**, **Frustración** y **Desajuste Metacognitivo**
 - Análisis de índice de calibración (C) para validar comprensión profunda vs. aciertos por azar
 
-### 🗣️ 2. Diálogo Socrático Adaptativo
-- Método de aprendizaje por descubrimiento basado en preguntas críticas
-- Retroalimentación inteligente que guía sin dar respuestas directas
-- Detección de impulsividad con "Freno Metacognitivo" para promover reflexión profunda
+### 🗣️ 2. Andamiaje Socrático y Regulador Metacognitivo
+- Método de aprendizaje por descubrimiento basado en andamios y preguntas críticas estructuradas
+- Retroalimentación guiada sin entregar respuestas directas
+- Detección de impulsividad con "Freno Metacognitivo" activo (micro-pausa reflexiva en UI) para promover el autocontrol
 
 ### 📊 3. Evaluación Trifásica
 - **Fase 1 (Pretest)**: Autopercepción del estudiante sobre competencias
@@ -89,10 +89,10 @@ Detección automática de:
 │            Backend (Node.js/Express + FastAPI)               │
 │  ┌─────────────────┐      ┌──────────────────────────────┐  │
 │  │ Express Server  │◄────►│ FastAPI Python Server        │  │
-│  │ (TypeScript)    │      │ • Analytics                  │  │
-│  │ • Auth API      │      │ • ML Models                  │  │
-│  │ • User Sessions │      │ • Cognitive Processing       │  │
-│  │ • Static Files  │      │ • Data Calibration           │  │
+│  │ (TypeScript)    │      │ • Analytics & Rules Engine   │  │
+│  │ • API Proxy     │      │ • Auth API & User Sessions   │  │
+│  │ • Static Files  │      │ • Cognitive Processing       │  │
+│  │                 │      │ • Metacognitive Calibration  │  │
 │  └─────────────────┘      └──────────────────────────────┘  │
 └──────────────────┬──────────────────────────────────────────┘
                    │ SQL/ORM

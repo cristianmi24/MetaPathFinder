@@ -83,15 +83,30 @@ export default function DriveFileSorter({ onValidation }: { onValidation?: (succ
 
   const onDrop = (destIndex: number) => {
     if (dragSrc === null || dragSrc === destIndex) return;
-    setOrder(prev => {
-      const copy = [...prev];
+    const newOrder = (() => {
+      const copy = [...order];
       const [moved] = copy.splice(dragSrc, 1);
       copy.splice(destIndex, 0, moved);
       return copy;
+    })();
+    
+    setOrder(newOrder);
+    
+    let correctCount = 0;
+    newOrder.forEach((id, idx) => {
+      if (correctOrder[idx] === id) correctCount += 1;
     });
-    setChecked(false);
-    setStars(0);
-    setMessage('Arrastra cada fila arriba o abajo para ordenar por fecha.');
+    setStars(correctCount);
+    
+    if (correctCount === FILES.length) {
+      setChecked(true);
+      setMessage('🎉 ¡Perfecto! Ordenaste todos los archivos por fecha correctamente.');
+      if (onValidation) onValidation(true);
+    } else {
+      setChecked(false);
+      setMessage(`Colocados: ${correctCount} de ${FILES.length} en orden correcto.`);
+      if (onValidation) onValidation(false);
+    }
   };
 
   return (
@@ -175,9 +190,8 @@ export default function DriveFileSorter({ onValidation }: { onValidation?: (succ
             </div>
 
             <div className="toolbar">
-              <button className="tb-btn primary" type="button" onClick={checkOrder}>Verificar orden</button>
-              <div style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--color-text-secondary)' }}>
-                Del más antiguo al más reciente
+              <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
+                ℹ️ Arrastra los archivos para ordenarlos del más antiguo al más reciente
               </div>
             </div>
 

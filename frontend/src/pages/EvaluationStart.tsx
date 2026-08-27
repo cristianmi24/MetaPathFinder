@@ -3,13 +3,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../ThemeContext';
-import { dynamicChallengeBank, DynamicChallenge, JolEspecifico } from '../data/dynamicChallengeBank';
+import { dynamicChallengeBank } from '../data/dynamicChallengeBank';
 import { jolGenerales } from '../data/jolGenerales';
 import { getChallengeBriefing } from '../data/challengeBriefings';
 import { getStrategyChallengeGuidance } from '../data/strategyChallengeGuidance';
 import { EvaluationTracker } from '../components/EvaluationTracker';
 import { usePhaseSync } from '../hooks/usePhaseSync';
 import { nuevasEstrategias, Estrategia } from '../data/metacognitiveStrategies';
+import { ChallengeSetupTour } from '../components/ChallengeSetupTour';
 import './EvaluationStart.css';
 
 // --- Motor de detección de tipo de escala ---
@@ -19,9 +20,9 @@ function detectScaleType(escala: string): ScaleType {
   if (/numérico/i.test(escala)) return 'number';
   if (/%/.test(escala) && /\d+\s*%?\s*[–-]\s*\d+\s*%/.test(escala)) return 'percent';
   if (/·/.test(escala) && !/\d\s*[–=-]\s*\d/.test(escala)) return 'options';
-  if (/·/.test(escala) && /\d\s*[=]\s*/.test(escala)) return 'options'; // "1=Nada · 2=Algo..."
+  if (/·/.test(escala) && /\d\s*[=]\s*/.test(escala)) return 'options';
   if (/\d+\s*[–-]\s*\d+/.test(escala)) return 'slider';
-  return 'slider'; // fallback
+  return 'slider';
 }
 
 function parseSliderRange(escala: string): { min: number; max: number } {
@@ -34,12 +35,6 @@ function parseOptions(escala: string): string[] {
   return escala.split('·').map(s => s.trim()).filter(s => s.length > 0);
 }
 
-function parseMaxWords(escala: string): number {
-  const match = escala.match(/máx\.?\s*(\d+)/i);
-  return match ? parseInt(match[1]) : 60;
-}
-
-// --- Interfaz enriquecida para JOL con escala ---
 interface JolItem {
   id: string;
   pregunta: string;
@@ -50,10 +45,24 @@ export function EvaluationStart() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const { addEvent, currentLevel, currentChallengeId, setCurrentChallengeId, setCurrentSessionId, currentSessionId, assignedStrategyId, strategyAssignedRandomly, setAssignedStrategyId, user } = useCognitiveStore();
+  const { addEvent, currentLevel, currentChallengeId, setCurrentChallengeId, setCurrentSessionId, currentSessionId, assignedStrategyId, strategyAssignedRandomly, setAssignedStrategyId } = useCognitiveStore();
   const { syncPhaseA } = usePhaseSync();
 
-  // Asignar estrategia aleatoria en el nivel 1, o recuperar la del store
+  // Estado del Tutorial Spotlight (alert flotante para el primer reto)
+  const [isTourOpen, setIsTourOpen] = useState(false);
+
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem('mpf_has_seen_first_challenge_tour');
+    if (currentLevel === 1 && !hasSeenTour) {
+      setIsTourOpen(true);
+    }
+  }, [currentLevel]);
+
+  const handleCloseTour = () => {
+    setIsTourOpen(false);
+    localStorage.setItem('mpf_has_seen_first_challenge_tour', 'true');
+  };
+
   const assignedStrategy: Estrategia | null = assignedStrategyId
     ? (nuevasEstrategias.find(e => e.id === assignedStrategyId) || null)
     : null;
@@ -81,7 +90,16 @@ export function EvaluationStart() {
   const currentLevelString = levelMap[currentLevel] || "Básico";
   
   useEffect(() => {
-    // Lógica de Fallback a N1
+    // 1. Si viene con forcedChallengeId (desde el modal de reto fallido), usar ese reto directamente
+    if (location.state?.forcedChallengeId) {
+      const forced = dynamicChallengeBank.find(c => c.id === location.state.forcedChallengeId);
+      if (forced && currentChallengeId !== forced.id) {
+        setCurrentChallengeId(forced.id);
+        return;
+      }
+    }
+
+    // 2. Lógica de Fallback a N1 (retryVariation sin forcedChallengeId)
     if (location.state?.retryVariation && location.state?.previousChallengeId) {
       const prevChallenge = dynamicChallengeBank.find(c => c.id === location.state.previousChallengeId);
       if (prevChallenge) {
@@ -106,8 +124,8 @@ export function EvaluationStart() {
     }
   }, [currentLevelString, currentChallengeId, setCurrentChallengeId, location.state]);
 
-  const currentChallenge = currentChallengeId 
-    ? dynamicChallengeBank.find(r => r.id === currentChallengeId) 
+  const currentChallenge = currentChallengeId
+    ? dynamicChallengeBank.find(r => r.id === currentChallengeId)
     : null;
 
   // Selección de JOLs: 3 generales del nivel + 2 específicos (con escala)
@@ -224,7 +242,7 @@ export function EvaluationStart() {
       <div className={`mp-root ${theme} flex items-center justify-center`} style={{ height: 'calc(100vh - 4rem)' }}>
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground font-medium">Preparando reto aleatorio...</p>
+          <p className="text-muted-foreground font-medium">Preparando tu reto...</p>
         </div>
       </div>
     );
@@ -235,53 +253,85 @@ export function EvaluationStart() {
     const scaleType = detectScaleType(jol.escala);
     const currentVal = jolAnswers[jol.id];
 
+    // Generar color semántico para el valor seleccionado
+    const getNumColor = (n: number) => {
+      if (n <= 2) return '#e24b4a';
+      if (n <= 4) return '#ef9f27';
+      if (n <= 6) return '#f2cc60';
+      if (n <= 8) return '#5dcaa5';
+      return '#238636';
+    };
+
     switch (scaleType) {
-      // ========== SLIDER NUMÉRICO (1-5, 1-10) ==========
+      // ========== ESCALA NUMÉRICA 1-10 (Botones) ==========
       case 'slider': {
         const { min, max } = parseSliderRange(jol.escala);
-        const val = (currentVal as number) || Math.ceil((min + max) / 2);
-        const color = getSliderColor(val, max);
-        const pct = ((val - min) / (max - min)) * 100;
+        const selected = currentVal as number | undefined;
+        const hasSelected = selected !== undefined;
+        const numbers = Array.from({ length: max - min + 1 }, (_, i) => min + i);
         return (
-          <div>
-            <div className="mp-slider-labels"><span>{min}</span><span>{max}</span></div>
-            <input
-              type="range" min={min} max={max}
-              value={val}
-              onChange={(e) => setJolAnswers(prev => ({ ...prev, [jol.id]: parseInt(e.target.value) }))}
-              className="mp-jol-slider"
-              style={{ background: `linear-gradient(to right, ${color} ${pct}%, var(--mp-divider) ${pct}%)` }}
-            />
-            <div className="mp-jol-value">
-              <span className="mp-jol-number" style={{ color }}>{val}</span>
-              <button className="mp-btn-iniciar ready" style={{ width: 'auto' }} onClick={() => confirmAnswer(val)}>
-                Continuar <i className="ti ti-arrow-right"></i>
-              </button>
+          <div className="mp-jol-scale-container">
+            <div className="mp-jol-scale-legend">
+              <span>😟 {min} = Muy inseguro</span>
+              <span>{max} = Totalmente seguro 💪</span>
             </div>
+            <div className="mp-jol-num-grid">
+              {numbers.map(n => (
+                <button
+                  key={n}
+                  className={`mp-jol-num-btn ${selected === n ? 'selected' : ''}`}
+                  onClick={() => setJolAnswers(prev => ({ ...prev, [jol.id]: n }))}
+                  style={selected === n ? { background: `linear-gradient(135deg, ${getNumColor(n)}, ${getNumColor(n)}dd)`, borderColor: getNumColor(n) } : {}}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            <button
+              id="tour-jol-continue"
+              className={`mp-btn-iniciar ${hasSelected ? 'ready' : ''}`}
+              disabled={!hasSelected}
+              style={{ marginTop: '8px', width: 'auto' }}
+              onClick={() => hasSelected && confirmAnswer(selected!)}
+            >
+              Continuar <i className="ti ti-arrow-right"></i>
+            </button>
           </div>
         );
       }
 
-      // ========== PORCENTAJE (0%-100%) ==========
+      // ========== PORCENTAJE (0%-100%) → Escala 1 al 10 ==========
       case 'percent': {
-        const val = (currentVal as number) || 50;
-        const color = getSliderColor(val, 100);
+        const selected = currentVal as number | undefined;
+        const hasSelected = selected !== undefined;
+        const numbers = Array.from({ length: 10 }, (_, i) => (i + 1) * 10);
         return (
-          <div>
-            <div className="mp-slider-labels"><span>0%</span><span>100%</span></div>
-            <input
-              type="range" min={0} max={100} step={5}
-              value={val}
-              onChange={(e) => setJolAnswers(prev => ({ ...prev, [jol.id]: parseInt(e.target.value) }))}
-              className="mp-jol-slider"
-              style={{ background: `linear-gradient(to right, ${color} ${val}%, var(--mp-divider) ${val}%)` }}
-            />
-            <div className="mp-jol-value">
-              <span className="mp-jol-number" style={{ color }}>{val}%</span>
-              <button className="mp-btn-iniciar ready" style={{ width: 'auto' }} onClick={() => confirmAnswer(val)}>
-                Continuar <i className="ti ti-arrow-right"></i>
-              </button>
+          <div className="mp-jol-scale-container">
+            <div className="mp-jol-scale-legend">
+              <span>😟 10% = Casi seguro que no</span>
+              <span>100% = Totalmente seguro 💪</span>
             </div>
+            <div className="mp-jol-num-grid">
+              {numbers.map(n => (
+                <button
+                  key={n}
+                  className={`mp-jol-num-btn ${selected === n ? 'selected' : ''}`}
+                  onClick={() => setJolAnswers(prev => ({ ...prev, [jol.id]: n }))}
+                  style={selected === n ? { background: `linear-gradient(135deg, ${getNumColor(n / 10)}, ${getNumColor(n / 10)}dd)`, borderColor: getNumColor(n / 10) } : {}}
+                >
+                  {n}%
+                </button>
+              ))}
+            </div>
+            <button
+              id="tour-jol-continue"
+              className={`mp-btn-iniciar ${hasSelected ? 'ready' : ''}`}
+              disabled={!hasSelected}
+              style={{ marginTop: '8px', width: 'auto' }}
+              onClick={() => hasSelected && confirmAnswer(selected!)}
+            >
+              Continuar <i className="ti ti-arrow-right"></i>
+            </button>
           </div>
         );
       }
@@ -289,20 +339,81 @@ export function EvaluationStart() {
       // ========== INPUT NUMÉRICO (minutos, intentos) ==========
       case 'number': {
         const val = (currentVal as string) || '';
-        const isNumValid = val !== '' && parseInt(val as string) > 0;
-        const unit = /min/i.test(jol.escala) ? 'minutos' : /intentos/i.test(jol.escala) ? 'intentos' : '';
+        const isNumValid = val !== '' && !isNaN(parseInt(val as string)) && parseInt(val as string) > 0;
+        const isMinutes = /min/i.test(jol.escala);
+        const unit = isMinutes ? 'minutos' : /intentos/i.test(jol.escala) ? 'intentos' : '';
+        const presets = isMinutes ? [5, 10, 15, 20, 25, 30] : [1, 2, 3, 4, 5];
+
         return (
-          <div>
-            <div className="mp-time-row">
+          <div style={{ marginTop: '8px' }}>
+            <div style={{ fontSize: '13px', color: 'var(--on-surface)', marginBottom: '10px', fontWeight: 600 }}>
+              ✍️ Escribe tu estimación o pulsa una sugerencia rápida:
+            </div>
+
+            {/* Fila principal con input numérico ultra visible y de alto contraste */}
+            <div className="mp-time-row" style={{ background: 'var(--mp-card-bg)', border: '2px solid var(--mp-border)', padding: '14px 18px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
               <input
-                type="number" min="1" max="999"
+                type="number"
+                min="1"
+                max="999"
                 value={val}
                 onChange={(e) => setJolAnswers(prev => ({ ...prev, [jol.id]: e.target.value }))}
-                placeholder="—" className="mp-time-input" autoFocus
+                placeholder="0"
+                className="mp-time-input"
+                style={{
+                  fontSize: '28px',
+                  fontWeight: 800,
+                  width: '120px',
+                  padding: '10px 14px',
+                  borderRadius: '12px',
+                  border: isNumValid ? '2px solid #388bfd' : '2px solid var(--mp-border)',
+                  background: 'var(--mp-input-bg)',
+                  color: 'var(--mp-text)',
+                  textAlign: 'center',
+                }}
+                autoFocus
               />
-              {unit && <span className="mp-time-unit">{unit}</span>}
+              {unit && (
+                <span className="mp-time-unit" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--on-surface)' }}>
+                  {unit}
+                </span>
+              )}
             </div>
-            <button className={`mp-btn-iniciar ${isNumValid ? 'ready' : ''}`} disabled={!isNumValid} style={{ marginTop: '16px', width: 'auto' }} onClick={() => confirmAnswer(parseInt(val as string))}>
+
+            {/* Botones de selección rápida */}
+            <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', color: 'var(--on-surface-variant)', fontWeight: 600, marginRight: '4px' }}>
+                Valores sugeridos:
+              </span>
+              {presets.map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setJolAnswers(prev => ({ ...prev, [jol.id]: p }))}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    border: String(val) === String(p) ? '1.5px solid #388bfd' : '1px solid var(--mp-border)',
+                    background: String(val) === String(p) ? 'rgba(56, 139, 253, 0.15)' : 'var(--mp-card-bg)',
+                    color: String(val) === String(p) ? '#388bfd' : 'var(--on-surface)',
+                    fontWeight: String(val) === String(p) ? 700 : 500,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {p} {unit}
+                </button>
+              ))}
+            </div>
+
+            <button
+              id="tour-jol-continue"
+              className={`mp-btn-iniciar ${isNumValid ? 'ready' : ''}`}
+              disabled={!isNumValid}
+              style={{ marginTop: '16px', width: 'auto' }}
+              onClick={() => confirmAnswer(parseInt(val as string))}
+            >
               Continuar <i className="ti ti-arrow-right"></i>
             </button>
           </div>
@@ -337,7 +448,7 @@ export function EvaluationStart() {
                 </button>
               ))}
             </div>
-            <button className={`mp-btn-iniciar ${selectedOption ? 'ready' : ''}`} disabled={!selectedOption} style={{ marginTop: '12px', width: 'auto' }} onClick={() => confirmAnswer(selectedOption)}>
+            <button id="tour-jol-continue" className={`mp-btn-iniciar ${selectedOption ? 'ready' : ''}`} disabled={!selectedOption} style={{ marginTop: '12px', width: 'auto' }} onClick={() => confirmAnswer(selectedOption)}>
               Continuar <i className="ti ti-arrow-right"></i>
             </button>
           </div>
@@ -353,52 +464,71 @@ export function EvaluationStart() {
     <div className={`mp-root ${theme}`}>
       <EvaluationTracker currentPhase="A" />
 
+      {/* Tutorial Spotlight Alert Flotante para el primer reto */}
+      <ChallengeSetupTour
+        isOpen={isTourOpen}
+        onClose={handleCloseTour}
+        showJolPhase={showJolPhase}
+        activeJolStep={activeStep}
+        totalJols={selectedJols.length}
+        allJolsDone={allJolsDone}
+        challengeTitle={currentChallenge?.titulo || ''}
+        challengeLevel={currentChallenge?.nivel || 'Básico'}
+        challengeSubLevel={currentChallenge?.sub_nivel || 'N1'}
+        challengeComponent={currentChallenge?.componente || ''}
+        estimatedTime={currentChallenge?.tiempo_estimado || '15'}
+        queVasAprender={briefing?.queVasAprender}
+        tareaConcreta={briefing?.tareaConcreta}
+        currentJolQuestion={currentJolQuestion}
+        isJolAnswered={currentJolQuestion ? jolAnswers[currentJolQuestion.id] !== undefined : false}
+      />
+
       <div className={`mp-body sidebar-closed`}>
         <div className="mp-main">
-          <div className="mp-competencia-tag">Nivel: {currentChallenge.nivel} ({currentChallenge.sub_nivel}) | {currentChallenge.componente}</div>
-          <h1 className="mp-reto-title">{currentChallenge.titulo}</h1>
-
-          {!showJolPhase && isRandomAssignment && (
-            <div style={{
-              marginTop: '14px',
-              padding: '16px 18px',
-              background: 'rgba(56, 139, 253, 0.08)',
-              borderRadius: '14px',
-              border: '1px solid rgba(56, 139, 253, 0.28)',
-              display: 'flex',
-              gap: '12px',
-              alignItems: 'flex-start',
-            }}>
-              <div style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                background: 'rgba(56, 139, 253, 0.15)',
+          {/* Header con botón para activar tutorial en cualquier momento */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <div className="mp-competencia-tag">Nivel: {currentChallenge.nivel} ({currentChallenge.sub_nivel}) | {currentChallenge.componente}</div>
+            <button
+              onClick={() => setIsTourOpen(true)}
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#388bfd',
+                background: 'rgba(56, 139, 253, 0.1)',
+                border: '1px solid rgba(56, 139, 253, 0.25)',
+                borderRadius: '8px',
+                padding: '4px 10px',
+                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}>
-                <i className="ti ti-dice-5" style={{ color: '#388bfd', fontSize: 18 }} />
-              </div>
-              <div>
-                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.7px', color: '#388bfd', marginBottom: '6px' }}>
-                  {currentLevel === 1 ? 'Tu primer reto — asignado al azar' : 'Reto asignado al azar'}
-                </div>
-                {currentLevel === 1 ? (
-                  <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.6, margin: 0 }}>
-                    Acabas de empezar el diagnóstico. Entre todos los retos del nivel <strong>{currentChallenge.nivel}</strong>, el sistema
-                    {' '}<strong>te tocó este al azar</strong> — como un sorteo. Tú no lo elegiste: simplemente fue el que salió.
-                    Cada compañero puede recibir uno distinto, y eso es normal. Lo importante es cómo trabajas en él, no cuál te tocó.
-                  </p>
-                ) : (
-                  <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.6, margin: 0 }}>
-                    Para el nivel <strong>{currentChallenge.nivel}</strong>, el sistema <strong>te asignó este reto al azar</strong> entre
-                    las actividades disponibles ({currentChallenge.sub_nivel}). No lo seleccionaste tú — fue el sorteo del sistema.
-                  </p>
-                )}
+                gap: '4px',
+              }}
+            >
+              <i className="ti ti-help-circle" /> ¿Cómo funciona?
+            </button>
+          </div>
 
-              </div>
+          <h1 className="mp-reto-title">{currentChallenge.titulo}</h1>
+
+          {/* Tarjeta de Sorteo / Asignación del Reto (Target Paso 1 del Tour) */}
+          {!showJolPhase && isRandomAssignment && (
+            <div
+              id="tour-assignment"
+              style={{
+                marginTop: '14px',
+                padding: '14px 16px',
+                background: 'var(--surface-2)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border)',
+                display: 'flex',
+                gap: '12px',
+                alignItems: 'flex-start',
+              }}
+            >
+              <i className="ti ti-dice-5" style={{ color: 'var(--accent)', fontSize: 18, marginTop: 2, flexShrink: 0 }} />
+              <p style={{ fontSize: '13.5px', color: 'var(--text)', lineHeight: 1.55, margin: 0 }}>
+                {currentLevel === 1 ? 'Tu primer reto, ' : 'Reto '}asignado al azar en nivel <strong>{currentChallenge.nivel}</strong>. Cada sesión puede ser distinta.
+              </p>
             </div>
           )}
 
@@ -414,83 +544,71 @@ export function EvaluationStart() {
               lineHeight: 1.55,
             }}>
               <i className="ti ti-info-circle" style={{ color: '#f2cc60', marginRight: 6 }} />
-              Esta es una <strong>variación de apoyo</strong> del mismo tema, para que puedas practicar con un reto un poco más accesible. No fue sorteo: el sistema te la asignó según tu recorrido anterior.
+              Esta es una <strong>variación de apoyo</strong> asignada según tu desempeño previo.
             </div>
           )}
 
+          {/* Presentación Sintetizada del Reto (Target Paso 2 del Tour) */}
           {!showJolPhase && briefing && (
-            <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ padding: '18px 20px', background: 'linear-gradient(135deg, var(--primary-container, rgba(79,55,139,0.12)) 0%, transparent 100%)', borderRadius: '16px', border: '1px solid var(--primary, #4f378b)33' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--primary)', marginBottom: '10px' }}>
-                  <i className="ti ti-school" style={{ marginRight: 6 }} />
-                  Presentación del reto
-                </div>
-                <p style={{ fontSize: '15px', color: 'var(--on-surface)', lineHeight: 1.65, margin: '0 0 14px 0', fontWeight: 500 }}>{briefing.saludo}</p>
-                <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.65, margin: '0 0 14px 0' }}>{briefing.contexto}</p>
-                <p style={{ fontSize: '14px', color: 'var(--on-surface-variant)', lineHeight: 1.65, margin: 0, fontStyle: 'italic' }}>{briefing.puente}</p>
-              </div>
-
-              <div style={{ padding: '16px 20px', background: 'var(--surface-container-low, rgba(0,0,0,0.03))', borderRadius: '14px', border: '1px solid var(--outline-variant, #e0e0e0)44' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
-                  ¿Qué vas a aprender?
-                </div>
-                <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.55, margin: 0 }}>{briefing.queVasAprender}</p>
-              </div>
-
-              <div style={{ padding: '16px 20px', background: 'var(--surface-container-low, rgba(0,0,0,0.03))', borderRadius: '14px', border: '1px solid var(--outline-variant, #e0e0e0)44' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
-                  ¿Qué vas a hacer en pantalla?
-                </div>
-                <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.6, margin: '0 0 12px 0' }}>{briefing.queVasHacer}</p>
-                <div style={{ padding: '12px 14px', background: 'var(--primary-container, rgba(79,55,139,0.06))', borderRadius: '10px', borderLeft: '3px solid var(--primary, #4f378b)' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--primary)', marginBottom: '6px' }}>
-                    Cuando llegue el momento, tu trabajo debe incluir
+            <div id="tour-briefing" style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ padding: '16px 18px', background: 'var(--surface-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent)' }}>
+                    El reto
                   </div>
-                  <p style={{ fontSize: '13px', color: 'var(--on-surface)', lineHeight: 1.55, margin: 0 }}>{briefing.tareaConcreta}</p>
+                  {briefing.tiempoSugerido && (
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>
+                      <i className="ti ti-clock" style={{ marginRight: 4 }} />
+                      {briefing.tiempoSugerido}
+                    </span>
+                  )}
                 </div>
-                {briefing.tiempoSugerido && (
-                  <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: '12px 0 0 0' }}>
-                    <i className="ti ti-clock" style={{ marginRight: 4 }} />
-                    Tiempo orientativo: <strong>{briefing.tiempoSugerido}</strong>
-                  </p>
-                )}
+                <p style={{ fontSize: '14.5px', color: 'var(--text)', lineHeight: 1.55, margin: '0 0 6px 0', fontWeight: 600 }}>{briefing.saludo}</p>
+                <p style={{ fontSize: '13.5px', color: 'var(--text-muted)', lineHeight: 1.55, margin: 0 }}>{briefing.contexto} {briefing.puente}</p>
               </div>
 
-              <div style={{ padding: '16px 20px', background: 'var(--primary-container, rgba(79,55,139,0.08))', borderRadius: '16px', border: '1px solid var(--primary, #4f378b)22' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--primary)', marginBottom: '10px' }}>
-                  Instrucciones paso a paso (sigue este orden)
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' }}>
+                <div style={{ padding: '12px 14px', background: 'var(--surface-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)', marginBottom: '4px' }}>Qué vas a aprender</div>
+                  <p style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>{briefing.queVasAprender}</p>
                 </div>
-                <ol style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ padding: '12px 14px', background: 'var(--surface-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)', marginBottom: '4px' }}>Tu meta</div>
+                  <p style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>{briefing.tareaConcreta}</p>
+                </div>
+              </div>
+
+              <div style={{ padding: '14px 18px', background: 'var(--surface-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent)', marginBottom: '8px' }}>
+                  Pasos
+                </div>
+                <ol style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
                   {briefing.pasosDetallados.map((step, i) => (
-                    <li key={i} style={{ fontSize: '13px', color: 'var(--on-surface)', lineHeight: 1.55, fontWeight: 500 }}>{step}</li>
+                    <li key={i} style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.45 }}>{step}</li>
                   ))}
                 </ol>
               </div>
 
-              <div style={{ padding: '14px 18px', background: 'rgba(35,134,54,0.08)', borderRadius: '12px', border: '1px solid rgba(35,134,54,0.25)' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', color: '#238636', marginBottom: '8px' }}>
+              <div style={{ padding: '12px 16px', background: 'color-mix(in srgb, var(--ok) 8%, transparent)', borderRadius: 'var(--radius-md)', border: '1px solid color-mix(in srgb, var(--ok) 25%, transparent)' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ok)', marginBottom: '4px' }}>
                   Recuerda
                 </div>
-                <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                   {briefing.recuerda.map((item, i) => (
-                    <li key={i} style={{ fontSize: '12px', color: 'var(--on-surface)', lineHeight: 1.5 }}>{item}</li>
+                    <li key={i} style={{ fontSize: '12px', color: 'var(--text)', lineHeight: 1.45 }}>{item}</li>
                   ))}
                 </ul>
               </div>
 
-              <div style={{ textAlign: 'center', paddingTop: '8px' }}>
-                <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', margin: '0 0 16px 0', lineHeight: 1.55 }}>
-                  Cuando hayas leído todo y te sientas listo/a, pulsa el botón para continuar.
-                  <br />
-                  El siguiente paso son unas preguntas cortas sobre cómo te sientes — todavía no entras al reto.
-                </p>
+              {/* Botón para iniciar JOL (Target Paso 3 del Tour) */}
+              <div id="tour-begin-jol" style={{ textAlign: 'center', paddingTop: '8px' }}>
                 <button
                   type="button"
                   className="mp-btn-iniciar ready"
                   onClick={handleBeginJol}
-                  style={{ fontSize: '17px', padding: '14px 36px' }}
+                  style={{ fontSize: '16px', padding: '14px 36px' }}
                 >
-                  Comenzar <i className="ti ti-arrow-right" />
+                  Comenzar preguntas <i className="ti ti-arrow-right" />
                 </button>
               </div>
             </div>
@@ -500,47 +618,57 @@ export function EvaluationStart() {
             <div ref={jolSectionRef} style={{ marginTop: '12px' }}>
               {!allJolsDone && (
                 <>
-                  <div style={{ padding: '18px 20px', background: 'var(--surface-container-low, rgba(0,0,0,0.03))', borderRadius: '16px', border: '1px solid var(--outline-variant, #e0e0e0)55', marginBottom: '20px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--primary)', marginBottom: '10px' }}>
+                  <div style={{ padding: '16px 18px', background: 'var(--surface-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', marginBottom: '18px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--accent)', marginBottom: '8px' }}>
                       <i className="ti ti-brain" style={{ marginRight: 6 }} />
-                      ¿Qué son las preguntas JOL?
+                      {selectedJols.length} preguntas antes de empezar
                     </div>
-                    <p style={{ fontSize: '14px', color: 'var(--on-surface)', lineHeight: 1.65, margin: '0 0 12px 0' }}>
-                      <strong>JOL</strong> significa <em>Juicio de Aprendizaje</em>. Son {selectedJols.length} preguntas breves que te hacemos <strong>antes</strong> de entrar al reto, para saber cómo te percibes en este momento.
-                    </p>
-                    <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', lineHeight: 1.6, margin: '0 0 12px 0' }}>
-                      No es un examen: <strong>no hay respuestas correctas ni incorrectas</strong>. Lo que importa es que respondas con honestidad, como cuando un profesor pregunta «¿qué tan preparado te sientes?» antes de una actividad.
-                    </p>
-                    <ul style={{ margin: '0 0 12px 0', paddingLeft: '20px', fontSize: '13px', color: 'var(--on-surface)', lineHeight: 1.55 }}>
-                      <li style={{ marginBottom: '6px' }}>Algunas preguntas son generales (tu confianza, el tiempo que crees que tardarás).</li>
-                      <li style={{ marginBottom: '6px' }}>Otras son específicas de este reto: «{currentChallenge.titulo}».</li>
-                      <li>Después compararemos lo que pensabas con lo que ocurre en la actividad — eso ayuda a entrenar tu metacognición.</li>
-                    </ul>
-                    <p style={{ fontSize: '12px', color: 'var(--on-surface-variant)', margin: 0, fontStyle: 'italic' }}>
-                      Responde pregunta por pregunta. Puedes usar el deslizador, escribir un número o elegir una opción, según cada pregunta.
+                    <p style={{ fontSize: '13.5px', color: 'var(--text)', lineHeight: 1.6, margin: 0 }}>
+                      Son juicios de aprendizaje (JOL): dinos cómo de preparado te sientes ahora mismo.
+                      No se califican y no hay respuesta correcta. Responde con honestidad, una por una.
                     </p>
                   </div>
                   <div className="mp-divider" />
                 </>
               )}
 
-              {/* Indicador de progreso de preguntas */}
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', justifyContent: 'center' }}>
-                {selectedJols.map((_, i) => (
-                  <div key={i} style={{
-                    width: i === activeStep ? '32px' : '10px',
-                    height: '10px',
-                    borderRadius: '99px',
-                    background: i < activeStep ? 'var(--primary)' : i === activeStep ? 'var(--primary)' : 'var(--mp-divider, #ddd)',
-                    opacity: i < activeStep ? 0.4 : 1,
-                    transition: 'all 0.3s ease'
-                  }} />
-                ))}
+              {/* Indicador de progreso de preguntas (5 pasos claros y explícitos) */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--primary)' }}>
+                    Pregunta JOL {activeStep + 1} de {selectedJols.length}
+                  </span>
+                  <span style={{ fontSize: '11px', color: 'var(--on-surface-variant)', fontFamily: 'IBM Plex Mono, monospace' }}>
+                    {Math.round(((activeStep) / selectedJols.length) * 100)}% completado
+                  </span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: `repeat(${selectedJols.length}, 1fr)`, gap: '8px' }}>
+                  {selectedJols.map((_, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        padding: '8px 4px',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        fontFamily: 'IBM Plex Mono, monospace',
+                        background: i < activeStep ? 'rgba(35, 134, 54, 0.15)' : i === activeStep ? 'rgba(56, 139, 253, 0.2)' : 'var(--surface-container-low, rgba(0,0,0,0.04))',
+                        border: i === activeStep ? '1.5px solid #388bfd' : i < activeStep ? '1.5px solid #238636' : '1px solid var(--outline-variant, #e0e0e0)44',
+                        color: i < activeStep ? '#238636' : i === activeStep ? '#388bfd' : 'var(--on-surface-variant)',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      {i < activeStep ? '✓ ' : ''}JOL {i + 1}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <AnimatePresence mode="wait">
             {!allJolsDone ? (
               <motion.div
+                id="tour-jol-card"
                 key={currentJolQuestion.id}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -567,91 +695,48 @@ export function EvaluationStart() {
                 className="mp-meta-card"
                 style={{ textAlign: 'center' }}
               >
-                <div style={{ fontSize: '48px', marginBottom: '12px' }}>🚀</div>
-                <p className="mp-meta-q" style={{ fontSize: '20px' }}>¡Listo para iniciar!</p>
-                <p style={{ color: 'var(--on-surface-variant)', fontSize: '14px', marginBottom: '20px' }}>
-                  Has completado tus preguntas de autopercepción. <br/>
-                  Tiempo estimado del reto: <strong>{currentChallenge.tiempo_estimado} min</strong>
+                <p className="mp-meta-q" style={{ fontSize: '19px', marginBottom: 4 }}>Listo para empezar</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '13.5px', marginBottom: '18px' }}>
+                  Preguntas respondidas. Tiempo estimado: <strong>{currentChallenge.tiempo_estimado} min</strong>
                 </p>
 
-                {/* Tarjeta de estrategia asignada */}
+                {/* Estrategia de apoyo asignada para este nivel */}
                 {assignedStrategy && (
                   <motion.div
+                    id="tour-strategy"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     style={{
-                      background: assignedStrategy.iconBg,
-                      border: `1.5px solid ${assignedStrategy.color}55`,
-                      borderRadius: '16px',
-                      padding: '16px 20px',
-                      marginBottom: '20px',
+                      background: 'var(--surface-2)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '16px 18px',
+                      marginBottom: '18px',
                       textAlign: 'left',
                     }}
                   >
-                    <div style={{
-                      padding: '12px 14px',
-                      background: strategyAssignedRandomly ? 'rgba(56, 139, 253, 0.08)' : 'rgba(93, 202, 165, 0.08)',
-                      borderRadius: '10px',
-                      border: `1px solid ${strategyAssignedRandomly ? 'rgba(56, 139, 253, 0.25)' : 'rgba(93, 202, 165, 0.3)'}`,
-                      marginBottom: '12px',
-                      display: 'flex',
-                      gap: '10px',
-                      alignItems: 'flex-start',
-                    }}>
-                      <i className={`ti ${strategyAssignedRandomly ? 'ti-dice-5' : 'ti-hand-click'}`} style={{ color: strategyAssignedRandomly ? '#388bfd' : '#5dcaa5', fontSize: 16, marginTop: 2 }} />
-                      <p style={{ fontSize: '12px', color: 'var(--on-surface)', lineHeight: 1.55, margin: 0 }}>
-                        {strategyAssignedRandomly ? (
-                          <>
-                            Entre las 8 estrategias metacognitivas, el sistema <strong>te asignó esta al azar</strong> para el Nivel {currentChallenge.nivel}.
-                            No la elegiste tú — fue sorteo, igual que el reto. Durante la actividad tendrás herramientas de apoyo basadas en ella.
-                          </>
-                        ) : (
-                          <>
-                            Esta es la estrategia que <strong>tú elegiste</strong> al terminar el nivel anterior.
-                            La usarás como apoyo durante este reto del Nivel {currentChallenge.nivel}.
-                          </>
-                        )}
-                      </p>
-                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                      <div style={{ background: assignedStrategy.iconBg, border: `1px solid ${assignedStrategy.color}44`, borderRadius: '10px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <i className={`ti ${assignedStrategy.icon}`} style={{ color: assignedStrategy.color, fontSize: '18px' }}></i>
-                      </div>
+                      <i className={`ti ${assignedStrategy.icon}`} style={{ color: 'var(--accent)', fontSize: '20px' }}></i>
                       <div>
-                        <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: assignedStrategy.color, marginBottom: '2px' }}>
-                          {strategyAssignedRandomly ? 'Estrategia asignada al azar' : 'Tu estrategia elegida'}
+                        <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
+                          {strategyAssignedRandomly ? 'Estrategia de apoyo (al azar)' : 'Tu estrategia elegida'}
                         </div>
-                        <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--on-surface)' }}>{assignedStrategy.nombre}</div>
+                        <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>{assignedStrategy.nombre}</div>
                       </div>
                     </div>
-                    <p style={{ fontSize: '13px', color: 'var(--on-surface-variant)', margin: '0 0 8px 0', lineHeight: 1.5 }}>{assignedStrategy.desc}</p>
-                    {strategyGuidance && (
-                      <div style={{ fontSize: '12px', color: 'var(--on-surface)', lineHeight: 1.5, marginBottom: '10px', padding: '10px 12px', background: `${assignedStrategy.color}10`, borderRadius: '10px', borderLeft: `3px solid ${assignedStrategy.color}` }}>
-                        <strong style={{ color: assignedStrategy.color }}>En este reto concreto: </strong>
-                        {strategyGuidance.mensajeProfesor}
-                      </div>
-                    )}
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: assignedStrategy.color, background: `${assignedStrategy.color}18`, borderRadius: '8px', padding: '6px 10px', display: 'inline-block', marginBottom: '12px' }}>
-                      <i className="ti ti-eye" style={{ marginRight: '5px' }}></i>
-                      {assignedStrategy.teoria}
-                    </div>
-                    {strategyGuidance && strategyGuidance.pasosEnEsteReto.length > 0 && (
-                      <ol style={{ margin: '0 0 12px 0', paddingLeft: '18px', fontSize: '11px', lineHeight: 1.5, color: 'var(--on-surface-variant)' }}>
-                        {strategyGuidance.pasosEnEsteReto.slice(0, 3).map((paso, i) => (
-                          <li key={i} style={{ marginBottom: 4 }}>{paso}</li>
-                        ))}
-                      </ol>
-                    )}
-                    <div style={{ textAlign: 'left', borderTop: `1px solid ${assignedStrategy.color}33`, paddingTop: '10px' }}>
-                      <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', color: assignedStrategy.color, marginBottom: '8px' }}>
-                        Herramientas que usarás durante la actividad
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 10px 0', lineHeight: 1.5 }}>
+                      {strategyGuidance?.mensajeProfesor || assignedStrategy.desc}
+                    </p>
+                    <div style={{ borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                        Herramientas que verás en la actividad
                       </div>
                       {assignedStrategy.herramientas.map(h => (
-                        <div key={h.id} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', marginBottom: '8px' }}>
-                          <i className={`ti ${h.icon}`} style={{ color: assignedStrategy.color, fontSize: '14px', marginTop: '2px' }} />
+                        <div key={h.id} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', marginBottom: '6px' }}>
+                          <i className={`ti ${h.icon}`} style={{ color: 'var(--accent)', fontSize: '14px', marginTop: '2px' }} />
                           <div>
-                            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--on-surface)' }}>{h.nombre}</div>
-                            <div style={{ fontSize: '11px', color: 'var(--on-surface-variant)', lineHeight: 1.4 }}>{h.descripcion}</div>
+                            <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{h.nombre}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{h.descripcion}</div>
                           </div>
                         </div>
                       ))}
@@ -659,8 +744,8 @@ export function EvaluationStart() {
                   </motion.div>
                 )}
 
-                <button className="mp-btn-iniciar ready" onClick={handleStart} style={{ fontSize: '18px', padding: '16px 40px' }}>
-                  Iniciar Reto <i className="ti ti-rocket"></i>
+                <button id="tour-start-challenge" className="mp-btn-iniciar ready" onClick={handleStart} style={{ fontSize: '16px', padding: '14px 36px' }}>
+                  Empezar el reto <i className="ti ti-arrow-right"></i>
                 </button>
               </motion.div>
             )}

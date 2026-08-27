@@ -33,6 +33,7 @@ export function StudentProfile() {
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const phase1Complete = events.some(e => e.type === 'PHASE_COMPLETED' && e.metadata?.phase === 'Juicio_Pretest');
   const phase2Complete = events.some(e => e.type === 'PHASE_COMPLETED' && e.metadata?.phase === 'Desafío_Cognitivo');
@@ -60,6 +61,7 @@ export function StudentProfile() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setAuthError(null);
     try {
       const res = await api.login(email, password);
       setUser({ name: res.user.name, lastName: res.user.last_name, email: res.user.email });
@@ -67,7 +69,7 @@ export function StudentProfile() {
       setToken(res.access_token, res.user.id);
       navigate(res.user.role === 'admin' ? '/admin' : '/profile');
     } catch (err: any) {
-      alert(err.message || 'Error al iniciar sesión');
+      setAuthError(err.message || 'Correo electrónico o contraseña incorrectos.');
     } finally {
       setIsLoading(false);
     }
@@ -75,8 +77,9 @@ export function StudentProfile() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError(null);
     if (!termsAccepted) {
-      alert('Debes aceptar los Términos y Condiciones y la Política de Tratamiento de Datos Personales para crear una cuenta.');
+      setAuthError('Debes aceptar los Términos y Condiciones y la Política de Tratamiento de Datos Personales para crear una cuenta.');
       return;
     }
     setIsLoading(true);
@@ -90,7 +93,7 @@ export function StudentProfile() {
       setPassword('');
       setTermsAccepted(false);
     } catch (err: any) {
-      alert(err.message || 'Error al registrarse');
+      setAuthError(err.message || 'Error al registrar la cuenta.');
     } finally {
       setIsLoading(false);
     }
@@ -171,6 +174,11 @@ export function StudentProfile() {
                       Cuenta creada con éxito. Ahora inicia sesión.
                     </div>
                   )}
+                  {authError && (
+                    <div className="rounded-2xl border border-red-300 bg-red-50 dark:bg-red-950/50 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300 font-semibold text-center">
+                      {authError}
+                    </div>
+                  )}
                   <div className="space-y-4">
                     <InputField 
                       icon={Mail} 
@@ -193,14 +201,14 @@ export function StudentProfile() {
                   <div className="flex flex-col gap-2 text-xs font-bold">
                     <button 
                       type="button" 
-                      onClick={() => setAuthMode('recovery')} 
+                      onClick={() => { setAuthMode('recovery'); setAuthError(null); }} 
                       className="text-primary hover:text-primary-container transition-colors text-left"
                     >
                       ¿Olvidaste tu contraseña?
                     </button>
                     <button 
                       type="button" 
-                      onClick={() => { setAuthMode('register'); setRegisterSuccess(false); }} 
+                      onClick={() => { setAuthMode('register'); setRegisterSuccess(false); setAuthError(null); }} 
                       className="text-sm font-black text-on-primary bg-primary/90 hover:bg-primary py-3 px-4 rounded-2xl transition-all shadow-md text-center"
                     >
                       Crear Cuenta Nueva
@@ -231,6 +239,11 @@ export function StudentProfile() {
 
               {authMode === 'register' && (
                 <form className="mt-8 space-y-6" onSubmit={handleRegister}>
+                  {authError && (
+                    <div className="rounded-2xl border border-red-300 bg-red-50 dark:bg-red-950/50 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300 font-semibold text-center">
+                      {authError}
+                    </div>
+                  )}
                   <div className="space-y-4">
                     <InputField 
                       icon={UserIcon} 
@@ -278,7 +291,7 @@ export function StudentProfile() {
 
                     <button
                       type="button"
-                      onClick={() => setAuthMode('login')}
+                      onClick={() => { setAuthMode('login'); setAuthError(null); }}
                       className="w-full flex justify-center py-3 px-4 rounded-2xl text-xs font-black text-slate-500 hover:text-primary transition-all"
                     >
                       <LogIn className="w-3 h-3 mr-2" /> ¿Ya tienes cuenta? Inicia Sesión
@@ -311,7 +324,7 @@ export function StudentProfile() {
                     <div className="flex flex-col items-center gap-2">
                       <button 
                         type="button" 
-                        onClick={() => setAuthMode('login')} 
+                        onClick={() => { setAuthMode('login'); setAuthError(null); }} 
                         className="text-xs font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-2"
                       >
                         <LogIn className="w-3 h-3" /> Volver al Inicio de Sesión
@@ -345,7 +358,7 @@ export function StudentProfile() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-5"
       >
-        <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-primary/20 shadow-lg shrink-0 bg-primary/10">
+        <div className="w-14 h-14 rounded-lg overflow-hidden border border-outline-variant shrink-0 bg-primary/10">
           <img
             src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name + ' ' + user.lastName)}&background=random&color=fff&bold=true&size=200`}
             alt={`${user.name} ${user.lastName}`}
@@ -353,32 +366,32 @@ export function StudentProfile() {
           />
         </div>
         <div>
-          <p className="text-sm font-semibold text-on-surface-variant">Tu espacio personal</p>
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-on-surface">
+          <p className="ui-sans text-sm font-medium text-on-surface-variant">Tu espacio personal</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-on-surface">
             Hola, {user.name}
           </h2>
         </div>
       </motion.div>
 
-      {/* Tranquilidad: no es evaluación */}
+      {/* Tranquilidad: es un análisis, no se califica */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="bento-card p-6 sm:p-8 bg-gradient-to-br from-secondary/10 via-white to-primary/5 border border-secondary/25 rounded-[1.75rem]"
+        className="bento-card p-6 sm:p-8"
       >
         <div className="flex gap-4 items-start">
-          <div className="w-12 h-12 rounded-2xl bg-secondary/15 text-secondary flex items-center justify-center shrink-0">
-            <Heart className="w-6 h-6" />
+          <div className="w-11 h-11 rounded-lg bg-secondary/15 text-secondary flex items-center justify-center shrink-0">
+            <Heart className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-on-surface mb-2">
-              Respira: esto no es un examen
+            <h3 className="text-lg font-semibold text-on-surface mb-1.5">
+              Tranquilo: esto no se califica
             </h3>
-            <p className="text-sm text-on-surface-variant leading-relaxed font-medium">
-              Meta-Pathfinder <strong>no es una evaluación</strong> ni una prueba con nota que te reprobe.
-              Es un <strong>diagnóstico de aprendizaje</strong> — como cuando un profesor te pregunta «¿cómo te sientes con este tema?»
-              para ayudarte mejor. No hay respuestas trampa ni castigo por equivocarte.
+            <p className="ui-sans text-sm text-on-surface-variant leading-relaxed">
+              Meta-Pathfinder es un <strong>análisis metacognitivo</strong>, no una prueba con nota.
+              Solo mira cómo aprendes, como cuando un profesor pregunta «¿cómo te sientes con este tema?».
+              No hay respuestas trampa ni castigo por equivocarte.
             </p>
           </div>
         </div>
@@ -540,7 +553,7 @@ export function StudentProfile() {
 
       <div className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/40 pb-4">
         <Sparkles className="w-3 h-3" />
-        Meta-Pathfinder · Diagnóstico metacognitivo
+        Meta-Pathfinder · Análisis metacognitivo
         <CheckCircle2 className="w-3 h-3" />
       </div>
     </div>

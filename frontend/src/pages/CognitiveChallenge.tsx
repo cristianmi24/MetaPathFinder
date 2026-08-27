@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { usePhaseSync } from '../hooks/usePhaseSync';
 import { useTheme } from '../ThemeContext';
-import { DynamicChallenge } from '../data/dynamicChallengeBank';
+import { DynamicChallenge, dynamicChallengeBank } from '../data/dynamicChallengeBank';
 import { EvaluationTracker } from '../components/EvaluationTracker';
 import { DragAndDropBoard } from '../components/DragAndDropBoard';
 import { EssayBoard } from '../components/EssayBoard';
@@ -40,6 +40,7 @@ import { getStrategyChallengeGuidance } from '../data/strategyChallengeGuidance'
 import { StrategyEvidence } from '../components/StrategyMonitor';
 import { StrategyHelpToolkit } from '../components/StrategyHelpToolkit';
 import { normalizeJolAverage } from '../lib/jolNormalization';
+import { ActivitySetupTour } from '../components/ActivitySetupTour';
 
 import './CognitiveChallenge.css';
 
@@ -50,11 +51,28 @@ export function CognitiveChallenge() {
   const { addEvent, currentLevel, assignedStrategyId, currentSessionId, user } = useCognitiveStore();
   const { syncPhaseB } = usePhaseSync();
 
+  // Estado del Tutorial Spotlight para la actividad interactiva
+  const [isActivityTourOpen, setIsActivityTourOpen] = useState(false);
+
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem('mpf_has_seen_activity_tour');
+    if (currentLevel === 1 && !hasSeenTour) {
+      setIsActivityTourOpen(true);
+    }
+  }, [currentLevel]);
+
+  const handleCloseActivityTour = () => {
+    setIsActivityTourOpen(false);
+    localStorage.setItem('mpf_has_seen_activity_tour', 'true');
+  };
+
   // Obtener estrategia activa (desde location state o desde el store)
   const activeStrategyId = location.state?.assignedStrategyId || assignedStrategyId;
   const activeStrategy = activeStrategyId
     ? (nuevasEstrategias.find(e => e.id === activeStrategyId) || null)
     : null;
+
+  const boardWrapperClass = "flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-lg overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/40";
 
   const getBoardType = (id: string): 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone' | 'ide' => {
     const mappings: Record<string, 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone' | 'ide'> = {
@@ -76,47 +94,7 @@ export function CognitiveChallenge() {
     return mappings[id] || 'code';
   };
 
-  const componentMap: Record<string, React.ReactNode> = {
-    // Nivel Básico (RB)
-    'RB-C1-N1': <TimelineGame />,
-    'RB-C1-N2': <MatchImageTerms />,
-    'RB-C1-N3': <MatchTechSituations />,
-    'RB-C2-N1': <DriveFileSorter />,
-    'RB-C2-N2': <DragAndDropBoard challengeId="RB-C2-N2" onValidation={() => {}} />,
-    'RB-C2-N3': <DragAndDropBoard challengeId="RB-C2-N3" onValidation={() => {}} />,
-    'RB-C3-N1': <SandwichAlgorithm challengeId="RB-C3-N1" onValidation={() => {}} />,
-    'RB-C3-N2': <AttendanceSimulator />,
-    'RB-C3-N3': <LibraryPseudocode onValidation={() => {}} />,
-    'RB-C4-N1': <DigitalAccessQuiz />,
-    'RB-C4-N2': <SocialMediaQuiz />,
-    'RB-C4-N3': <EssayBoard challengeId="RB-C4-N3" onValidation={() => {}} />,
-    // Nivel Medio (RM)
-    'RM-C1-N1': <SmartphoneAnatomyQuiz />,
-    'RM-C1-N2': <ComputingEvolutionQuiz />,
-    'RM-C1-N3': <ProspectiveTechEssay challengeId="RM-C1-N3" onValidation={() => {}} />,
-    'RM-C2-N1': <MiniExcelBoard challengeId="RM-C2-N1" onValidation={() => {}} />,
-    'RM-C2-N2': <DigitalIdentityBoard challengeId="RM-C2-N2" onValidation={() => {}} />,
-    'RM-C2-N3': <SqlBlockBoard challengeId="RM-C2-N3" onValidation={() => {}} />,
-    'RM-C3-N1': <ArduinoBlockBoard challengeId="RM-C3-N1" onValidation={() => {}} />,
-    'RM-C3-N2': <CodeBlockBoard challengeId="RM-C3-N2" onValidation={() => {}} />,
-    'RM-C3-N3': <CodeBlockBoard challengeId="RM-C3-N3" onValidation={() => {}} />,
-    'RM-C4-N1': <EssayBoard challengeId="RM-C4-N1" onValidation={() => {}} />,
-    'RM-C4-N2': <EssayBoard challengeId="RM-C4-N2" onValidation={() => {}} />,
-    'RM-C4-N3': <EssayBoard challengeId="RM-C4-N3" onValidation={() => {}} />,
-    // Nivel Avanzado (RA)
-    'RA-C1-N1': <PhoneDismantlingBoard challengeId="RA-C1-N1" onValidation={() => {}} />,
-    'RA-C1-N2': <CodingIDEBoard challengeId="RA-C1-N2" onValidation={() => {}} />,
-    'RA-C1-N3': <EssayBoard challengeId="RA-C1-N3" onValidation={() => {}} />,
-    'RA-C2-N1': <CodingIDEBoard challengeId="RA-C2-N1" onValidation={() => {}} />,
-    'RA-C2-N2': <CodingIDEBoard challengeId="RA-C2-N2" onValidation={() => {}} />,
-    'RA-C2-N3': <CodingIDEBoard challengeId="RA-C2-N3" onValidation={() => {}} />,
-    'RA-C3-N1': <ArduinoHuertaBoard challengeId="RA-C3-N1" onValidation={() => {}} />,
-    'RA-C3-N2': <CodingIDEBoard challengeId="RA-C3-N2" onValidation={() => {}} />,
-    'RA-C3-N3': <CodingIDEBoard challengeId="RA-C3-N3" onValidation={() => {}} />,
-    'RA-C4-N1': <AdvancedIcfesBoard challengeId="RA-C4-N1" onValidation={() => {}} />,
-    'RA-C4-N2': <AdvancedIcfesBoard challengeId="RA-C4-N2" onValidation={() => {}} />,
-    'RA-C4-N3': <AdvancedIcfesBoard challengeId="RA-C4-N3" onValidation={() => {}} />,
-  };
+
 
   const challenge: DynamicChallenge = location.state?.challenge || {
     id: "0",
@@ -158,10 +136,12 @@ export function CognitiveChallenge() {
   const [strategyEvidence, setStrategyEvidence] = useState<Partial<StrategyEvidence>>({});
   
   const [showHint, setShowHint] = useState(false);
+  const [activeHint, setActiveHint] = useState<null | 1 | 2>(null);
   const [boardSuccess, setBoardSuccess] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultScore, setResultScore] = useState(0);
   const [resultPassed, setResultPassed] = useState(false);
+  const [alternativeChallenge, setAlternativeChallenge] = useState<DynamicChallenge | null>(null);
 
   const secondsRef = useRef(seconds);
   const clickCountRef = useRef(clickCount);
@@ -196,6 +176,48 @@ export function CognitiveChallenge() {
     }
   }, [addEvent, challenge.id]);
 
+  const componentMap: Record<string, React.ReactNode> = {
+    // Nivel Básico (RB)
+    'RB-C1-N1': <TimelineGame onValidation={handleBoardValidation} />,
+    'RB-C1-N2': <MatchImageTerms onValidation={handleBoardValidation} />,
+    'RB-C1-N3': <MatchTechSituations onValidation={handleBoardValidation} />,
+    'RB-C2-N1': <DriveFileSorter onValidation={handleBoardValidation} />,
+    'RB-C2-N2': <DragAndDropBoard challengeId="RB-C2-N2" onValidation={handleBoardValidation} />,
+    'RB-C2-N3': <DragAndDropBoard challengeId="RB-C2-N3" onValidation={handleBoardValidation} />,
+    'RB-C3-N1': <SandwichAlgorithm challengeId="RB-C3-N1" onValidation={handleBoardValidation} />,
+    'RB-C3-N2': <AttendanceSimulator challengeId="RB-C3-N2" onValidation={handleBoardValidation} />,
+    'RB-C3-N3': <LibraryPseudocode onValidation={handleBoardValidation} />,
+    'RB-C4-N1': <DigitalAccessQuiz challengeId="RB-C4-N1" onValidation={handleBoardValidation} />,
+    'RB-C4-N2': <SocialMediaQuiz challengeId="RB-C4-N2" onValidation={handleBoardValidation} />,
+    'RB-C4-N3': <EssayBoard challengeId="RB-C4-N3" onValidation={handleBoardValidation} />,
+    // Nivel Medio (RM)
+    'RM-C1-N1': <SmartphoneAnatomyQuiz challengeId="RM-C1-N1" onValidation={handleBoardValidation} />,
+    'RM-C1-N2': <ComputingEvolutionQuiz challengeId="RM-C1-N2" onValidation={handleBoardValidation} />,
+    'RM-C1-N3': <ProspectiveTechEssay challengeId="RM-C1-N3" onValidation={handleBoardValidation} />,
+    'RM-C2-N1': <MiniExcelBoard challengeId="RM-C2-N1" onValidation={handleBoardValidation} />,
+    'RM-C2-N2': <DigitalIdentityBoard challengeId="RM-C2-N2" onValidation={handleBoardValidation} />,
+    'RM-C2-N3': <SqlBlockBoard challengeId="RM-C2-N3" onValidation={handleBoardValidation} />,
+    'RM-C3-N1': <ArduinoBlockBoard challengeId="RM-C3-N1" onValidation={handleBoardValidation} />,
+    'RM-C3-N2': <CodeBlockBoard challengeId="RM-C3-N2" onValidation={handleBoardValidation} />,
+    'RM-C3-N3': <CodeBlockBoard challengeId="RM-C3-N3" onValidation={handleBoardValidation} />,
+    'RM-C4-N1': <EssayBoard challengeId="RM-C4-N1" onValidation={handleBoardValidation} />,
+    'RM-C4-N2': <EssayBoard challengeId="RM-C4-N2" onValidation={handleBoardValidation} />,
+    'RM-C4-N3': <EssayBoard challengeId="RM-C4-N3" onValidation={handleBoardValidation} />,
+    // Nivel Avanzado (RA)
+    'RA-C1-N1': <PhoneDismantlingBoard challengeId="RA-C1-N1" onValidation={handleBoardValidation} />,
+    'RA-C1-N2': <CodingIDEBoard challengeId="RA-C1-N2" onValidation={handleBoardValidation} />,
+    'RA-C1-N3': <EssayBoard challengeId="RA-C1-N3" onValidation={handleBoardValidation} />,
+    'RA-C2-N1': <CodingIDEBoard challengeId="RA-C2-N1" onValidation={handleBoardValidation} />,
+    'RA-C2-N2': <CodingIDEBoard challengeId="RA-C2-N2" onValidation={handleBoardValidation} />,
+    'RA-C2-N3': <CodingIDEBoard challengeId="RA-C2-N3" onValidation={handleBoardValidation} />,
+    'RA-C3-N1': <ArduinoHuertaBoard challengeId="RA-C3-N1" onValidation={handleBoardValidation} />,
+    'RA-C3-N2': <CodingIDEBoard challengeId="RA-C3-N2" onValidation={handleBoardValidation} />,
+    'RA-C3-N3': <CodingIDEBoard challengeId="RA-C3-N3" onValidation={handleBoardValidation} />,
+    'RA-C4-N1': <AdvancedIcfesBoard challengeId="RA-C4-N1" onValidation={handleBoardValidation} />,
+    'RA-C4-N2': <AdvancedIcfesBoard challengeId="RA-C4-N2" onValidation={handleBoardValidation} />,
+    'RA-C4-N3': <AdvancedIcfesBoard challengeId="RA-C4-N3" onValidation={handleBoardValidation} />,
+  };
+
   const handleStrategyEvidence = useCallback((ev: Partial<StrategyEvidence>) => {
     setStrategyEvidence(prev => {
       const next = { ...prev, ...ev };
@@ -208,6 +230,15 @@ export function CognitiveChallenge() {
 
   const handleBoardAreaClick = () => {
     setClickCount(p => p + 1);
+  };
+
+  // Abre una pista como alerta modal y la contabiliza para la calibración.
+  // La Pista 2 se habilita en cuanto ya se pidió la Pista 1.
+  const openHint = (n: 1 | 2) => {
+    if (n === 2 && !showHint) return;
+    setActiveHint(n);
+    setShowHint(true);
+    setHintCount(hc => hc + 1);
   };
 
   // JOL promedio de Fase A, normalizado a 0-10 según la escala real de cada pregunta
@@ -318,7 +349,10 @@ export function CognitiveChallenge() {
     } else {
       setConsoleMessages(prev => [...prev, { type: 'err', text: `> Error: Validación fallida (Intento ${newRuns}). Revisa tu lógica.` }]);
       setErrCount(prev => prev + 1);
-      if (newRuns >= 2) setShowHint(true);
+      if (newRuns >= 2 && !showHint) {
+        setShowHint(true);
+        setActiveHint(1); // tras 2 intentos fallidos, la pista aparece sola (no cuenta contra la calibración)
+      }
     }
   };
 
@@ -338,6 +372,35 @@ export function CognitiveChallenge() {
         score = Math.max(0, 30 - errCount * 10);
         passed = false;
       }
+    }
+
+    // Si falla, calcular un reto alternativo del mismo componente
+    if (!passed) {
+      const currentComp = challenge.componente;
+      const currentSubNivel = challenge.sub_nivel; // 'N1', 'N2', 'N3'
+      const currentNivel = challenge.nivel;
+
+      // Intentar bajar al N1 del mismo componente si no está en N1
+      let alt: DynamicChallenge | null = null;
+      if (currentSubNivel !== 'N1') {
+        alt = dynamicChallengeBank.find(
+          c => c.componente === currentComp && c.sub_nivel === 'N1' && c.id !== challenge.id
+        ) || null;
+      }
+
+      // Si ya está en N1, buscar cualquier otro N1 del mismo nivel (diferente componente)
+      if (!alt) {
+        const otherN1 = dynamicChallengeBank.filter(
+          c => c.nivel === currentNivel && c.sub_nivel === 'N1' && c.id !== challenge.id
+        );
+        if (otherN1.length > 0) {
+          alt = otherN1[Math.floor(Math.random() * otherN1.length)];
+        }
+      }
+
+      setAlternativeChallenge(alt);
+    } else {
+      setAlternativeChallenge(null);
     }
 
     setResultScore(Math.round(Math.max(0, Math.min(100, score))));
@@ -426,9 +489,15 @@ export function CognitiveChallenge() {
         jolDisplay={getJolDisplay()}
       />
 
+      {/* Tutorial Spotlight Alert Flotante para la actividad interactiva */}
+      <ActivitySetupTour
+        isOpen={isActivityTourOpen}
+        onClose={handleCloseActivityTour}
+      />
+
       <div className="fb-layout">
         {/* Lateral Izquierdo: Reto y Criterios */}
-        <div className="fb-sidebar-l">
+        <div className="fb-sidebar-l" id="tour-activity-criteria">
           <div className="fb-panel-title">
             <i className="ti ti-target" aria-hidden="true" style={{ fontSize: '13px' }}></i>
             Reto activo
@@ -474,10 +543,10 @@ export function CognitiveChallenge() {
         </div>
 
         {/* Zona Central: Tablero o Editor */}
-        <div className="fb-editor-zone">
+        <div className="fb-editor-zone" id="tour-activity-area">
           {activeStrategy && (
             <StrategyHelpToolkit
-              variant="banner"
+              variant="floating"
               challengeId={challenge.id}
               strategy={activeStrategy}
               seconds={seconds}
@@ -500,66 +569,42 @@ export function CognitiveChallenge() {
             />
           )}
           {componentMap[challenge.id] ? (
-            <div 
-  ref={boardAreaRef}
-  onClick={handleBoardAreaClick}
-  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
->
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
               {React.cloneElement(componentMap[challenge.id] as any, {
                 challengeId: challenge.id,
                 onValidation: (success: boolean) => handleBoardValidation(success)
               })}
             </div>
           ) : getBoardType(challenge.id) === 'drag_drop' ? (
-            <div 
-  ref={boardAreaRef}
-  onClick={handleBoardAreaClick}
-  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
->
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
               <DragAndDropBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => handleBoardValidation(success, '> ¡Orden correcto! Reto completado con éxito.')} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'text' ? (
-            <div 
-  ref={boardAreaRef}
-  onClick={handleBoardAreaClick}
-  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
->
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
               <EssayBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => handleBoardValidation(success)} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'canvas' ? (
-            <div 
-  ref={boardAreaRef}
-  onClick={handleBoardAreaClick}
-  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
->
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
               <CanvasBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => handleBoardValidation(success)} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'phone' ? (
-            <div 
-  ref={boardAreaRef}
-  onClick={handleBoardAreaClick}
-  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
->
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
               <PhoneDismantlingBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => handleBoardValidation(success)} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'ide' ? (
-            <div 
-  ref={boardAreaRef}
-  onClick={handleBoardAreaClick}
-  className="flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-[2rem] overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/30 dark:border-outline-variant/20"
->
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
               <CodingIDEBoard 
                 challengeId={challenge.id} 
                 onValidation={(success) => handleBoardValidation(success)} 
@@ -658,7 +703,7 @@ export function CognitiveChallenge() {
                 </div>
               ))}
               <div style={{ marginTop: 6, fontSize: 9, color: activeStrategy.color }}>
-                ↑ Usa las herramientas arriba de la actividad
+                Panel flotante de herramientas (esquina inferior izquierda). Puedes moverlo o minimizarlo.
               </div>
             </div>
           )}
@@ -717,25 +762,18 @@ export function CognitiveChallenge() {
           </div>
 
           <div className="fb-andamiaje">
-            <div className="fb-andamiaje-title">Andamiaje disponible</div>
-            <div className="fb-hint-item" onClick={() => {
-              setShowHint(prev => {
-                const next = !prev;
-                if (next) setHintCount(hc => hc + 1);
-                return next;
-              });
-            }}>
+            <div className="fb-andamiaje-title">Pistas de ayuda</div>
+            <div className="fb-hint-item" onClick={() => openHint(1)}>
               <i className="ti ti-bulb" aria-hidden="true" style={{ color: 'var(--fb-blue)' }}></i>
-              {showHint ? "Ocultar pista de ayuda" : "Pista 1: Activar ayuda"}
+              Pista 1: consejo para empezar
             </div>
-            <div className={`fb-hint-item ${errCount < 2 && !showHint ? 'locked' : ''}`} onClick={() => {
-              if (errCount >= 2) {
-                setHintCount(hc => hc + 1);
-                setShowHint(true);
-              }
-            }}>
-              <i className={`ti ${errCount >= 2 ? 'ti-bulb' : 'ti-lock'}`} aria-hidden="true" style={{ color: errCount >= 2 ? 'var(--fb-blue)' : 'inherit' }}></i>
-              Pista 2: Explicación de rúbrica
+            <div
+              className={`fb-hint-item ${!showHint ? 'locked' : ''}`}
+              onClick={() => openHint(2)}
+              title={!showHint ? 'Pide primero la Pista 1' : undefined}
+            >
+              <i className={`ti ${showHint ? 'ti-bulb' : 'ti-lock'}`} aria-hidden="true" style={{ color: showHint ? 'var(--fb-blue)' : 'inherit' }}></i>
+              Pista 2: errores frecuentes {!showHint && '(pide antes la Pista 1)'}
             </div>
           </div>
 
@@ -778,7 +816,7 @@ export function CognitiveChallenge() {
               onClick={handleSubmit}
             >
               <i className="ti ti-send" aria-hidden="true" style={{ fontSize: '13px' }}></i>
-              Enviar solución → Fase C
+              Enviar y ver mi análisis
             </button>
             <div style={{ fontSize: '10px', fontFamily: 'IBM Plex Mono, monospace', color: 'var(--fb-text-secondary)', textAlign: 'center', marginTop: '6px' }}>
               {isChallengeDone ? "¡Reto superado con éxito!" : "Completa la actividad para activar"}
@@ -796,59 +834,208 @@ export function CognitiveChallenge() {
             exit={{ opacity: 0 }}
             style={{
               position: 'fixed', inset: 0, zIndex: 9999,
-              background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+              background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: '20px'
             }}
             onClick={() => setShowResultModal(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
               style={{
-                background: 'var(--fb-surface, #1c1c1e)',
-                borderRadius: '24px', padding: '32px',
-                maxWidth: '400px', width: '100%',
-                textAlign: 'center', border: resultPassed ? '2px solid #238636' : '2px solid #ff7b72'
+                background: 'var(--surface)',
+                borderRadius: 'var(--radius-lg)', padding: '28px',
+                maxWidth: '420px', width: '100%',
+                textAlign: 'center', border: `1px solid ${resultPassed ? 'var(--ok)' : 'var(--danger)'}`
               }}
             >
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>
-                {resultPassed ? '✅' : '❌'}
+              <div style={{ fontSize: '40px', marginBottom: '14px' }}>
+                {resultPassed ? '✓' : '✕'}
               </div>
-              <h3 style={{ fontSize: '22px', fontWeight: 900, color: resultPassed ? '#238636' : '#ff7b72', marginBottom: '8px' }}>
-                {resultPassed ? '¡Correcto!' : 'Incorrecto'}
+              <h3 style={{ fontSize: '20px', fontWeight: 700, color: resultPassed ? 'var(--ok)' : 'var(--danger)', marginBottom: '8px' }}>
+                {resultPassed ? '¡Correcto!' : 'Resultado: No superado'}
               </h3>
               <p style={{ fontSize: '14px', color: 'var(--fb-text-muted, #8b949e)', marginBottom: '20px' }}>
                 {resultPassed
-                  ? 'Tu respuesta es correcta. Puedes continuar a la calibración.'
-                  : 'Tu respuesta no es correcta. Revisa los criterios e intenta de nuevo.'}
+                  ? 'Tu respuesta es correcta. Continúa a tu análisis de calibración.'
+                  : 'La actividad no se completó del todo. Te proponemos una actividad de apoyo más sencilla.'}
               </p>
               <div style={{
-                background: 'rgba(255,255,255,0.05)', borderRadius: '16px',
-                padding: '20px', marginBottom: '20px'
+                background: 'var(--surface-2)', borderRadius: 'var(--radius-md)',
+                padding: '18px', marginBottom: '18px'
               }}>
-                <div style={{ fontSize: '11px', color: 'var(--fb-text-muted, #8b949e)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>
                   Puntaje
                 </div>
-                <div style={{ fontSize: '42px', fontWeight: 900, color: resultPassed ? '#238636' : '#ff7b72' }}>
-                  {resultScore}<span style={{ fontSize: '18px', color: 'var(--fb-text-muted, #8b949e)' }}>/100</span>
+                <div style={{ fontSize: '40px', fontWeight: 700, color: resultPassed ? 'var(--ok)' : 'var(--danger)' }}>
+                  {resultScore}<span style={{ fontSize: '18px', color: 'var(--text-muted)' }}>/100</span>
                 </div>
               </div>
+
+              {/* Actividad alternativa cuando falla */}
+              {!resultPassed && alternativeChallenge && (
+                <div style={{
+                  background: 'rgba(56,139,253,0.08)',
+                  border: '1px solid rgba(56,139,253,0.3)',
+                  borderRadius: '14px',
+                  padding: '16px',
+                  marginBottom: '16px',
+                  textAlign: 'left'
+                }}>
+                  <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: '#388bfd', marginBottom: '6px' }}>
+                    🔄 Actividad alternativa asignada
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--fb-text, #c9d1d9)', marginBottom: '4px' }}>
+                    {alternativeChallenge.titulo}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--fb-text-muted, #8b949e)' }}>
+                    {alternativeChallenge.nivel} · {alternativeChallenge.sub_nivel} · {alternativeChallenge.componente}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <button
+                  onClick={() => {
+                    setShowResultModal(false);
+                    if (resultPassed) {
+                      handleSubmit();
+                    } else if (alternativeChallenge) {
+                      // Navegar a Fase A con el reto alternativo pre-asignado
+                      const { setCurrentChallengeId } = useCognitiveStore.getState();
+                      setCurrentChallengeId(alternativeChallenge.id);
+                      navigate('/evaluation-prep', {
+                        state: {
+                          retryVariation: true,
+                          previousChallengeId: challenge.id,
+                          forcedChallengeId: alternativeChallenge.id
+                        }
+                      });
+                    }
+                  }}
+                  style={{
+                    width: '100%', padding: '13px', borderRadius: 'var(--radius-md)',
+                    background: resultPassed ? 'var(--ok)' : 'var(--accent)', color: 'var(--color-on-primary)',
+                    border: 'none', fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-sans)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {resultPassed
+                    ? 'Ver mi análisis'
+                    : alternativeChallenge
+                      ? 'Ir a la actividad de apoyo'
+                      : 'Cerrar e intentar de nuevo'}
+                </button>
+
+                {!resultPassed && (
+                  <button
+                    onClick={() => setShowResultModal(false)}
+                    style={{
+                      width: '100%', padding: '11px', borderRadius: 'var(--radius-md)',
+                      background: 'transparent',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-muted)',
+                      fontWeight: 500, fontSize: '13px', fontFamily: 'var(--font-sans)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Seguir intentando esta actividad
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Alerta de Pista */}
+      <AnimatePresence>
+        {activeHint !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 10000,
+              background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+            }}
+            onClick={() => setActiveHint(null)}
+          >
+            <motion.div
+              role="alertdialog"
+              aria-modal="true"
+              initial={{ scale: 0.95, opacity: 0, y: 8 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 8 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'var(--surface)',
+                border: '2px solid var(--tour-hl)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '24px',
+                maxWidth: '420px', width: '100%',
+                boxShadow: '0 20px 50px -12px rgba(0,0,0,0.4), 0 0 0 4px color-mix(in srgb, var(--tour-hl) 15%, transparent)',
+                fontFamily: 'var(--font-sans)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <i className="ti ti-bulb" style={{ fontSize: 22, color: 'var(--tour-hl)' }} />
+                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--tour-hl)' }}>
+                  {activeHint === 1 ? 'Pista 1 · Consejo para empezar' : 'Pista 2 · Errores frecuentes'}
+                </span>
+              </div>
+
+              {activeHint === 1 ? (
+                <div style={{ fontSize: '14px', color: 'var(--text)', lineHeight: 1.6 }}>
+                  <p style={{ margin: '0 0 10px 0' }}>
+                    {challengeProfile?.consejoProfesor || challengeBriefing?.resumenSuave || 'Lee con calma la meta y los criterios del reto antes de actuar. Divídelo en pasos pequeños.'}
+                  </p>
+                  {challengeProfile?.metaConcreta && (
+                    <p style={{ margin: '0 0 6px 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                      <strong style={{ color: 'var(--text)' }}>Tu meta: </strong>{challengeProfile.metaConcreta}
+                    </p>
+                  )}
+                  {challengeProfile?.interaccionUI && (
+                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>
+                      <strong style={{ color: 'var(--text)' }}>Cómo se hace: </strong>{challengeProfile.interaccionUI}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div style={{ fontSize: '14px', color: 'var(--text)', lineHeight: 1.6 }}>
+                  {challengeProfile?.erroresComunes && (
+                    <p style={{ margin: '0 0 10px 0' }}>
+                      <strong>Suele fallarse en: </strong>{challengeProfile.erroresComunes}
+                    </p>
+                  )}
+                  <p style={{ margin: '0 0 6px 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                    <strong style={{ color: 'var(--text)' }}>Se comprueba con: </strong>
+                    {challengeProfile?.verificarCon || 'el botón «Verificar»'}
+                  </p>
+                  {challenge.criterios?.length > 0 && (
+                    <ul style={{ margin: '8px 0 0 0', paddingLeft: '18px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {challenge.criterios.map((c: string, i: number) => (
+                        <li key={i} style={{ marginBottom: 3 }}>{c.replace(/^\d+\.\s*/, '')}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
               <button
-                onClick={() => {
-                  setShowResultModal(false);
-                  if (resultPassed) handleSubmit();
-                }}
+                onClick={() => setActiveHint(null)}
                 style={{
-                  width: '100%', padding: '14px', borderRadius: '14px',
-                  background: resultPassed ? '#238636' : '#ff7b72', color: '#fff',
-                  border: 'none', fontWeight: 800, fontSize: '14px',
-                  cursor: 'pointer'
+                  marginTop: '18px', width: '100%', padding: '11px',
+                  borderRadius: 'var(--radius-md)', border: 'none',
+                  background: 'var(--accent)', color: 'var(--color-on-primary)',
+                  fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-sans)', cursor: 'pointer',
                 }}
               >
-                {resultPassed ? 'Continuar a Calibración' : 'Cerrar e Intentar de Nuevo'}
+                Entendido
               </button>
             </motion.div>
           </motion.div>

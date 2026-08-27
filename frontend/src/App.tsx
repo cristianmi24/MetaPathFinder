@@ -176,9 +176,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     let mounted = true;
     if (!token) {
       // Sesión inconsistente: quedó user/role persistido de una sesión anterior sin token
-      // (p.ej. token expirado). Sin esto, la app queda "medio logueada" con datos de un
-      // usuario fantasma en vez de mostrar el login.
-      if (user || role) {
+      if (useCognitiveStore.getState().user || useCognitiveStore.getState().role) {
         setUser(null);
         setRole(null);
       }
@@ -191,12 +189,13 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         setRole(me.role as any);
       })
       .catch(() => {
+        if (!mounted) return;
         setToken(null, null);
         setUser(null);
         setRole(null);
       });
     return () => { mounted = false; };
-  }, [token, user, role, setUser, setRole, setToken, resetStore]);
+  }, [token]);
 
   useCognitiveTracking(true);
   usePageLeaveSave();
@@ -220,9 +219,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   return <StudentLayout>{children}</StudentLayout>;
 }
 
+import { MetacognitiveBrakeModal } from './components/MetacognitiveBrakeModal';
+
 export default function App() {
   return (
     <Router>
+      <MetacognitiveBrakeModal />
       <AppLayout>
         <Routes>
           <Route path="/" element={<RootRedirect />} />

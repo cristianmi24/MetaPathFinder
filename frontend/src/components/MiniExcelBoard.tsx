@@ -320,7 +320,6 @@ tr:hover td{filter:brightness(1.08);}
     <div class="feedback-bar" id="feedbackBar"></div>
 
     <div class="scratch-footer">
-      <button class="btn btn-verify" onclick="verifyOrder()">✔ Verificar</button>
       <button class="btn btn-hint" onclick="giveHint()" id="btnHint">💡 Pista</button>
       <button class="btn" onclick="reshuffleBlocks()">⟳ Mezclar</button>
       <span class="hint-count" id="hintCount">Pistas: 3</span>
@@ -524,12 +523,30 @@ function handleDrop(targetIdx){
   else if(source==="slot"){dropSlots[slotIdx]=null;}
   block.placed=true;dropSlots[targetIdx]=block;
   dragSrc=null;renderBank();renderDropZone();
+  checkRealtimeValidation();
 }
 
 function returnToBank(block,slotIdx){
   dropSlots[slotIdx]=null;block.placed=false;
   if(!bankBlocks.find(b=>b.id===block.id))bankBlocks.push(block);
   renderBank();renderDropZone();
+  checkRealtimeValidation();
+}
+
+function checkRealtimeValidation(){
+  if(!dropSlots.some(s=>s===null)){
+    let isCorrect=true;
+    for(let i=0;i<CORRECT_BLOCKS.length;i++){
+      if(!dropSlots[i]||dropSlots[i].id!==CORRECT_BLOCKS[i].id){isCorrect=false;break;}
+    }
+    if(isCorrect){
+      window.parent.postMessage({ type: 'QUIZ_SUCCESS' }, '*');
+    } else {
+      window.parent.postMessage({ type: 'QUIZ_FAIL' }, '*');
+    }
+  } else {
+    window.parent.postMessage({ type: 'QUIZ_FAIL' }, '*');
+  }
 }
 
 async function verifyOrder(){

@@ -29,28 +29,58 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = getToken();
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await requestWithTimeout(url, { headers, ...options }, REQUEST_TIMEOUT_MS);
-  if (res.status === 401) {
-    // Only clear auth state, preserve other data
-    try {
-      const raw = localStorage.getItem('meta-pathfinder-storage');
-      if (raw) {
-        const state = JSON.parse(raw);
-        if (state.state) {
-          state.state.token = null;
-          state.state.user = null;
-          state.state.role = null;
-        }
-        localStorage.setItem('meta-pathfinder-storage', JSON.stringify(state));
-      }
-    } catch {}
-    window.location.href = '/';
-    throw new Error('Session expired');
+  let res: Response;
+  try {
+    res = await requestWithTimeout(url, { headers, ...options }, REQUEST_TIMEOUT_MS);
+  } catch {
+    // Network error (server down, no connection, timeout, etc.)
+    throw new Error('No se pudo conectar con el servidor. Verifica tu conexión e intenta de nuevo.');
   }
+
   if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`API ${res.status}: ${body}`);
+    // Try to extract a clean error message from the response
+    let errorMessage = '';
+    try {
+      const data = await res.json();
+      if (data && typeof data === 'object' && typeof data.detail === 'string') {
+        errorMessage = data.detail;
+      }
+    } catch {
+      // Response wasn't JSON — ignore the raw body
+    }
+
+    // Only redirect on 401 if accessing a protected endpoint (NOT login/register)
+    if (res.status === 401 && !path.startsWith('/api/auth/')) {
+      try {
+        const raw = localStorage.getItem('meta-pathfinder-storage');
+        if (raw) {
+          const state = JSON.parse(raw);
+          if (state.state) {
+            state.state.token = null;
+            state.state.user = null;
+            state.state.role = null;
+          }
+          localStorage.setItem('meta-pathfinder-storage', JSON.stringify(state));
+        }
+      } catch {}
+      window.location.href = '/';
+      throw new Error('Sesión expirada');
+    }
+
+    // Fallback: if we couldn't extract a clean message, use a generic one based on context
+    if (!errorMessage) {
+      if (path.includes('/auth/login')) {
+        errorMessage = 'Correo electrónico o contraseña incorrectos.';
+      } else if (path.includes('/auth/register')) {
+        errorMessage = 'No se pudo crear la cuenta. Verifica tus datos e intenta de nuevo.';
+      } else {
+        errorMessage = `Error del servidor (${res.status}). Intenta de nuevo.`;
+      }
+    }
+
+    throw new Error(errorMessage);
   }
+
   return res.json();
 }
 

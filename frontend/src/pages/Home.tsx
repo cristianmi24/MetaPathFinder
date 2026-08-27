@@ -26,7 +26,7 @@ export function Home() {
     { 
       id: 'student' as UserRole, 
       title: 'Estudiante', 
-      desc: 'Accede a tus diagnósticos, visualiza tu progreso cognitivo y recibe recomendaciones.', 
+      desc: 'Accede a tus análisis, visualiza tu progreso y recibe recomendaciones.',
       icon: GraduationCap,
       iconClasses: 'bg-gradient-to-br from-primary to-violet-400 shadow-[0_24px_70px_-35px_rgba(103,75,181,0.45)] text-white',
       borderColor: 'border-primary'

@@ -1,28 +1,21 @@
-/* ChallengeCalibration.css - Premium Metacognitive Mirror */
-.fc-root {
-  --fc-bg: #0d1117;
-  --fc-card: #161b22;
-  --fc-border: #30363d;
-  --fc-text: #e6edf3;
-  --fc-text-muted: #8b949e;
-  --fc-accent: #d2a8ff;
-  
-  font-family: 'Sora', sans-serif;
+/* ChallengeCalibration.css — puente al sistema de diseño unificado (index.css) */
+.fc-root,
+.fc-root.light,
+.fc-root.dark {
+  --fc-bg: var(--bg);
+  --fc-card: var(--surface);
+  --fc-border: var(--border);
+  --fc-text: var(--text);
+  --fc-text-muted: var(--text-muted);
+  --fc-accent: var(--accent);
+
+  font-family: var(--font-sans);
   background: var(--fc-bg);
   color: var(--fc-text);
   min-height: calc(100vh - 4rem);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.fc-root.light {
-  --fc-bg: #f6f8fa;
-  --fc-card: #ffffff;
-  --fc-border: #d0d7de;
-  --fc-text: #1f2328;
-  --fc-text-muted: #6e7681;
-  --fc-accent: #8250df;
 }
 
 .fc-topbar {
@@ -37,7 +30,7 @@
 
 .fc-logo { display: flex; align-items: center; gap: 10px; }
 .fc-logo-mark {
-  width: 32px; height: 32px; background: #238636; border-radius: 8px;
+  width: 32px; height: 32px; background: var(--accent); border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: #fff;
 }
@@ -53,8 +46,8 @@
   border-right: 0.5px solid var(--fc-border);
 }
 .fc-phase-item:last-child { border-right: none; }
-.fc-phase-item.done { color: #238636; }
-.fc-phase-item.done .fc-pd { background: #238636; }
+.fc-phase-item.done { color: var(--ok); }
+.fc-phase-item.done .fc-pd { background: var(--ok); }
 .fc-phase-item.active { color: var(--fc-accent); background: rgba(210,168,255,0.08); }
 .fc-phase-item.active .fc-pd { background: var(--fc-accent); }
 .fc-pd { width: 6px; height: 6px; border-radius: 50%; background: var(--fc-border); }
@@ -90,7 +83,7 @@
   font-size: 15px;
   font-weight: 700;
   margin-bottom: 8px;
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .fc-profile-card-desc {
@@ -157,7 +150,7 @@
 }
 .fc-reflexion-input {
   width: 100%; background: var(--fc-bg); border: 1px solid var(--fc-border); border-radius: 8px;
-  padding: 12px 16px; font-size: 14px; font-family: 'Sora', sans-serif; color: var(--fc-text);
+  padding: 12px 16px; font-size: 14px; font-family: var(--font-sans); color: var(--fc-text);
   outline: none; resize: none; min-height: 100px; line-height: 1.6;
 }
 .fc-reflexion-input:focus { border-color: var(--fc-accent); }
@@ -196,41 +189,93 @@
 .fc-vector-val { color: var(--fc-text); font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
 
 .fc-btn-siguiente {
-  width: 100%; background: #238636; color: white; border: none; border-radius: 8px;
+  width: 100%; background: var(--accent); color: var(--color-on-primary); border: none; border-radius: 8px;
   padding: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-sans);
 }
 .fc-btn-reintentar {
-  width: 100%; background: transparent; color: #7ee787; border: 1px solid #238636; border-radius: 8px;
+  width: 100%; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 8px;
   padding: 12px; margin-top: 12px; font-weight: 600; cursor: pointer;
+  font-family: var(--font-sans);
 }
 .fc-btn-reintentar:disabled { opacity: 0.3; cursor: not-allowed; }
 
-@media (max-width: 1100px) {
+@media (max-width: 1024px) {
   .fc-body {
     grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
   }
 
   .fc-main {
     border-right: none;
     border-bottom: 0.5px solid var(--fc-border);
+    padding: 24px 20px;
+    overflow: visible;
+  }
+
+  .fc-desfase-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
   }
 
   .fc-sidebar {
     border-left: none;
     border-top: 0.5px solid var(--fc-border);
+    padding: 24px 20px;
+    overflow: visible;
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 640px) {
+  .fc-topbar {
+    padding: 10px 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
   .fc-main {
-    padding: 20px;
+    padding: 16px 12px;
   }
 
   .fc-sidebar {
-    padding: 20px 16px;
+    padding: 16px 12px;
   }
 
   .fc-desfase-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .fc-stat-card {
+    padding: 12px;
+  }
+
+  .fc-stat-val {
+    font-size: 22px;
+  }
+
+  .fc-mirror-header {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .fc-mirror-title {
+    font-size: 17px;
+  }
+
+  .fc-chart-card {
+    padding: 16px 12px;
+  }
+
+  .fc-reflexion-card {
+    padding: 16px 12px;
+  }
+
+  .fc-interv-card {
+    padding: 16px 12px;
   }
 }

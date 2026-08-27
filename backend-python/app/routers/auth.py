@@ -70,7 +70,7 @@ async def register(
     async with _registration_lock:
         result = await db.execute(select(User).where(User.email == payload.email))
         if result.scalar_one_or_none():
-            raise HTTPException(status_code=400, detail="Email already registered")
+            raise HTTPException(status_code=400, detail="El correo electrónico ya se encuentra registrado")
         user = User(
             name=payload.name,
             last_name=payload.last_name,
@@ -91,11 +91,11 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
     user = result.scalar_one_or_none()
 
     if not user or not user.password_hash:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=401, detail="Correo electrónico o contraseña incorrectos")
 
     password_ok = await asyncio.to_thread(pwd_context.verify, payload.password, user.password_hash)
     if not password_ok:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=401, detail="Correo electrónico o contraseña incorrectos")
 
     token = create_access_token({"sub": str(user.id), "role": user.role})
     return TokenResponse(access_token=token, user=user)

@@ -100,6 +100,12 @@ interface CognitiveStore {
   isSidebarCollapsed: boolean;
   setSidebarCollapsed: (collapsed: boolean) => void;
 
+  // Freno Metacognitivo Activo
+  isReflexiveBrakeActive: boolean;
+  brakeMessage: string | null;
+  triggerReflexiveBrake: (message?: string) => void;
+  dismissReflexiveBrake: () => void;
+
   // Seguimiento de retos
   currentLevel: number;
   currentChallengeId: string | null;
@@ -132,6 +138,8 @@ export const useCognitiveStore = create<CognitiveStore>()(
       students: [],
       currentTestSession: null,
       isSidebarCollapsed: false,
+      isReflexiveBrakeActive: false,
+      brakeMessage: null,
       currentLevel: 1,
       currentChallengeId: null,
       currentSessionId: null,
@@ -143,6 +151,16 @@ export const useCognitiveStore = create<CognitiveStore>()(
       setAssignedStrategyId: (id, randomlyAssigned = false) => set({
         assignedStrategyId: id,
         strategyAssignedRandomly: randomlyAssigned,
+      }),
+
+      triggerReflexiveBrake: (message) => set({
+        isReflexiveBrakeActive: true,
+        brakeMessage: message || 'Pausa para pensar: respondiste muy rápido, sin analizarlo antes.',
+      }),
+
+      dismissReflexiveBrake: () => set({
+        isReflexiveBrakeActive: false,
+        brakeMessage: null,
       }),
 
       setUser: (user) => set({ user }),
@@ -159,9 +177,15 @@ export const useCognitiveStore = create<CognitiveStore>()(
           const isReflexiveBrake = (type === 'UI_CLICK' || type === 'QUIZ_ANSWER') && durationSinceLast < threshold;
 
           const enhancedMetadata = { ...metadata };
+          let shouldTriggerBrakeModal = false;
+
           if (isReflexiveBrake) {
             enhancedMetadata.is_reflexive_brake = true;
             enhancedMetadata.processing_latency = `${(durationSinceLast / 1000).toFixed(1)}s`;
+
+            if (type === 'QUIZ_ANSWER') {
+              shouldTriggerBrakeModal = true;
+            }
 
             const strategies = state.latentStrategies;
             if (strategies.length > 0) {
@@ -184,6 +208,11 @@ export const useCognitiveStore = create<CognitiveStore>()(
             events: [...state.events.slice(-99), newEvent],
             lastEventTime: now,
           };
+
+          if (shouldTriggerBrakeModal) {
+            nextState.isReflexiveBrakeActive = true;
+            nextState.brakeMessage = '🛑 Freno Metacognitivo Activo: Has respondido en menos de 5 segundos. Tómate una pausa reflexiva para verificar tu razonamiento.';
+          }
 
           if (type === 'EVALUATION_COMPLETED' && metadata?.score > 80) {
             const newStrategyId = metadata.theme === 'Meta-Cognición' ? 'SYSTEMATIC_VERIFICATION' : 'STRUCTURAL_MAPPING';
@@ -411,6 +440,10 @@ export const useCognitiveStore = create<CognitiveStore>()(
       },
 
       reset: () => {
+        try {
+          localStorage.removeItem('mp-db-user-id');
+          localStorage.removeItem('mp-synced-sessions');
+        } catch {}
         set({
           userId: 'user-' + Math.random().toString(36).substr(2, 9),
           token: null,
@@ -427,6 +460,8 @@ export const useCognitiveStore = create<CognitiveStore>()(
           students: [],
           currentTestSession: null,
           isSidebarCollapsed: false,
+          isReflexiveBrakeActive: false,
+          brakeMessage: null,
           currentLevel: 1,
           currentChallengeId: null,
           currentSessionId: null,

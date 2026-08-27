@@ -61,7 +61,7 @@ export const challengeInstructions: Record<string, string[]> = {
     'Lee los dos artículos breves sobre conectividad y brecha digital.',
     'Para cada pregunta, haz clic en la opción A, B o C que mejor responda según el texto.',
     'Puedes volver a leer los artículos antes de responder.',
-    'Responde las 3 preguntas para completar el diagnóstico de comprensión.'
+    'Responde las 3 preguntas para completar la actividad de comprensión.'
   ],
   'RB-C4-N2': [
     'Lee las investigaciones sobre redes sociales y bienestar emocional.',
@@ -211,7 +211,7 @@ export const challengeInstructions: Record<string, string[]> = {
     'Lee el texto sobre startups de impacto social en Colombia.',
     'Selecciona la opción correcta (A, B, C o D) para cada una de las 4 preguntas.',
     'Basa tu respuesta en el texto: propuesta de valor, Sistema B, unit economics, SOM.',
-    'Avanza pregunta por pregunta hasta completar el diagnóstico.'
+    'Avanza pregunta por pregunta hasta completar la actividad.'
   ],
   'RA-C4-N3': [
     'Lee el texto guía sobre investigación cualitativa y ética de campo.',

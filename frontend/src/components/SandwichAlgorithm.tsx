@@ -108,16 +108,57 @@ export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?:
     newSlots[index] = block;
     setSlotContents(newSlots);
     setDragItem(null);
-    setFeedback({ ...feedback, show: false });
-    setSlotStates(Array(7).fill(''));
+    evalSlots(newSlots);
   };
 
   const handleRemoveFromSlot = (index: number) => {
     const newSlots = [...slotContents];
     newSlots[index] = null;
     setSlotContents(newSlots);
-    setFeedback({ ...feedback, show: false });
-    setSlotStates(Array(7).fill(''));
+    evalSlots(newSlots);
+  };
+
+  const evalSlots = (slots: (Block | null)[]) => {
+    let correct = 0;
+    let filled = 0;
+    const newStates = Array(7).fill('');
+
+    slots.forEach((b, i) => {
+      if (!b) return;
+      filled++;
+      if (b.id === CORRECT_ORDER[i].id) {
+        newStates[i] = 'checking correct-mark';
+        correct++;
+      } else {
+        newStates[i] = 'checking wrong';
+      }
+    });
+
+    setSlotStates(newStates);
+
+    if (filled < 7) {
+      setFeedback({
+        show: true,
+        type: 'fail',
+        text: <><i className="ti ti-alert-circle" style={{fontSize:'18px',flexShrink:0}}></i> Colocados: {filled} de 7 bloques. ¡Completa los 7 pasos!</>
+      });
+      if (onValidation) onValidation(false);
+    } else if (correct === 7) {
+      setFeedback({
+        show: true,
+        type: 'success',
+        text: <><i className="ti ti-trophy" style={{fontSize:'18px',flexShrink:0}}></i> ¡Perfecto! Armaste el sándwich en el orden correcto.</>
+      });
+      throwConfetti();
+      if (onValidation) onValidation(true);
+    } else {
+      setFeedback({
+        show: true,
+        type: 'partial',
+        text: <><i className="ti ti-star-half" style={{fontSize:'18px',flexShrink:0}}></i> Tienes {correct} de 7 correctos.</>
+      });
+      if (onValidation) onValidation(false);
+    }
   };
 
   const throwConfetti = () => {
@@ -138,49 +179,6 @@ export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?:
     }
   };
 
-  const checkAnswer = () => {
-    let correct = 0;
-    let filled = 0;
-    const newStates = Array(7).fill('');
-
-    slotContents.forEach((b, i) => {
-      if (!b) return;
-      filled++;
-      if (b.id === CORRECT_ORDER[i].id) {
-        newStates[i] = 'checking correct-mark';
-        correct++;
-      } else {
-        newStates[i] = 'checking wrong';
-      }
-    });
-
-    setSlotStates(newStates);
-
-    if (filled < 7) {
-      setFeedback({
-        show: true,
-        type: 'fail',
-        text: <><i className="ti ti-alert-circle" style={{fontSize:'18px',flexShrink:0}}></i> Aún faltan pasos por colocar. ¡Completa los 7 bloques!</>
-      });
-      if (onValidation) onValidation(false);
-    } else if (correct === 7) {
-      setFeedback({
-        show: true,
-        type: 'success',
-        text: <><i className="ti ti-trophy" style={{fontSize:'18px',flexShrink:0}}></i> ¡Perfecto! Armaste el sándwich en el orden correcto. ¡Excelente trabajo!</>
-      });
-      throwConfetti();
-      if (onValidation) onValidation(true);
-    } else {
-      setFeedback({
-        show: true,
-        type: 'partial',
-        text: <><i className="ti ti-star-half" style={{fontSize:'18px',flexShrink:0}}></i> Tienes {correct} de 7 correctos. Los bloques en rojo están en posición incorrecta. ¡Inténtalo de nuevo!</>
-      });
-      if (onValidation) onValidation(false);
-    }
-  };
-
   return (
     <div className="sandwich-app w-full h-full p-4 overflow-auto relative bg-white dark:bg-[#1a1b1e] rounded-xl border border-gray-200 dark:border-gray-800">
       <div className="top-bar">
@@ -189,15 +187,13 @@ export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?:
       </div>
 
       <div className="instructions">
-        <i className="ti ti-drag-drop" style={{fontSize:'18px',flexShrink:0}}></i>
-        Arrastra cada bloque al orden correcto. Hay pasos trampa que no pertenecen al algoritmo.
+        <span>Arrastra los bloques de la izquierda a las ranuras de la derecha para ordenar el algoritmo paso a paso.</span>
       </div>
 
       <div className="columns">
         <div className="panel">
           <div className="panel-title">
-            <i className="ti ti-stack-2" style={{fontSize:'15px'}}></i>
-            Bloques disponibles
+            <span>Pasos disponibles</span>
           </div>
           <div className="blocks-pool">
             {poolOrder.map((b) => {
@@ -210,7 +206,7 @@ export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?:
                   onDragStart={(e) => !inSlot && handleDragStart(b, { type: 'pool' }, e)}
                   onDragEnd={handleDragEnd}
                 >
-                  <i className="ti ti-grip-vertical drag-handle"></i>
+                  <span className="drag-icon">⋮⋮</span>
                   <span className="block-icon">{b.icon}</span>
                   <span className="block-text">{b.label}</span>
                 </div>
@@ -221,8 +217,7 @@ export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?:
 
         <div>
           <div className="panel-title" style={{marginBottom:'8px'}}>
-            <i className="ti ti-list-numbers" style={{fontSize:'15px'}}></i>
-            Tu secuencia
+            <span>Algoritmo ordenado (Paso 1 al 7)</span>
           </div>
           <div className="drop-zone">
             {slotContents.map((b, i) => (
@@ -243,12 +238,12 @@ export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?:
                       onDragStart={(e) => handleDragStart(b, { type: 'slot', index: i }, e)}
                       onDragEnd={handleDragEnd}
                     >
-                      <i className="ti ti-grip-vertical drag-handle"></i>
+                      <span className="drag-icon">⋮⋮</span>
                       <span className="block-icon">{b.icon}</span>
                       <span className="block-text">{b.label}</span>
                     </div>
                     <button className="remove-btn" title="Quitar" onClick={() => handleRemoveFromSlot(i)}>
-                      <i className="ti ti-x" style={{fontSize:'13px'}}></i>
+                      ✕
                     </button>
                   </>
                 ) : (
@@ -258,16 +253,6 @@ export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?:
             ))}
           </div>
         </div>
-      </div>
-
-      <div className="check-row">
-        <button className="btn-check" onClick={checkAnswer}>
-          <i className="ti ti-check" style={{fontSize:'16px',verticalAlign:'-2px',marginRight:'4px'}}></i>
-          Verificar orden
-        </button>
-        <button className="btn-reset" onClick={buildPool} title="Reiniciar todo">
-          <i className="ti ti-refresh" style={{fontSize:'16px',verticalAlign:'-2px'}}></i>
-        </button>
       </div>
 
       <div className={`feedback-bar ${feedback.show ? 'show' : ''} ${feedback.type}`}>

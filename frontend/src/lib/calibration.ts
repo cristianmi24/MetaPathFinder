@@ -87,27 +87,58 @@ export function computeCalibration(
   resultados_normalizados: number[];
   diferencias_por_item: number[];
   error_promedio: number;
+  bias_index: number;
   calibracion: number;
+  cluster: 'over' | 'sub' | 'cal';
   nivel: string;
+  is_zero_attempt: boolean;
 } {
   if (jols.length !== actualScores.length) {
     throw new Error('JOLs and actual scores must have the same length');
   }
 
+  if (jols.length === 0) {
+    return {
+      confianzas_normalizadas: [],
+      resultados_normalizados: [],
+      diferencias_por_item: [],
+      error_promedio: 0,
+      bias_index: 0,
+      calibracion: 5,
+      cluster: 'cal',
+      nivel: 'Sin suficientes observaciones',
+      is_zero_attempt: false,
+    };
+  }
+
   const confidences = jols.map(normalizeJol);
   const performances = actualScores.map(normalizePerformance);
 
+  const avgC = confidences.reduce((a, b) => a + b, 0) / confidences.length;
+  const avgP = performances.reduce((a, b) => a + b, 0) / performances.length;
+
   const diffs = confidences.map((c, i) => Math.abs(c - performances[i]));
   const avgError = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+  const biasIndex = Math.round((avgC - avgP) * 100) / 100;
   const calibration = Math.max(0, Math.min(10, 10 - avgError));
+
+  let cluster: 'over' | 'sub' | 'cal' = 'cal';
+  if (biasIndex > 2.0) cluster = 'over';
+  else if (biasIndex < -2.0) cluster = 'sub';
+
+  const isZeroAttempt = avgC < 1.0 && avgP < 1.0;
+  const nivel = classifyCalibration(calibration, biasIndex, isZeroAttempt);
 
   return {
     confianzas_normalizadas: confidences.map((c) => Math.round(c * 100) / 100),
     resultados_normalizados: performances.map((p) => Math.round(p * 100) / 100),
     diferencias_por_item: diffs.map((d) => Math.round(d * 100) / 100),
     error_promedio: Math.round(avgError * 100) / 100,
+    bias_index: biasIndex,
     calibracion: Math.round(calibration * 100) / 100,
-    nivel: classifyCalibration(calibration),
+    cluster,
+    nivel,
+    is_zero_attempt: isZeroAttempt,
   };
 }
 
@@ -119,10 +150,19 @@ function classifyConfidence(avg: number): string {
   return 'Confianza muy baja';
 }
 
-function classifyCalibration(cal: number): string {
-  if (cal >= 9) return 'Excelente calibración';
-  if (cal >= 7) return 'Buena calibración';
-  if (cal >= 5) return 'Calibración regular';
-  if (cal >= 3) return 'Baja calibración (sobreconfianza o subconfianza)';
-  return 'Muy baja calibración';
+function classifyCalibration(cal: number, bias: number, isZeroAttempt: boolean = false): string {
+  if (isZeroAttempt) {
+    return 'Reconocimiento de falta de dominio (Desempeño Nulo)';
+  }
+
+  if (bias > 2.0) {
+    return `Sobreconfianza Marcada (Sesgo +${bias})`;
+  } else if (bias < -2.0) {
+    return `Subestimación Cognitiva (Sesgo ${bias})`;
+  }
+
+  if (cal >= 9) return 'Excelente Calibración Metacognitiva';
+  if (cal >= 7) return 'Buena Calibración';
+  if (cal >= 5) return 'Calibración Regular';
+  return 'Baja Calibración Metacognitiva';
 }

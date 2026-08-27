@@ -1,138 +1,266 @@
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Lexend", ui-sans-serif, system-ui, sans-serif;
-  
-  --color-surface: #f4faff;
-  --color-surface-dim: #cbdde8;
-  --color-surface-bright: #f4faff;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #e8f6ff;
-  --color-surface-container: #def0fc;
-  --color-surface-container-high: #d9ebf7;
-  --color-surface-container-highest: #d3e5f1;
-  --color-on-surface: #0c1e26;
-  --color-on-surface-variant: #494552;
-  --color-inverse-surface: #22333c;
-  --color-inverse-on-surface: #e2f3ff;
-  --color-outline: #7a7583;
-  --color-outline-variant: #cac4d4;
-  --color-surface-tint: #674bb5;
-  --color-primary: #674bb5;
-  --color-on-primary: #ffffff;
-  --color-primary-container: #a78bfa;
-  --color-on-primary-container: #3c1989;
-  --color-inverse-primary: #cebdff;
-  --color-secondary: #006b5e;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #96f3e1;
-  --color-on-secondary-container: #007164;
-  --color-tertiary: #79573f;
-  --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #bd957a;
-  --color-on-tertiary-container: #4a2e19;
-  --color-warning: #b87a00;
-  --color-on-warning: #ffffff;
-  --color-warning-container: #ffde9a;
-  --color-on-warning-container: #3a2600;
-  --color-error: #ba1a1a;
-  --color-on-error: #ffffff;
-  --color-error-container: #ffdad6;
-  --color-on-error-container: #93000a;
-  --color-primary-fixed: #e8ddff;
-  --color-primary-fixed-dim: #cebdff;
-  --color-on-primary-fixed: #21005e;
-  --color-on-primary-fixed-variant: #4f319c;
-  --color-secondary-fixed: #96f3e1;
-  --color-secondary-fixed-dim: #7ad7c6;
-  --color-on-secondary-fixed: #00201b;
-  --color-on-secondary-fixed-variant: #005046;
-  --color-tertiary-fixed: #ffdcc5;
-  --color-tertiary-fixed-dim: #eabea0;
-  --color-on-tertiary-fixed: #2d1604;
-  --color-on-tertiary-fixed-variant: #5f402a;
-  --color-background: #f4faff;
-  --color-on-background: #0c1e26;
-  --color-surface-variant: #d3e5f1;
+/* ============================================================================
+   MetaPathFinder — sistema de diseño unificado
+   Tipografía académica: Source Serif 4 (lectura) + IBM Plex Sans (interfaz)
+   + IBM Plex Mono (datos). Paleta sobria, minimalista, un solo acento.
+   ========================================================================== */
 
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2rem;
+@theme {
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  /* Tailwind usa --font-sans para la clase `font-sans`; el body va en serif por capa base */
+
+  /* --- Superficies (papel) --- */
+  --color-surface: #fbfaf8;
+  --color-surface-dim: #efece6;
+  --color-surface-bright: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f7f5f1;
+  --color-surface-container: #f2efe9;
+  --color-surface-container-high: #ece8e1;
+  --color-surface-container-highest: #e5e1d8;
+  --color-surface-variant: #eceae4;
+
+  /* --- Tinta --- */
+  --color-on-surface: #1f1d1a;
+  --color-on-surface-variant: #6b665e;
+  --color-inverse-surface: #2f2c28;
+  --color-inverse-on-surface: #f6f3ee;
+
+  /* --- Trazo fino --- */
+  --color-outline: #b7b1a6;
+  --color-outline-variant: #e3ded4;
+
+  /* --- Acento (indigo apagado, uso escaso) --- */
+  --color-surface-tint: #574c9b;
+  --color-primary: #574c9b;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #e4dffb;
+  --color-on-primary-container: #241a5c;
+  --color-inverse-primary: #c3b9f5;
+
+  /* --- Secundario (verde azulado apagado) --- */
+  --color-secondary: #3f6b62;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #cfe9e2;
+  --color-on-secondary-container: #1c3b35;
+
+  --color-tertiary: #7a5a41;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #eddccf;
+  --color-on-tertiary-container: #3f2a1a;
+
+  /* --- Estados funcionales --- */
+  --color-warning: #9a6a00;
+  --color-on-warning: #ffffff;
+  --color-warning-container: #ffe6b8;
+  --color-on-warning-container: #3a2600;
+  --color-error: #a63a2f;
+  --color-on-error: #ffffff;
+  --color-error-container: #f7ddd8;
+  --color-on-error-container: #5f1712;
+
+  --color-background: #fbfaf8;
+  --color-on-background: #1f1d1a;
+
+  /* Compat: variantes "fixed" poco usadas, mapeadas al acento */
+  --color-primary-fixed: #e4dffb;
+  --color-primary-fixed-dim: #c3b9f5;
+  --color-on-primary-fixed: #1a1148;
+  --color-on-primary-fixed-variant: #443a80;
+  --color-secondary-fixed: #cfe9e2;
+  --color-secondary-fixed-dim: #b3d6cd;
+  --color-on-secondary-fixed: #0d2621;
+  --color-on-secondary-fixed-variant: #2c534b;
+  --color-tertiary-fixed: #eddccf;
+  --color-tertiary-fixed-dim: #d9c3b2;
+  --color-on-tertiary-fixed: #2a1a0d;
+  --color-on-tertiary-fixed-variant: #5c412e;
+
+  /* --- Escala de radios (sustituye a los 2rem/2.5rem/3rem dispersos) --- */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+}
+
+/* ----------------------------------------------------------------------------
+   Alias compartidos: puente para los CSS legacy (--mp-*, --fc-*, --fb-*)
+   -------------------------------------------------------------------------- */
+:root {
+  --accent: #574c9b;
+  --accent-soft: #efecfb;
+  --bg: #fbfaf8;
+  --surface: #ffffff;
+  --surface-2: #f5f3ef;
+  --text: #1f1d1a;
+  --text-muted: #6b665e;
+  --border: #e3ded4;
+  --ok: #3f6b62;
+  --warn: #9a6a00;
+  --danger: #a63a2f;
+  --tour-hl: #2f6bff;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+
+  color-scheme: light;
 }
 
 .dark {
-  --color-surface: #0c1e26;
-  --color-surface-dim: #22333c;
-  --color-surface-bright: #22333c;
-  --color-surface-container-lowest: #0c1e26;
-  --color-surface-container-low: #22333c;
-  --color-surface-container: #2a3d46;
-  --color-surface-container-high: #354952;
-  --color-surface-container-highest: #404f58;
-  --color-on-surface: #e2f3ff;
-  --color-on-surface-variant: #bec2c9;
-  --color-inverse-surface: #e2f3ff;
-  --color-inverse-on-surface: #0c1e26;
-  --color-outline: #8b9198;
-  --color-outline-variant: #404f58;
-  --color-surface-tint: #cebdff;
-  --color-primary: #cebdff;
-  --color-on-primary: #21005e;
-  --color-primary-container: #4f319c;
-  --color-on-primary-container: #e8ddff;
-  --color-inverse-primary: #674bb5;
-  --color-secondary: #7ad7c6;
-  --color-on-secondary: #00201b;
-  --color-secondary-container: #005046;
-  --color-on-secondary-container: #96f3e1;
-  --color-tertiary: #eabea0;
-  --color-on-tertiary: #2d1604;
-  --color-tertiary-container: #5f402a;
-  --color-on-tertiary-container: #ffdcc5;
-  --color-warning: #ffb74d;
+  --color-surface: #17161a;
+  --color-surface-dim: #131217;
+  --color-surface-bright: #201f24;
+  --color-surface-container-lowest: #121116;
+  --color-surface-container-low: #1c1b20;
+  --color-surface-container: #201f24;
+  --color-surface-container-high: #2a2930;
+  --color-surface-container-highest: #34333b;
+  --color-surface-variant: #2a2930;
+
+  --color-on-surface: #e9e6e0;
+  --color-on-surface-variant: #a8a39a;
+  --color-inverse-surface: #e9e6e0;
+  --color-inverse-on-surface: #17161a;
+
+  --color-outline: #6a655d;
+  --color-outline-variant: #322f27;
+
+  --color-surface-tint: #c3b9f5;
+  --color-primary: #c3b9f5;
+  --color-on-primary: #1a1148;
+  --color-primary-container: #3f3579;
+  --color-on-primary-container: #e4dffb;
+  --color-inverse-primary: #574c9b;
+
+  --color-secondary: #a7d0c7;
+  --color-on-secondary: #0d2621;
+  --color-secondary-container: #2c534b;
+  --color-on-secondary-container: #cfe9e2;
+
+  --color-tertiary: #d9c3b2;
+  --color-on-tertiary: #2a1a0d;
+  --color-tertiary-container: #5c412e;
+  --color-on-tertiary-container: #eddccf;
+
+  --color-warning: #f0b755;
   --color-on-warning: #3a2600;
-  --color-warning-container: #5d3f00;
-  --color-on-warning-container: #ffde9a;
-  --color-error: #ffb4ab;
-  --color-on-error: #690005;
-  --color-error-container: #93000a;
-  --color-on-error-container: #ffdad6;
-  --color-primary-fixed: #e8ddff;
-  --color-primary-fixed-dim: #cebdff;
-  --color-on-primary-fixed: #21005e;
-  --color-on-primary-fixed-variant: #4f319c;
-  --color-secondary-fixed: #96f3e1;
-  --color-secondary-fixed-dim: #7ad7c6;
-  --color-on-secondary-fixed: #00201b;
-  --color-on-secondary-fixed-variant: #005046;
-  --color-tertiary-fixed: #ffdcc5;
-  --color-tertiary-fixed-dim: #eabea0;
-  --color-on-tertiary-fixed: #2d1604;
-  --color-on-tertiary-fixed-variant: #5f402a;
-  --color-background: #0c1e26;
-  --color-on-background: #e2f3ff;
-  --color-surface-variant: #404f58;
+  --color-warning-container: #5c4200;
+  --color-on-warning-container: #ffe6b8;
+  --color-error: #efb0a6;
+  --color-on-error: #5f1712;
+  --color-error-container: #7c2b22;
+  --color-on-error-container: #f7ddd8;
+
+  --color-background: #17161a;
+  --color-on-background: #e9e6e0;
+
+  --accent: #c3b9f5;
+  --accent-soft: #262239;
+  --bg: #17161a;
+  --surface: #201f24;
+  --surface-2: #1c1b20;
+  --text: #e9e6e0;
+  --text-muted: #a8a39a;
+  --border: #322f27;
+  --ok: #a7d0c7;
+  --warn: #f0b755;
+  --danger: #efb0a6;
+  --tour-hl: #6ea8ff;
+
+  color-scheme: dark;
 }
 
 @layer base {
   body {
     @apply bg-background text-on-background antialiased;
+    font-family: var(--font-serif);
+    font-size: var(--fs-base);
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  /* La interfaz (controles, etiquetas, datos) usa la sans; la lectura, la serif */
+  button, input, textarea, select, label,
+  .ui-sans, [class*="badge"], [class*="chip"], [class*="tag"] {
+    font-family: var(--font-sans);
+  }
+
+  code, kbd, samp, pre, .ui-mono {
+    font-family: var(--font-mono);
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--accent) 24%, transparent);
   }
 }
 
+/* --- Utilidades compartidas --- */
 .glass {
-  @apply bg-surface/70 backdrop-blur-xl border border-outline-variant/20 shadow-sm;
+  @apply bg-surface/80 backdrop-blur-md border border-outline-variant/40 shadow-sm;
 }
 
 .bento-card {
-  @apply bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(103,75,181,0.05)] border border-outline-variant/30 transition-all duration-300;
+  @apply bg-surface-container-lowest rounded-lg border border-outline-variant/60 transition-colors duration-200;
 }
 
 .bento-card:hover {
-  @apply shadow-[0_8px_32px_rgba(103,75,181,0.1)] -translate-y-0.5;
+  @apply border-outline-variant;
 }
 
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
+}
+
+/* --- Resaltado del tour: ilumina con fuerza la parte que se está explicando --- */
+@keyframes mp-tour-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 3px var(--tour-hl),
+      0 0 0 6px color-mix(in srgb, var(--tour-hl) 30%, transparent),
+      0 6px 24px color-mix(in srgb, var(--tour-hl) 35%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px var(--tour-hl),
+      0 0 0 14px color-mix(in srgb, var(--tour-hl) 0%, transparent),
+      0 6px 30px color-mix(in srgb, var(--tour-hl) 55%, transparent);
+  }
+}
+
+.mp-tour-highlight {
+  position: relative !important;
+  z-index: 20 !important;
+  border-radius: var(--radius-md) !important;
+  background-color: color-mix(in srgb, var(--tour-hl) 8%, transparent) !important;
+  box-shadow:
+    0 0 0 3px var(--tour-hl),
+    0 0 0 6px color-mix(in srgb, var(--tour-hl) 30%, transparent),
+    0 6px 24px color-mix(in srgb, var(--tour-hl) 35%, transparent) !important;
+  animation: mp-tour-pulse 1.6s ease-in-out infinite !important;
+  scroll-margin: 110px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-tour-highlight { animation: none !important; }
 }

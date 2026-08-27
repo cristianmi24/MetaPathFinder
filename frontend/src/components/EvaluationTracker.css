@@ -1,23 +1,24 @@
+/* EvaluationTracker.css — barra de progreso fija (puente al sistema unificado) */
 .em-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(12px);
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 20px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-sans);
 }
 
-/* Light theme support if needed, but we focus on premium dark/glass */
-.light .em-topbar {
-  background: rgba(255, 255, 255, 0.8);
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+.light .em-topbar,
+.dark .em-topbar {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border-bottom: 1px solid var(--border);
 }
 
 .em-logo {
@@ -28,10 +29,10 @@
 }
 
 .em-logo-mark {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 12px;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,29 +41,31 @@
 }
 
 .em-logo-text {
-  color: #f0f6fc;
+  color: var(--text);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: -0.01em;
 }
 
-.light .em-logo-text {
-  color: #1f2328;
+.light .em-logo-text,
+.dark .em-logo-text {
+  color: var(--text);
 }
 
 .em-phase-track {
   display: flex;
   align-items: center;
-  gap: 24px;
-  background: rgba(255, 255, 255, 0.03);
+  gap: 20px;
+  background: var(--surface-2);
   padding: 6px 16px;
   border-radius: 100px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
 }
 
-.light .em-phase-track {
-  background: rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+.light .em-phase-track,
+.dark .em-phase-track {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 .em-phase-item {
@@ -71,47 +74,40 @@
   gap: 8px;
   font-size: 11px;
   font-weight: 500;
-  color: rgba(240, 246, 252, 0.4);
-  transition: all 0.3s ease;
+  color: var(--text-muted);
+  transition: color 0.3s ease;
   position: relative;
 }
 
-.em-phase-item.active {
-  color: #f0f6fc;
-}
-
-.light .em-phase-item {
-  color: rgba(0, 0, 0, 0.5);
-}
-
+.em-phase-item.active,
 .light .em-phase-item.active {
-  color: #000000;
+  color: var(--text);
+}
+
+.light .em-phase-item,
+.dark .em-phase-item {
+  color: var(--text-muted);
 }
 
 .em-phase-item.done {
-  color: #3fb950;
+  color: var(--ok);
 }
 
 .em-pd {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(240, 246, 252, 0.1);
+  background: var(--border);
   transition: all 0.3s ease;
 }
 
-.light .em-pd {
-  background: rgba(31, 35, 40, 0.1);
-}
-
 .em-phase-item.active .em-pd {
-  background: #388bfd;
-  box-shadow: 0 0 10px rgba(56, 139, 253, 0.5);
+  background: var(--accent);
   transform: scale(1.2);
 }
 
 .em-phase-item.done .em-pd {
-  background: #3fb950;
+  background: var(--ok);
 }
 
 .em-perfil-chip {
@@ -121,61 +117,61 @@
   border-radius: 7px;
   padding: 5px 12px;
   font-size: 11px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-weight: 500;
   flex-shrink: 0;
   transition: all 0.3s ease;
 }
 
-/* Profiles from user example and ChallengeCalibration */
 .em-perfil-chip.overconf {
-  background: rgba(255, 123, 114, 0.1);
-  border: 0.5px solid rgba(255, 123, 114, 0.35);
-  color: #ff7b72;
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+  color: var(--danger);
 }
 
 .em-perfil-chip.underconf {
-  background: rgba(121, 192, 255, 0.1);
-  border: 0.5px solid rgba(121, 192, 255, 0.35);
-  color: #79c0ff;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--accent);
 }
 
 .em-perfil-chip.calibrated {
-  background: rgba(63, 185, 80, 0.1);
-  border: 0.5px solid rgba(63, 185, 80, 0.35);
-  color: #3fb950;
+  background: color-mix(in srgb, var(--ok) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ok) 35%, transparent);
+  color: var(--ok);
+}
+
+/* --- Compacto en móvil: solo el paso activo + contador --- */
+.em-step-count {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 @media (max-width: 900px) {
-  .em-logo-text {
-    display: none;
-  }
-  .em-phase-track {
-    gap: 12px;
-    padding: 4px 10px;
-  }
-  .em-phase-item {
-    font-size: 10px;
-  }
+  .em-logo-text { display: none; }
+  .em-phase-track { gap: 12px; padding: 4px 10px; }
+  .em-phase-item { font-size: 10px; }
 }
 
 @media (max-width: 600px) {
-  .em-phase-item:not(.active) {
-    display: none;
-  }
+  .em-phase-item:not(.active) { display: none; }
+  .em-step-count { display: inline-flex; }
 }
 
 .fb-jol-chip {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(35, 134, 54, 0.1);
-  border: 0.5px solid rgba(35, 134, 54, 0.3);
+  background: color-mix(in srgb, var(--ok) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ok) 30%, transparent);
   border-radius: 7px;
   padding: 5px 12px;
   font-size: 11px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: #238636;
+  font-family: var(--font-mono);
+  color: var(--ok);
   flex-shrink: 0;
 }
 
@@ -183,14 +179,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 7px;
   padding: 5px 12px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 500;
-  color: #f2cc60;
+  color: var(--warn);
   flex-shrink: 0;
 }
 
@@ -198,7 +194,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #f2cc60;
+  background: var(--warn);
   animation: blink 1.2s ease-in-out infinite;
 }
 

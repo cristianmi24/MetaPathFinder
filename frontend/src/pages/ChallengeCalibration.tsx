@@ -24,6 +24,7 @@ import {
   Sparkles, 
   CheckCircle2, 
   Info,
+  HelpCircle,
   Code2,
   Video
 } from 'lucide-react';
@@ -31,6 +32,8 @@ import { useTheme } from '../ThemeContext';
 import { EvaluationTracker } from '../components/EvaluationTracker';
 import { usePhaseSync } from '../hooks/usePhaseSync';
 import { normalizeJolAverage, clamp010 } from '../lib/jolNormalization';
+import { evaluateMetacognitiveReflection, getPrescribedInterventions } from '../lib/metacognitiveEvaluator';
+import { dynamicChallengeBank } from '../data/dynamicChallengeBank';
 import './ChallengeCalibration.css';
 
 ChartJS.register(
@@ -69,19 +72,39 @@ export function ChallengeCalibration() {
 
   const [reflection, setReflection] = useState('');
   const [isReflected, setIsReflected] = useState(false);
-  const wordCount = reflection.trim().split(/\s+/).filter(w => w.length > 0).length;
 
-  // Cálculos de Calibración — cada JOL se normaliza según su propia escala (1-10, minutos,
-  // intentos, porcentaje, opciones) antes de promediar, y el resultado siempre queda en [0, 10].
+  // Análisis semántico de la autorregulación
+  const reflectionAnalysis = useMemo(() => {
+    return evaluateMetacognitiveReflection(reflection);
+  }, [reflection]);
+
+  // Cálculos de Calibración
   const jolAvg = normalizeJolAverage(metrics.jolAnswers || {}, metrics.estimatedTime);
   const performance = clamp010((metrics.metricas_tecnicas?.score || 0) / 10);
   const gap = Number((jolAvg - performance).toFixed(1));
   
+  const isZeroAttempt = jolAvg < 1.0 && performance < 1.0;
+
   const profile = useMemo(() => {
-    if (gap > 2) return { type: 'overconf', label: 'Sobreconfianza crítica', icon: AlertTriangle, desc: 'Efecto Dunning-Kruger detectado. Alta autopercepción con bajo rendimiento real.' };
-    if (gap < -2) return { type: 'underconf', label: 'Subestimación cognitiva', icon: Zap, desc: 'Síndrome del impostor detectado. El desempeño superó por mucho la expectativa inicial.' };
-    return { type: 'calibrated', label: 'Perfil Calibrado', icon: CheckCircle2, desc: 'Excelente autoconocimiento. Tu percepción coincide con tus capacidades técnicas.' };
-  }, [gap]);
+    if (isZeroAttempt) {
+      return { type: 'zero_attempt', label: 'Reconocimiento de Falta de Dominio', icon: HelpCircle, desc: 'Reconociste tu falta de experiencia previa y obtuviste desempeño nulo (Conocimiento Ausente).' };
+    }
+    if (gap > 2) return { type: 'overconf', label: 'Sobreconfianza Crítica', icon: AlertTriangle, desc: 'Efecto Dunning-Kruger detectado. Alta autopercepción con bajo rendimiento real.' };
+    if (gap < -2) return { type: 'underconf', label: 'Subestimación Cognitiva', icon: Zap, desc: 'El desempeño superó por mucho la expectativa inicial.' };
+    return { type: 'calibrated', label: 'Perfil Calibrado Metacognitivo', icon: CheckCircle2, desc: 'Excelente autoconocimiento. Tu percepción coincide con tus capacidades técnicas.' };
+  }, [gap, isZeroAttempt]);
+
+  const currentChallengeObj = useMemo(() => {
+    return dynamicChallengeBank.find(c => c.id === metrics.challengeId) || null;
+  }, [metrics.challengeId]);
+
+  const dynamicInterventions = useMemo(() => {
+    return getPrescribedInterventions(
+      profile.type,
+      currentChallengeObj?.componente || 'Tecnología',
+      metrics
+    );
+  }, [profile.type, currentChallengeObj, metrics]);
 
   // Real metrics for radar chart
   const tech = metrics.metricas_tecnicas || {};
@@ -97,26 +120,26 @@ export function ChallengeCalibration() {
     labels: ['Precisión', 'Eficiencia', 'Independencia', 'Interacción', 'Velocidad'],
     datasets: [
       {
-        label: 'JOL Declarado',
+        label: 'Tu confianza',
         data: [jolAvg, jolAvg, jolAvg, jolAvg, jolAvg],
-        borderColor: '#f2cc60',
-        backgroundColor: 'rgba(242,204,96,0.1)',
-        pointBackgroundColor: '#f2cc60',
+        borderColor: '#c99a2e',
+        backgroundColor: 'rgba(201,154,46,0.10)',
+        pointBackgroundColor: '#c99a2e',
         borderWidth: 2,
       },
       {
-        label: 'Desempeño Real',
+        label: 'Tu desempeño',
         data: [performance, eficiencia, independencia, interaccion, velocidad],
-        borderColor: '#ff7b72',
-        backgroundColor: 'rgba(255,123,114,0.1)',
-        pointBackgroundColor: '#ff7b72',
+        borderColor: '#cf5a4e',
+        backgroundColor: 'rgba(207,90,78,0.10)',
+        pointBackgroundColor: '#cf5a4e',
         borderWidth: 2,
       },
       {
-        label: 'Zona Calibrada',
+        label: 'Zona ideal',
         data: [6, 6, 6, 6, 6],
-        borderColor: '#388bfd',
-        backgroundColor: 'rgba(56,139,253,0.05)',
+        borderColor: '#7b6fca',
+        backgroundColor: 'rgba(123,111,202,0.05)',
         borderDash: [5, 5],
         borderWidth: 1,
       }
@@ -146,16 +169,18 @@ export function ChallengeCalibration() {
   };
 
   const handleFinishReflection = async () => {
-    console.log('📝 Click en Registrar Reflexión. Palabras:', wordCount);
-    if (wordCount < 20) {
-      console.warn('⚠️ Reflexión muy corta.');
+    if (!reflectionAnalysis.isValid) {
+      console.warn('⚠️ Reflexión no cumple con los criterios de validez.');
       return;
     }
     setIsReflected(true);
     addEvent('METACOGNITIVE_REFLECTION', { 
       text: reflection, 
       gap, 
-      profile: profile.label 
+      profile: profile.label,
+      reflection_score: reflectionAnalysis.score,
+      reflection_level: reflectionAnalysis.level,
+      keywords_found: reflectionAnalysis.metacognitiveKeywordsFound
     });
 
     await syncPhaseC();
@@ -190,41 +215,41 @@ export function ChallengeCalibration() {
               <Search className="w-6 h-6 text-red-400" />
             </div>
             <div>
-              <h2 className="fc-mirror-title">Tu espejo de aprendizaje</h2>
-              <p className="fc-mirror-sub">Sesión {user?.name || 'Invitado'} · Comparación Metacognitiva Completada</p>
+              <h2 className="fc-mirror-title">Tu análisis de calibración</h2>
+              <p className="fc-mirror-sub">Sesión {user?.name || 'Invitado'} · lo que creías vs. lo que pasó</p>
             </div>
           </header>
 
           <div className="fc-desfase-grid">
             <div className="fc-stat-card">
-              <div className="fc-stat-label">Confianza (JOL)</div>
-              <div className="fc-stat-val text-yellow-400">{jolAvg.toFixed(1)} <span className="fc-stat-unit">/ 10</span></div>
-              <div className="fc-stat-delta text-gray-500">Fase A · Percepción</div>
+              <div className="fc-stat-label">Tu confianza</div>
+              <div className="fc-stat-val" style={{ color: '#c99a2e' }}>{jolAvg.toFixed(1)} <span className="fc-stat-unit">/ 10</span></div>
+              <div className="fc-stat-delta" style={{ color: 'var(--text-muted)' }}>lo que esperabas</div>
             </div>
             <div className="fc-stat-card">
-              <div className="fc-stat-label">Desempeño Real</div>
-              <div className="fc-stat-val text-red-400">{performance} <span className="fc-stat-unit">/ 10</span></div>
-              <div className="fc-stat-delta text-red-400">{gap > 0 ? `-${gap}` : `+${Math.abs(gap)}`} pts vs predicción</div>
+              <div className="fc-stat-label">Tu desempeño</div>
+              <div className="fc-stat-val" style={{ color: '#cf5a4e' }}>{performance} <span className="fc-stat-unit">/ 10</span></div>
+              <div className="fc-stat-delta" style={{ color: 'var(--text-muted)' }}>{gap > 0 ? `${gap} pts por debajo` : `${Math.abs(gap)} pts por encima`}</div>
             </div>
             <div className="fc-stat-card">
-              <div className="fc-stat-label">Tiempo Real</div>
-              <div className="fc-stat-val text-gray-200">{Math.round(metrics.biometricas.total_time / 60)} <span className="fc-stat-unit">min</span></div>
-              <div className="fc-stat-delta text-red-400">+{Math.max(0, Math.round(metrics.biometricas.total_time / 60) - metrics.estimatedTime)} min sobre estimado</div>
+              <div className="fc-stat-label">Tiempo</div>
+              <div className="fc-stat-val" style={{ color: 'var(--text)' }}>{Math.round(metrics.biometricas.total_time / 60)} <span className="fc-stat-unit">min</span></div>
+              <div className="fc-stat-delta" style={{ color: 'var(--text-muted)' }}>+{Math.max(0, Math.round(metrics.biometricas.total_time / 60) - metrics.estimatedTime)} min sobre lo estimado</div>
             </div>
             <div className="fc-stat-card">
-              <div className="fc-stat-label">Runs / Errores</div>
-              <div className="fc-stat-val text-red-400">{metrics.metricas_tecnicas.runs} <span className="fc-stat-unit">intentos</span></div>
-              <div className="fc-stat-delta text-gray-500">{metrics.metricas_tecnicas.hints} pistas usadas</div>
+              <div className="fc-stat-label">Intentos</div>
+              <div className="fc-stat-val" style={{ color: 'var(--text)' }}>{metrics.metricas_tecnicas.runs}</div>
+              <div className="fc-stat-delta" style={{ color: 'var(--text-muted)' }}>{metrics.metricas_tecnicas.hints} pistas usadas</div>
             </div>
           </div>
 
           <div className="fc-chart-card">
             <div className="fc-chart-header">
-              <span className="fc-chart-title">Desfase Cognitivo · Confianza vs Desempeño</span>
+              <span className="fc-chart-title">Confianza vs. desempeño</span>
               <div className="fc-legend">
-                <span className="fc-leg-item"><span className="fc-leg-dot bg-yellow-400"></span>JOL</span>
-                <span className="fc-leg-item"><span className="fc-leg-dot bg-red-400"></span>Real</span>
-                <span className="fc-leg-item"><span className="fc-leg-dot bg-blue-400"></span>Meta</span>
+                <span className="fc-leg-item"><span className="fc-leg-dot" style={{ background: '#c99a2e' }}></span>Confianza</span>
+                <span className="fc-leg-item"><span className="fc-leg-dot" style={{ background: '#cf5a4e' }}></span>Desempeño</span>
+                <span className="fc-leg-item"><span className="fc-leg-dot" style={{ background: '#7b6fca' }}></span>Ideal</span>
               </div>
             </div>
             <div style={{ height: '240px' }}>
@@ -235,7 +260,7 @@ export function ChallengeCalibration() {
           <div className="fc-reflexion-card">
             <div className="fc-reflexion-label">
               <Brain className="w-4 h-4" />
-              Pregunta de Regulación · Pintrich (2002)
+              Para reflexionar
             </div>
             <p className="fc-reflexion-q">
               "Tu confianza inicial fue {jolAvg.toFixed(1)}/10 pero tu desempeño real fue {performance}/10. 
@@ -243,22 +268,63 @@ export function ChallengeCalibration() {
             </p>
             <textarea 
               className="fc-reflexion-input"
-              placeholder="Escribe tu reflexión aquí... (mínimo 20 palabras para habilitar el reintento)"
+              placeholder="Escribe tu reflexión aquí... (Explica las causas técnicas, de tiempo o de confianza que influyeron)"
               value={reflection}
               onChange={(e) => setReflection(e.target.value)}
               disabled={isReflected}
             />
-            <div className="flex justify-between items-center mt-4">
-              <span className={`text-[11px] font-mono ${wordCount >= 20 ? 'text-green-400' : 'text-gray-500'}`}>
-                {wordCount} palabras {wordCount < 20 && `(faltan ${20 - wordCount})`}
+
+            {/* Calidad de la reflexión en tiempo real */}
+            <div className="mt-3 p-3 rounded-md text-xs ui-sans" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="font-semibold" style={{ color: 'var(--text)' }}>
+                  Calidad: <span style={{
+                    color: reflectionAnalysis.level === 'profunda' ? 'var(--ok)' :
+                           reflectionAnalysis.level === 'buena' ? 'var(--accent)' :
+                           reflectionAnalysis.level === 'basica' ? 'var(--warn)' : 'var(--danger)'
+                  }}>
+                    {reflectionAnalysis.level} ({reflectionAnalysis.score}/100)
+                  </span>
+                </span>
+                <span className="font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                  {reflectionAnalysis.wordCount} palabras
+                </span>
+              </div>
+              <div className="w-full h-1.5 rounded-full overflow-hidden mb-2" style={{ background: 'var(--border)' }}>
+                <div
+                  className="h-full transition-all duration-300 rounded-full"
+                  style={{
+                    width: `${reflectionAnalysis.score}%`,
+                    backgroundColor: reflectionAnalysis.score > 70 ? 'var(--ok)' : reflectionAnalysis.score > 40 ? 'var(--warn)' : 'var(--danger)'
+                  }}
+                />
+              </div>
+              <p className="text-[11px] italic" style={{ color: 'var(--text-muted)' }}>
+                {reflectionAnalysis.feedback}
+              </p>
+              {reflectionAnalysis.metacognitiveKeywordsFound.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  <span className="text-[10px] mr-1" style={{ color: 'var(--text-muted)' }}>Términos usados:</span>
+                  {reflectionAnalysis.metacognitiveKeywordsFound.map((kw, i) => (
+                    <span key={i} className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)', color: 'var(--accent)', border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-3 justify-between items-center mt-4">
+              <span className="text-[11px] font-mono" style={{ color: reflectionAnalysis.isValid ? 'var(--ok)' : 'var(--text-muted)' }}>
+                {reflectionAnalysis.isValid ? '✓ Lista para guardar' : 'Mínimo 20 palabras explicando causas'}
               </span>
-              <button 
+              <button
                 className="fc-btn-siguiente !w-auto !py-2 !px-6"
-                disabled={wordCount < 20 || isReflected}
+                disabled={!reflectionAnalysis.isValid || isReflected}
                 onClick={handleFinishReflection}
-                style={{ opacity: wordCount < 20 || isReflected ? 0.5 : 1 }}
+                style={{ opacity: !reflectionAnalysis.isValid || isReflected ? 0.5 : 1 }}
               >
-                {isReflected ? 'Reflexión Guardada' : 'Registrar Reflexión'}
+                {isReflected ? 'Guardada' : 'Guardar reflexión'}
               </button>
             </div>
           </div>
@@ -266,67 +332,71 @@ export function ChallengeCalibration() {
           <div className="fc-interv-card">
             <div className="fc-interv-label">
               <Sparkles className="w-4 h-4" />
-              Intervenciones Prescritas
+              Qué te recomendamos ahora
             </div>
-            <div className="fc-interv-item">
-              <div className="fc-interv-icon warn"><Video className="w-5 h-5" /></div>
-              <div className="fc-interv-body">
-                <h4 className="fc-interv-title">Video: Descomposición de problemas (12 min)</h4>
-                <p className="fc-interv-desc">Aprenderás a dividir retos complejos en sub-tareas antes de escribir código.</p>
+            {dynamicInterventions.map((interv) => (
+              <div key={interv.id} className="fc-interv-item">
+                <div className={`fc-interv-icon ${interv.iconType}`}>
+                  <i className={`ti ${interv.icon}`} />
+                </div>
+                <div className="fc-interv-body">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="fc-interv-title">{interv.titulo}</h4>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-gray-400 border border-white/10">
+                      {interv.tiempoEstimado} · {interv.tipoAccion}
+                    </span>
+                  </div>
+                  <p className="fc-interv-desc">{interv.descripcion}</p>
+                </div>
               </div>
-            </div>
-            <div className="fc-interv-item">
-              <div className="fc-interv-icon info"><Info className="w-5 h-5" /></div>
-              <div className="fc-interv-body">
-                <h4 className="fc-interv-title">Autodiagnóstico guiado</h4>
-                <p className="fc-interv-desc">Identifica 3 supuestos erróneos que tenías al inicio del reto.</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
         <aside className="fc-sidebar">
-          <div className="fc-side-title"><Brain className="w-4 h-4" /> Clasificación del Modelo</div>
+          <div className="fc-side-title"><Brain className="w-4 h-4" /> Cómo quedó tu calibración</div>
           
           <div className={`fc-profile-card ${profile.type}`}>
             <div className="fc-profile-card-name">{profile.label}</div>
             <p className="fc-profile-card-desc">{profile.desc}</p>
           </div>
 
-          <div className="fc-vector-card">
-            <div className="fc-vector-title"><Code2 className="w-4 h-4" /> Vector de Entrada</div>
-            <div className="fc-vector-row">
-              <span className="fc-vector-key">jol_score</span>
-              <span className="fc-vector-val text-yellow-400">{jolAvg.toFixed(1)}</span>
+          <details className="fc-vector-card">
+            <summary className="fc-vector-title" style={{ cursor: 'pointer', listStyle: 'none' }}>
+              <Code2 className="w-4 h-4" /> Datos de tu sesión
+            </summary>
+            <div className="fc-vector-row" style={{ marginTop: 10 }}>
+              <span className="fc-vector-key">confianza</span>
+              <span className="fc-vector-val">{jolAvg.toFixed(1)}</span>
             </div>
             <div className="fc-vector-row">
-              <span className="fc-vector-key">nota_real</span>
-              <span className="fc-vector-val text-red-400">{performance}</span>
+              <span className="fc-vector-key">desempeño</span>
+              <span className="fc-vector-val">{performance}</span>
             </div>
             <div className="fc-vector-row">
-              <span className="fc-vector-key">clicks</span>
+              <span className="fc-vector-key">clics</span>
               <span className="fc-vector-val">{metrics.biometricas.clicks}</span>
             </div>
             <div className="fc-vector-row">
               <span className="fc-vector-key">ediciones</span>
               <span className="fc-vector-val">{metrics.metricas_tecnicas.edits}</span>
             </div>
-          </div>
+          </details>
 
-          <button 
-            className="fc-btn-reintentar" 
+          <button
+            className="fc-btn-reintentar"
             disabled={!isReflected}
             onClick={handleRetrySimplified}
           >
             <RefreshCcw className="w-4 h-4 mr-2" />
-            Reto Simplificado (Soporte)
+            Reto de apoyo más sencillo
           </button>
 
-          <button 
+          <button
             className="fc-btn-siguiente mt-4"
             onClick={handleNextLevel}
           >
-            Siguiente Nivel <ChevronRight className="w-4 h-4 ml-2" />
+            Siguiente nivel <ChevronRight className="w-4 h-4 ml-2" />
           </button>
         </aside>
       </div>

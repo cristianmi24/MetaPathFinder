@@ -132,17 +132,30 @@ export default function MatchTechSituations({ onValidation }: { onValidation?: (
       return;
     }
 
-    setPlacements(prev => ({
-      ...prev,
-      [situationId]: { ...prev[situationId], [slotType]: selectedCard.id },
-    }));
+    const updatedPlacements = {
+      ...placements,
+      [situationId]: { ...placements[situationId], [slotType]: selectedCard.id },
+    };
+    setPlacements(updatedPlacements);
     setSelectedCardId(null);
-    if (nextTries >= maxTries) {
+
+    const correctCount = SITUATIONS.reduce((count, situation) => {
+      const placement = updatedPlacements[situation.id];
+      return count + ((placement.old === `${situation.id}-old` && placement.modern === `${situation.id}-modern`) ? 1 : 0);
+    }, 0);
+
+    if (correctCount === SITUATIONS.length) {
       setCompleted(true);
-      setMessage('Has usado los 8 intentos. Revisa tus respuestas.');
-      if (onValidation) onValidation(false);
+      setMessage('🎉 ¡Perfecto! Asociaste correctamente las 4 situaciones.');
+      if (onValidation) onValidation(true);
     } else {
-      setMessage('¡Bien! Ahora selecciona otra tecnología para continuar.');
+      if (onValidation) onValidation(false);
+      if (nextTries >= maxTries) {
+        setCompleted(true);
+        setMessage('Has usado los intentos disponibles.');
+      } else {
+        setMessage(`Asociaciones completas: ${correctCount} de ${SITUATIONS.length}. Sigue colocando tarjetas.`);
+      }
     }
   };
 
@@ -185,22 +198,7 @@ export default function MatchTechSituations({ onValidation }: { onValidation?: (
     setTries(0);
     setMessage('Selecciona una tarjeta y luego elige la situación correcta.');
     setCompleted(false);
-  };
-
-  const checkAnswers = () => {
-    const correctCount = SITUATIONS.reduce((count, situation) => {
-      const placement = placements[situation.id];
-      return count + ((placement.old === `${situation.id}-old` && placement.modern === `${situation.id}-modern`) ? 1 : 0);
-    }, 0);
-
-    if (correctCount === SITUATIONS.length) {
-      setCompleted(true);
-      setMessage('¡Perfecto! Asociaste correctamente las 4 situaciones con tecnologías antiguas y modernas.');
-      if (onValidation) onValidation(true);
-    } else {
-      setMessage(`Tienes ${correctCount} de 4 situaciones completas. Revisa las tecnologías que quedan.`);
-      if (onValidation) onValidation(false);
-    }
+    if (onValidation) onValidation(false);
   };
 
   const clearSelection = () => {
@@ -250,9 +248,6 @@ export default function MatchTechSituations({ onValidation }: { onValidation?: (
         <div className="status-row">
           <div className="status-banner">{message}</div>
           <div className="status-banner">Intentos restantes: {remainingAttempts}</div>
-          <div className="actions">
-            <button className="btn primary" onClick={checkAnswers} disabled={gameOver}>Verificar</button>
-          </div>
         </div>
 
         <div className="layout">
