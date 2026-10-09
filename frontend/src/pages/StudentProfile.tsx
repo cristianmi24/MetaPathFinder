@@ -10,6 +10,9 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../ThemeContext';
 import { api } from '../services/api';
 import { TermsCheckbox } from '../components/TermsAndConditions';
+import { LEGAL } from '../data/legalConfig';
+import { StudentHome } from '../components/StudentHome';
+import WalkingScene from '../components/WalkingScene/WalkingScene';
 
 export function StudentProfile() {
   const { cognitiveLoad, calibration, events, user, setUser, setRole, setToken, currentLevel, role, token } = useCognitiveStore();
@@ -79,12 +82,12 @@ export function StudentProfile() {
     e.preventDefault();
     setAuthError(null);
     if (!termsAccepted) {
-      setAuthError('Debes aceptar los Términos y Condiciones y la Política de Tratamiento de Datos Personales para crear una cuenta.');
+      setAuthError('Debes aceptar los Términos y Condiciones y la Política de Privacidad, y confirmar que eres mayor de edad o cuentas con autorización de tu representante legal, para crear una cuenta.');
       return;
     }
     setIsLoading(true);
     try {
-      await api.register({ name, last_name: lastName, email, password, terms_accepted: termsAccepted });
+      await api.register({ name, last_name: lastName, email, password, terms_accepted: termsAccepted, guardian_declaration: termsAccepted, terms_version: LEGAL.version });
       setRegisterSuccess(true);
       setAuthMode('login');
       setName('');
@@ -112,15 +115,33 @@ export function StudentProfile() {
 
   if (!user || !token) {
     return (
+      <div className="relative w-full" style={{ height: '100vh' }}>
+      <WalkingScene initialTheme={theme === 'dark' ? 'night' : 'day'} showControls={false} boyLeft={78}>
       <div className={cn(
-        "h-screen w-full flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300",
-        theme === 'light' ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-white'
+        "h-full w-full flex items-start justify-center overflow-y-auto py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300",
+        theme === 'light' ? 'text-slate-900' : 'text-white'
       )}>
+      <div className="w-full max-w-md flex flex-col gap-4 my-auto">
+        <button
+          type="button"
+          onClick={() => {
+            useCognitiveStore.getState().reset();
+            navigate('/');
+          }}
+          className={cn(
+            'self-start inline-flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-full border shadow-md transition-all hover:scale-105',
+            theme === 'light'
+              ? 'bg-white/70 border-white/40 text-slate-900 hover:bg-white/90'
+              : 'bg-slate-950/70 border-slate-700/50 text-white hover:bg-slate-900/90'
+          )}
+        >
+          <ArrowRight className="w-4 h-4 rotate-180" /> Volver al inicio
+        </button>
         <div className={cn(
-          "w-full max-w-md space-y-8 bento-card p-10 backdrop-blur-2xl border shadow-2xl relative overflow-hidden",
+          "w-full space-y-8 bento-card p-10 backdrop-blur-2xl border shadow-2xl relative overflow-hidden",
           theme === 'light'
-            ? 'bg-white/90 border-white/20 text-slate-900'
-            : 'bg-slate-950/95 border-slate-700/70 text-white'
+            ? 'bg-white/70 border-white/40 text-slate-900'
+            : 'bg-slate-950/70 border-slate-700/50 text-white'
         )}>
           <button
             type="button"
@@ -222,17 +243,6 @@ export function StudentProfile() {
                     >
                       {isLoading ? 'Accediendo...' : 'Ingresar al Perfil'}
                     </button>
-                    
-                    <button
-                      type="button"
-                      onClick={() => {
-                        useCognitiveStore.getState().reset();
-                        navigate('/');
-                      }}
-                      className="w-full flex justify-center py-3 px-4 rounded-2xl text-xs font-black text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-md active:scale-95"
-                    >
-                      Volver al inicio
-                    </button>
                   </div>
                 </form>
               )}
@@ -322,22 +332,12 @@ export function StudentProfile() {
                     </button>
 
                     <div className="flex flex-col items-center gap-2">
-                      <button 
-                        type="button" 
-                        onClick={() => { setAuthMode('login'); setAuthError(null); }} 
+                      <button
+                        type="button"
+                        onClick={() => { setAuthMode('login'); setAuthError(null); }}
                         className="text-xs font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-2"
                       >
                         <LogIn className="w-3 h-3" /> Volver al Inicio de Sesión
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={() => {
-                          useCognitiveStore.getState().reset();
-                          navigate('/');
-                        }}
-                        className="w-full flex justify-center py-3 px-4 rounded-2xl text-xs font-black text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-md active:scale-95 uppercase tracking-widest"
-                      >
-                        Volver al inicio
                       </button>
                     </div>
                   </div>
@@ -347,216 +347,26 @@ export function StudentProfile() {
           </AnimatePresence>
         </div>
       </div>
+      </div>
+      </WalkingScene>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto py-8 px-4 sm:px-0">
-      {/* Saludo */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-5"
-      >
-        <div className="w-14 h-14 rounded-lg overflow-hidden border border-outline-variant shrink-0 bg-primary/10">
-          <img
-            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name + ' ' + user.lastName)}&background=random&color=fff&bold=true&size=200`}
-            alt={`${user.name} ${user.lastName}`}
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div>
-          <p className="ui-sans text-sm font-medium text-on-surface-variant">Tu espacio personal</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-on-surface">
-            Hola, {user.name}
-          </h2>
-        </div>
-      </motion.div>
-
-      {/* Tranquilidad: es un análisis, no se califica */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className="bento-card p-6 sm:p-8"
-      >
-        <div className="flex gap-4 items-start">
-          <div className="w-11 h-11 rounded-lg bg-secondary/15 text-secondary flex items-center justify-center shrink-0">
-            <Heart className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-on-surface mb-1.5">
-              Tranquilo: esto no se califica
-            </h3>
-            <p className="ui-sans text-sm text-on-surface-variant leading-relaxed">
-              Meta-Pathfinder es un <strong>análisis metacognitivo</strong>, no una prueba con nota.
-              Solo mira cómo aprendes, como cuando un profesor pregunta «¿cómo te sientes con este tema?».
-              No hay respuestas trampa ni castigo por equivocarte.
-            </p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Cómo ayuda */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <h3 className="text-xs font-black uppercase tracking-[0.15em] text-on-surface-variant/60 mb-4 px-1">
-          ¿Cómo te ayuda esto?
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {[
-            {
-              icon: Brain,
-              color: 'primary',
-              title: 'Conocerte como aprendiz',
-              text: 'Descubrirás qué tan bien calibras tu confianza: si crees que sabes algo y realmente lo sabes, o si te falta practicar un poco más.',
-            },
-            {
-              icon: Compass,
-              color: 'secondary',
-              title: 'Estrategias que sí funcionan',
-              text: 'Probarás herramientas metacognitivas (planificar, pausar, reflexionar) mientras haces retos de tecnología — como en clase, pero a tu ritmo.',
-            },
-            {
-              icon: Coffee,
-              color: 'tertiary',
-              title: 'Sin presión de nota',
-              text: 'No hay calificación definitiva. Lo que importa es cómo piensas mientras trabajas, no si aciertas a la primera.',
-            },
-            {
-              icon: ShieldCheck,
-              color: 'primary',
-              title: 'Retos variados y justos',
-              text: 'El sistema te asigna un reto al azar del nivel. Es sorteo, no selección tuya — todos pueden tocar actividades distintas.',
-            },
-          ].map((item, i) => (
-            <div
-              key={i}
-              className="bento-card p-5 bg-white border border-outline-variant/20 rounded-2xl flex gap-4"
-            >
-              <div className={cn(
-                'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
-                item.color === 'primary' && 'bg-primary/10 text-primary',
-                item.color === 'secondary' && 'bg-secondary/10 text-secondary',
-                item.color === 'tertiary' && 'bg-tertiary/10 text-tertiary',
-              )}>
-                <item.icon className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-sm font-black text-on-surface mb-1">{item.title}</p>
-                <p className="text-xs text-on-surface-variant leading-relaxed font-medium">{item.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Qué vas a hacer */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-        className="bento-card p-6 sm:p-8 bg-surface-container-low/60 border border-outline-variant/20 rounded-[1.75rem]"
-      >
-        <div className="flex items-center gap-2 mb-5">
-          <HelpCircle className="w-5 h-5 text-primary" />
-          <h3 className="text-base font-black text-on-surface">¿Qué vas a hacer? (en pocas palabras)</h3>
-        </div>
-        <ol className="space-y-4">
-          {[
-            'Leer con calma de qué trata el reto — te lo explicamos paso a paso, como un profesor.',
-            'Responder unas preguntas cortas sobre cómo te sientes (no hay respuestas correctas).',
-            'Hacer una actividad de tecnología con herramientas de apoyo a tu lado.',
-            'Reflexionar al final y, si quieres, elegir una estrategia para el siguiente nivel.',
-          ].map((step, i) => (
-            <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium leading-relaxed">
-              <span className="w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center shrink-0">
-                {i + 1}
-              </span>
-              {step}
-            </li>
-          ))}
-        </ol>
-        <p className="mt-5 text-xs text-on-surface-variant/80 italic border-t border-outline-variant/20 pt-4">
-          Tómate el tiempo que necesites. Puedes pausar mentalmente entre pasos — no hay cronómetro que te apure.
-        </p>
-      </motion.div>
-
-      {/* Progreso + CTA */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bento-card p-6 sm:p-8 bg-white border border-primary/10 rounded-[1.75rem] shadow-lg shadow-primary/5"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="flex-1">
-            <h3 className="text-xs font-black uppercase tracking-[0.15em] text-on-surface-variant/60 mb-3">
-              Tu recorrido {hasStarted ? `· Nivel ${currentLevel}` : ''}
-            </h3>
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              <div className={cn('h-2 rounded-full transition-all', phase1Complete ? 'bg-secondary' : hasStarted ? 'bg-primary' : 'bg-outline-variant/30')} />
-              <div className={cn('h-2 rounded-full transition-all', phase2Complete ? 'bg-secondary' : phase1Complete ? 'bg-primary/60' : 'bg-outline-variant/30')} />
-              <div className={cn('h-2 rounded-full transition-all', phase3Complete ? 'bg-secondary' : phase2Complete ? 'bg-primary/60' : 'bg-outline-variant/30')} />
-            </div>
-            <div className="grid grid-cols-3 gap-1 text-[10px] font-bold text-on-surface-variant">
-              <span className={phase1Complete ? 'text-secondary' : ''}>Autopercepción</span>
-              <span className={cn('text-center', phase2Complete && 'text-secondary')}>Actividad</span>
-              <span className={cn('text-right', phase3Complete && 'text-secondary')}>Reflexión</span>
-            </div>
-            {!hasStarted && (
-              <p className="text-xs text-on-surface-variant mt-3 font-medium">
-                Aún no has empezado — cuando pulses «Comenzar», te guiamos desde el principio.
-              </p>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={handleBeginDiagnosis}
-            className="w-full sm:w-auto px-10 py-5 bg-primary text-on-primary rounded-2xl font-black text-base shadow-xl shadow-primary/25 hover:scale-[1.02] transition-all flex items-center justify-center gap-3 active:scale-95 shrink-0"
-          >
-            <Play className="w-5 h-5 fill-current" />
-            {beginButtonLabel}
-            <ArrowRight className="w-5 h-5" />
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Métricas solo si ya avanzó — sin alarmar */}
-      {hasStarted && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-        >
-          <div className="bento-card p-5 bg-surface-container-low/40 border border-outline-variant/20 rounded-2xl text-center">
-            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Tu calibración</p>
-            <p className="text-3xl font-black text-on-surface">{Math.round(calibration * 100)}%</p>
-            <p className="text-[10px] text-on-surface-variant/70 mt-1">Qué tan alineada está tu confianza con tu desempeño</p>
-          </div>
-          <div className="bento-card p-5 bg-surface-container-low/40 border border-outline-variant/20 rounded-2xl text-center">
-            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Esfuerzo mental</p>
-            <p className="text-3xl font-black text-on-surface">{Math.round(cognitiveLoad * 100)}%</p>
-            <p className="text-[10px] text-on-surface-variant/70 mt-1">Solo informativo — no es bueno ni malo</p>
-          </div>
-          <div className="bento-card p-5 bg-surface-container-low/40 border border-outline-variant/20 rounded-2xl text-center">
-            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Preparación</p>
-            <p className="text-3xl font-black text-on-surface">{Math.round(useCognitiveStore.getState().transferReadiness * 100)}%</p>
-            <p className="text-[10px] text-on-surface-variant/70 mt-1">Cómo vas integrando lo aprendido</p>
-          </div>
-        </motion.div>
-      )}
-
-      <div className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/40 pb-4">
-        <Sparkles className="w-3 h-3" />
-        Meta-Pathfinder · Análisis metacognitivo
-        <CheckCircle2 className="w-3 h-3" />
-      </div>
-    </div>
+    <StudentHome
+      name={user.name}
+      hasStarted={hasStarted}
+      level={currentLevel}
+      steps={[phase1Complete, phase2Complete, phase3Complete]}
+      ctaLabel={beginButtonLabel}
+      onBegin={handleBeginDiagnosis}
+      metrics={{
+        calibration: Math.round(calibration * 100),
+        load: Math.round(cognitiveLoad * 100),
+        readiness: Math.round(useCognitiveStore.getState().transferReadiness * 100),
+      }}
+    />
   );
 }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { ShieldAlert, Brain, Sparkles, CheckCircle2, Clock } from 'lucide-react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 
@@ -31,7 +31,6 @@ export function MetacognitiveBrakeModal() {
   if (!isReflexiveBrakeActive) return null;
 
   return (
-    <AnimatePresence>
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -75,16 +74,15 @@ export function MetacognitiveBrakeModal() {
           >
             {canDismiss ? (
               <>
-                Confirmar y Continuar <CheckCircle2 className="w-5 h-5" />
+                <span>Confirmar y Continuar</span> <CheckCircle2 className="w-5 h-5" />
               </>
             ) : (
               <>
-                Reflexionando ({countdown}s)... <Sparkles className="w-4 h-4 animate-spin" />
+                <span>{`Reflexionando (${countdown}s)...`}</span> <Sparkles className="w-4 h-4 animate-spin" />
               </>
             )}
           </button>
         </motion.div>
       </div>
-    </AnimatePresence>
   );
 }

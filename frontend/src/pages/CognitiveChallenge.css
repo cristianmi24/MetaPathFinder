@@ -27,13 +27,13 @@
 .fb-root.clean-ui {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 50px);
+  min-height: calc(100vh - 64px);
   background: var(--fb-bg);
   color: var(--fb-text);
   font-family: var(--font-sans);
   overflow: hidden;
   transition: background 0.3s ease, color 0.3s ease;
-  margin-top: 50px;
+  margin-top: 0;
 }
 
 /* Layout */
@@ -56,7 +56,7 @@
   .fb-root.clean-ui {
     overflow-y: auto;
     height: auto;
-    min-height: calc(100vh - 50px);
+    min-height: calc(100vh - 64px);
   }
 
   .fb-layout {

@@ -22,6 +22,8 @@ _registration_lock = asyncio.Lock()
 SECRET_KEY = settings.secret_key
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 horas
+# Versión vigente de los Términos y la Política de Privacidad (debe coincidir con frontend/src/data/legalConfig.ts)
+CURRENT_TERMS_VERSION = "1.0"
 
 
 def create_access_token(data: dict) -> str:
@@ -66,6 +68,8 @@ async def register(
         raise HTTPException(status_code=400, detail="Invalid role. Must be student or teacher")
     if not payload.terms_accepted:
         raise HTTPException(status_code=400, detail="Debes aceptar los Términos y Condiciones y la Política de Tratamiento de Datos Personales")
+    if not payload.guardian_declaration:
+        raise HTTPException(status_code=400, detail="Debes declarar que eres mayor de edad o que cuentas con la autorización de tu representante legal")
     password_hash = await asyncio.to_thread(pwd_context.hash, payload.password)
     async with _registration_lock:
         result = await db.execute(select(User).where(User.email == payload.email))
@@ -79,6 +83,8 @@ async def register(
             password_hash=password_hash,
             terms_accepted=True,
             terms_accepted_at=datetime.now(timezone.utc),
+            terms_version=payload.terms_version or CURRENT_TERMS_VERSION,
+            guardian_declaration=True,
         )
         db.add(user)
         await db.commit()

@@ -531,12 +531,12 @@ export function Activities() {
                         <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Encuadre Metacognitivo (Preguntas JOL)</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="p-4 bg-surface-container/50 border border-outline-variant/20 rounded-2xl">
-                            <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 rounded font-mono text-[9px] font-bold block w-fit mb-2">JOL PRE-ESTUDIO</span>
+                            <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 rounded font-mono text-[9px] font-bold block w-fit mb-2">JOL INICIAL</span>
                             <p className="text-xs text-on-surface font-semibold mb-2">{selectedChallenge.jol_esp_1.pregunta}</p>
                             <span className="text-[10px] text-gray-500 font-mono">Escala: {selectedChallenge.jol_esp_1.escala}</span>
                           </div>
                           <div className="p-4 bg-surface-container/50 border border-outline-variant/20 rounded-2xl">
-                            <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-500 rounded font-mono text-[9px] font-bold block w-fit mb-2">JOL POST-ESTUDIO</span>
+                            <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-500 rounded font-mono text-[9px] font-bold block w-fit mb-2">JOL FINAL</span>
                             <p className="text-xs text-on-surface font-semibold mb-2">{selectedChallenge.jol_esp_2.pregunta}</p>
                             <span className="text-[10px] text-gray-500 font-mono">Escala: {selectedChallenge.jol_esp_2.escala}</span>
                           </div>

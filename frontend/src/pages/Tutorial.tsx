@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { CircleGauge, MousePointerClick, LineChart, ChevronRight } from 'lucide-react';
+import { CircleGauge, MousePointerClick, LineChart, ChevronRight, Shuffle, Play } from 'lucide-react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,72 +16,65 @@ export function Tutorial() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-10 px-5">
+    <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bento-card p-8 md:p-10"
+        className="bento-card overflow-hidden"
       >
-        <span className="ui-sans inline-block text-xs font-semibold uppercase tracking-widest text-primary mb-3">
-          Cómo funciona
-        </span>
-        <h1 className="text-2xl md:text-3xl font-semibold text-on-surface leading-tight">
-          Un <span className="text-primary italic">análisis metacognitivo</span>, no una prueba
-        </h1>
-        <p className="mt-3 text-on-surface-variant leading-relaxed">
-          No se califica y no hay nota. Solo comparamos lo que <em>crees</em> que sabes con lo
-          que ocurre cuando lo haces. Son 3 momentos:
-        </p>
-
-        <div className="mt-7 grid gap-3">
-          <Step
-            n="1"
-            icon={CircleGauge}
-            title="Antes — cómo te sientes"
-            desc="Respondes 5 preguntas rápidas sobre tu confianza (JOL). No hay respuestas correctas."
-          />
-          <Step
-            n="2"
-            icon={MousePointerClick}
-            title="Durante — la actividad"
-            desc="Resuelves un reto interactivo: arrastrar, ordenar, escribir o completar código."
-          />
-          <Step
-            n="3"
-            icon={LineChart}
-            title="Después — tu calibración"
-            desc="Ves si tu confianza inicial coincidió con tu desempeño real, y qué ajustar."
-          />
-        </div>
-
-        <div className="mt-6 grid gap-4 md:grid-cols-[1fr_260px] md:items-start">
-          <div className="ui-sans rounded-md border border-outline-variant/60 p-4 text-sm text-on-surface-variant leading-relaxed">
-            <p className="mb-2">
-              <strong className="text-on-surface">El reto se asigna al azar</strong> según tu nivel
-              (Básico, Medio o Avanzado). Cada sesión puede ser distinta.
+        <div className="grid lg:grid-cols-[1.25fr_1fr]">
+          {/* Texto */}
+          <div className="p-6 sm:p-8 lg:p-10">
+            <span className="ui-sans inline-block text-[11px] font-semibold uppercase tracking-[0.18em] text-primary bg-primary/10 px-3 py-1 rounded-md">
+              Cómo funciona
+            </span>
+            <h1 className="mt-4 text-3xl sm:text-4xl font-semibold leading-tight text-on-surface">
+              Un <span className="text-primary italic">análisis</span>, no una prueba
+            </h1>
+            <p className="ui-sans mt-2 text-on-surface-variant">
+              No se califica. Solo comparas lo que crees con lo que haces.
             </p>
-            <p className="font-medium text-on-surface mb-1">Cómo responder las preguntas JOL</p>
-            <ul className="list-disc pl-4 space-y-1">
-              <li>Escala 1–10 o porcentaje: elige el valor y pulsa «Continuar».</li>
-              <li>Minutos o intentos: escribe un número y pulsa «Continuar».</li>
-              <li>Opciones de texto: haz clic en la frase que te describa.</li>
-            </ul>
+
+            <ol className="mt-7 space-y-5">
+              <Step n="1" icon={CircleGauge} tone="primary" title="Antes" desc="5 preguntas rápidas sobre tu confianza (JOL)." />
+              <Step n="2" icon={MousePointerClick} tone="secondary" title="Durante" desc="Un reto interactivo con herramientas de apoyo." />
+              <Step n="3" icon={LineChart} tone="tertiary" title="Después" desc="Ves si tu confianza coincidió con tu desempeño." />
+            </ol>
+
+            <div className="ui-sans mt-7 flex flex-wrap gap-2 text-xs text-on-surface-variant">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant/70 px-3 py-1.5">
+                <Shuffle className="w-3.5 h-3.5 text-primary" /> Reto al azar según tu nivel
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant/70 px-3 py-1.5">
+                <MousePointerClick className="w-3.5 h-3.5 text-primary" /> Elige o escribe y pulsa «Continuar»
+              </span>
+            </div>
           </div>
 
-          <div className="rounded-lg overflow-hidden border border-outline-variant/60 bg-surface-container-highest aspect-[9/16] w-full max-w-[260px] mx-auto">
-            <video
-              src="/Instructivoevalaucion.webm"
-              controls
-              preload="metadata"
-              className="w-full h-full object-cover"
-            />
+          {/* Video */}
+          <div className="p-6 sm:p-8 border-t lg:border-t-0 lg:border-l border-outline-variant/50 bg-surface-container-low/60 flex flex-col items-center justify-center gap-3">
+            <p className="ui-sans text-[11px] font-semibold uppercase tracking-[0.18em] text-on-surface-variant flex items-center gap-1.5">
+              <Play className="w-3 h-3 fill-current" /> Míralo en acción
+            </p>
+            <div className="w-full max-w-[250px] aspect-[9/16] rounded-xl overflow-hidden border border-outline-variant bg-surface-container-highest shadow-lg">
+              <video
+                src="/Instructivoevalaucion.webm"
+                controls
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="mt-8 flex justify-center border-t border-outline-variant/40 pt-6">
+        <div className="flex justify-center border-t border-outline-variant/50 px-6 py-5 bg-surface-container-lowest">
           <button
             onClick={startAfterTutorial}
-            className="ui-sans px-10 py-3.5 bg-primary text-on-primary rounded-md font-semibold text-base hover:opacity-90 transition-opacity active:scale-[0.99] flex items-center gap-2"
+            className="ui-sans w-full sm:w-auto sm:min-w-[260px] inline-flex items-center justify-center gap-2 px-10 py-3.5 bg-primary text-on-primary rounded-md font-semibold text-base hover:opacity-90 active:scale-[0.99] transition"
           >
             Empezar <ChevronRight className="w-5 h-5" />
           </button>
@@ -91,28 +84,36 @@ export function Tutorial() {
   );
 }
 
+const TONES: Record<string, string> = {
+  primary: 'bg-primary/10 text-primary',
+  secondary: 'bg-secondary/10 text-secondary',
+  tertiary: 'bg-tertiary/10 text-tertiary',
+};
+
 function Step({
   n,
   title,
   desc,
   icon: Icon,
+  tone,
 }: {
   n: string;
   title: string;
   desc: string;
+  tone: keyof typeof TONES;
   icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="flex gap-3.5 p-3.5 rounded-md border border-transparent hover:border-outline-variant/50 hover:bg-surface-container transition-colors">
-      <div className="ui-sans w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm shrink-0">
+    <li className="flex gap-4 items-start">
+      <span className={`ui-sans w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm shrink-0 ${TONES[tone]}`}>
         {n}
-      </div>
+      </span>
       <div>
-        <h3 className="font-semibold text-on-surface flex items-center gap-2 text-[0.95rem]">
-          {title} <Icon className="w-4 h-4 text-primary/50" />
+        <h3 className="text-lg font-semibold text-on-surface flex items-center gap-2 leading-tight">
+          {title} <Icon className="w-4 h-4 text-on-surface-variant" />
         </h3>
-        <p className="ui-sans text-sm text-on-surface-variant leading-relaxed">{desc}</p>
+        <p className="ui-sans text-sm text-on-surface-variant leading-relaxed mt-0.5">{desc}</p>
       </div>
-    </div>
+    </li>
   );
 }

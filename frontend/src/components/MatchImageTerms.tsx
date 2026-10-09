@@ -8,89 +8,98 @@ interface MatchItem {
   imgLabel: string;
   termName: string;
   benefit: string;
-  img: string;
+  icon: string;
+  benefitIcon: string;
 }
 
 const ITEMS: MatchItem[] = [
   {
     id: 'elec1',
+    icon: 'ti-bolt',
+    benefitIcon: 'ti-bulb',
     cat: 'Eléctrica',
     catBg: '#FAEEDA',
     catTxt: '#633806',
     imgLabel: 'Torres de transmisión',
     termName: 'Red eléctrica',
     benefit: 'Lleva luz a hogares, hospitales y escuelas',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Electrical_Transmission_Lines.jpg/320px-Electrical_Transmission_Lines.jpg',
   },
   {
     id: 'elec2',
+    icon: 'ti-sun',
+    benefitIcon: 'ti-leaf',
     cat: 'Eléctrica',
     catBg: '#FAEEDA',
     catTxt: '#633806',
     imgLabel: 'Paneles solares',
     termName: 'Energía solar',
     benefit: 'Genera electricidad limpia y reduce la contaminación',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Solar_panels_on_a_roof.jpg/320px-Solar_panels_on_a_roof.jpg',
   },
   {
     id: 'trans1',
+    icon: 'ti-train',
+    benefitIcon: 'ti-users',
     cat: 'Transporte',
     catBg: '#E6F1FB',
     catTxt: '#0C447C',
     imgLabel: 'Metro urbano',
     termName: 'Metro / tren urbano',
     benefit: 'Mueve miles de personas rápido y sin contaminar',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Metro_de_Medellin.jpg/320px-Metro_de_Medellin.jpg',
   },
   {
     id: 'trans2',
+    icon: 'ti-bridge',
+    benefitIcon: 'ti-route',
     cat: 'Transporte',
     catBg: '#E6F1FB',
     catTxt: '#0C447C',
     imgLabel: 'Puente vial',
     termName: 'Puente y viaducto',
     benefit: 'Conecta comunidades y acorta tiempos de viaje',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/GoldenGateBridge-001.jpg/320px-GoldenGateBridge-001.jpg',
   },
   {
     id: 'const1',
+    icon: 'ti-building-hospital',
+    benefitIcon: 'ti-heartbeat',
     cat: 'Construcción',
     catBg: '#EEEDFE',
     catTxt: '#3C3489',
     imgLabel: 'Hospital público',
     termName: 'Edificio de salud',
     benefit: 'Brinda atención médica a toda la comunidad',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Hospital_Nacional_de_Ni%C3%B1os_%28Costa_Rica%29.jpg/320px-Hospital_Nacional_de_Ni%C3%B1os_%28Costa_Rica%29.jpg',
   },
   {
     id: 'const2',
+    icon: 'ti-school',
+    benefitIcon: 'ti-book',
     cat: 'Construcción',
     catBg: '#EEEDFE',
     catTxt: '#3C3489',
     imgLabel: 'Escuela pública',
     termName: 'Infraestructura educativa',
     benefit: 'Garantiza educación de calidad para niños y jóvenes',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Escuela_publica.jpg/320px-Escuela_publica.jpg',
   },
   {
     id: 'agua1',
+    icon: 'ti-droplet',
+    benefitIcon: 'ti-glass',
     cat: 'Agua',
     catBg: '#E1F5EE',
     catTxt: '#085041',
     imgLabel: 'Planta potabilizadora',
     termName: 'Acueducto',
     benefit: 'Provee agua potable limpia y segura a los hogares',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Water_treatment_plant.jpg/320px-Water_treatment_plant.jpg',
   },
   {
     id: 'agua2',
+    icon: 'ti-pipe',
+    benefitIcon: 'ti-shield-check',
     cat: 'Agua',
     catBg: '#E1F5EE',
     catTxt: '#085041',
     imgLabel: 'Red de alcantarillado',
     termName: 'Alcantarillado',
     benefit: 'Evita inundaciones y enfermedades al drenar aguas residuales',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Sewer_drain.jpg/320px-Sewer_drain.jpg',
   },
 ];
 
@@ -193,41 +202,50 @@ export default function MatchImageTerms({ onValidation }: { onValidation?: (succ
   return (
     <div className="match-image-scoped">
       <style>{`
-.match-image-scoped .page{padding:1.2rem 1rem 2.5rem;background:var(--color-surface);color:var(--color-on-surface)}
-.match-image-scoped .hero{text-align:center;margin-bottom:1.4rem}
-.match-image-scoped .hero h1{font-size:21px;font-weight:500;margin:0}
-.match-image-scoped .hero p{font-size:13px;color:var(--color-on-surface-variant);margin-top:4px;line-height:1.5}
-.match-image-scoped .score-row{display:flex;gap:10px;justify-content:center;margin-bottom:1.4rem;flex-wrap:wrap}
-.match-image-scoped .score-pill{background:var(--color-surface-container);border:1px solid var(--color-outline-variant);border-radius:12px;padding:6px 14px;font-size:13px;font-weight:500;color:var(--color-on-surface-variant)}
-.match-image-scoped .score-pill b{color:var(--color-on-surface)}
-.match-image-scoped .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:1.4rem}
-.match-image-scoped .col{background:var(--color-surface-container-low);border:2px dashed var(--color-outline-variant);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
-.match-image-scoped .col-title{font-size:11px;font-weight:500;color:var(--color-on-surface-variant);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;text-align:center}
-.match-image-scoped .card{background:var(--color-surface);border:1.5px solid var(--color-outline-variant);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;text-align:center;user-select:none;margin:0}
-.match-image-scoped .card:hover{border-color:var(--color-primary);transform:translateY(-2px);box-shadow:0 8px 16px rgba(0,0,0,.05)}
-.match-image-scoped .card.selected{border-color:var(--color-primary);background:var(--color-secondary-container);color:var(--color-on-secondary-container);transform:scale(1.02);box-shadow:0 0 0 3px rgba(122,215,198,.3)}
-.match-image-scoped .card.matched{border-color:var(--color-secondary);background:var(--color-secondary-container);opacity:.6;cursor:default;transform:none;box-shadow:none}
-.match-image-scoped .card img{width:60px;height:60px;object-fit:cover;border-radius:6px;margin-bottom:8px}
-.match-image-scoped .card-text{font-size:13px;font-weight:500;line-height:1.4}
-.match-image-scoped .actions{display:flex;justify-content:center;margin-bottom:1rem}
-.match-image-scoped .btn{padding:9px 18px;border:1px solid var(--color-outline-variant);background:transparent;color:var(--color-on-surface-variant);border-radius:8px;font-size:13px;cursor:pointer;transition:all .2s}
+.match-image-scoped{font-family:var(--font-sans);color:var(--color-on-surface)}
+.match-image-scoped .page{padding:1rem 1rem 1.5rem}
+.match-image-scoped .hero{text-align:center;margin-bottom:.9rem}
+.match-image-scoped .hero h1{font-family:var(--font-serif);font-size:22px;font-weight:600;margin:0}
+.match-image-scoped .hero p{font-size:13px;color:var(--color-on-surface-variant);margin:4px 0 0;line-height:1.5}
+.match-image-scoped .score-row{display:flex;gap:8px;justify-content:center;margin-bottom:.8rem;flex-wrap:wrap}
+.match-image-scoped .score-box{display:flex;align-items:baseline;gap:8px;background:var(--color-surface-container);border:1px solid var(--color-outline-variant);border-radius:999px;padding:5px 14px}
+.match-image-scoped .score-box .lbl{font-size:11px;color:var(--color-on-surface-variant)}
+.match-image-scoped .score-box .val{font-size:15px;font-weight:700}
+.match-image-scoped .result-banner{display:none;text-align:center;font-size:13px;font-weight:600;padding:10px 14px;border-radius:12px;margin-bottom:.8rem}
+.match-image-scoped .result-banner.show{display:block}
+.match-image-scoped .result-banner.win{background:rgba(29,158,117,.14);color:#0f7a5a}
+.match-image-scoped .result-banner.lose{background:rgba(220,38,38,.12);color:#b91c1c}
+.match-image-scoped .hint{text-align:center;font-size:13px;font-weight:600;color:var(--color-primary);margin:0 0 .9rem;min-height:20px}
+.match-image-scoped .game-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.match-image-scoped .col-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-on-surface-variant);margin:0 0 8px 4px}
+.match-image-scoped .img-col,.match-image-scoped .term-col{display:flex;flex-direction:column;gap:8px}
+.match-image-scoped .img-card,.match-image-scoped .term-card{position:relative;display:flex;align-items:center;gap:12px;min-height:58px;padding:8px 12px;border-radius:14px;background:var(--color-surface);border:1.5px solid var(--color-outline-variant);cursor:pointer;user-select:none;transition:transform .15s,border-color .15s,box-shadow .15s,background .15s}
+.match-image-scoped .img-card:hover,.match-image-scoped .term-card:hover{border-color:var(--color-primary);transform:translateY(-1px)}
+.match-image-scoped .img-card.selected{border-color:var(--color-primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--color-primary) 22%,transparent);background:color-mix(in srgb,var(--color-primary) 8%,var(--color-surface))}
+.match-image-scoped .img-card.matched,.match-image-scoped .term-card.matched{opacity:.55;cursor:default;transform:none;background:rgba(29,158,117,.08)}
+.match-image-scoped .ico{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
+.match-image-scoped .img-info{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+.match-image-scoped .img-label{font-size:13px;font-weight:600;line-height:1.25}
+.match-image-scoped .cat-tag{align-self:flex-start;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 8px;border-radius:999px}
+.match-image-scoped .matched-badge{width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.match-image-scoped .term-name{font-size:13px;font-weight:700}
+.match-image-scoped .term-benefit{font-size:11.5px;color:var(--color-on-surface-variant);line-height:1.35;margin-top:2px}
+.match-image-scoped .actions{display:flex;justify-content:center;margin-top:1rem}
+.match-image-scoped .btn{padding:8px 18px;border:1px solid var(--color-outline-variant);background:transparent;color:var(--color-on-surface-variant);border-radius:999px;font-size:13px;font-weight:600;cursor:pointer}
 .match-image-scoped .btn:hover{background:var(--color-surface-container);color:var(--color-on-surface)}
-.match-image-scoped .feedback{text-align:center;font-size:14px;font-weight:500;padding:12px 16px;border-radius:8px;display:none;margin-bottom:1rem}
-.match-image-scoped .feedback.show{display:block}
-.match-image-scoped .feedback.win{background:var(--color-secondary-container);color:var(--color-secondary)}
-.match-image-scoped .feedback.lose{background:var(--color-error-container);color:var(--color-error)}
+@media (max-width:640px){.match-image-scoped .game-grid{gap:8px}.match-image-scoped .img-card,.match-image-scoped .term-card{padding:8px}.match-image-scoped .ico{width:32px;height:32px;font-size:16px}.match-image-scoped .term-benefit{display:none}}
       `}</style>
 
       <div className="page">
         <div className="hero">
-          <h1>🏙️ Une la infraestructura</h1>
-          <p>Toca una imagen y luego el término que le corresponde.<br />¿Sabes cómo mejora la vida de las personas?</p>
+          <h1>Une la infraestructura</h1>
+          <p>Toca un ícono y luego el término que le corresponde. ¿Sabes cómo mejora la vida de las personas?</p>
         </div>
 
         <div className="score-row">
           <div className="score-box"><div className="lbl">Aciertos</div><div className="val">{hits}</div></div>
           <div className="score-box"><div className="lbl">Intentos</div><div className="val">{tries}</div></div>
-          <div className="score-box"><div className="lbl">Intentos restantes</div><div className="val">{remainingAttempts}</div></div>
+          <div className="score-box"><div className="lbl">Restantes</div><div className="val">{remainingAttempts}</div></div>
         </div>
 
         <div className={`result-banner ${banner.type ? `show ${banner.type}` : ''}`}>
@@ -243,13 +261,16 @@ export default function MatchImageTerms({ onValidation }: { onValidation?: (succ
                 <div
                   key={item.id}
                   className={`img-card ${isMatched(item.id) ? 'matched' : ''} ${selectedImgId === item.id ? 'selected' : ''}`}
-                  style={{ borderColor: isMatched(item.id) ? '#1D9E75' : selectedImgId === item.id ? '#185FA5' : undefined }}
                   onClick={() => selectImg(item.id)}
                 >
-                  <img src={item.img} alt={item.imgLabel} />
-                  <div className="cat-tag" style={{ background: item.catBg, color: item.catTxt }}>{item.cat}</div>
+                  <span className="ico" style={{ background: item.catBg, color: item.catTxt }}>
+                    <i className={`ti ${item.icon}`} aria-hidden="true" />
+                  </span>
+                  <div className="img-info">
+                    <div className="img-label">{item.imgLabel}</div>
+                    <div className="cat-tag" style={{ background: item.catBg, color: item.catTxt }}>{item.cat}</div>
+                  </div>
                   {isMatched(item.id) && <div className="matched-badge">✓</div>}
-                  <div className="img-label">{item.imgLabel}</div>
                 </div>
               ))}
             </div>
@@ -262,17 +283,26 @@ export default function MatchImageTerms({ onValidation }: { onValidation?: (succ
                 <div
                   key={item.id}
                   className={`term-card ${isMatched(item.id) ? 'matched' : ''}`}
-                  style={{ borderColor: isMatched(item.id) ? '#1D9E75' : undefined }}
                   onClick={() => selectTerm(item.id)}
                 >
-                  <div className="term-name">{item.termName}</div>
-                  <div className="term-benefit">{item.benefit}</div>
+                  <span className="ico" style={{ background: 'var(--color-surface-container)', color: 'var(--color-primary)' }}>
+                    <i className={`ti ${item.benefitIcon}`} aria-hidden="true" />
+                  </span>
+                  <div>
+                    <div className="term-name">{item.termName}</div>
+                    <div className="term-benefit">{item.benefit}</div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
+        {gameOver && (
+          <div className="actions">
+            <button type="button" className="btn" onClick={resetGame}>Jugar de nuevo</button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { useTheme } from '../ThemeContext';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { TermsCheckbox } from '../components/TermsAndConditions';
+import { LEGAL } from '../data/legalConfig';
 
 interface UserEntry {
   id: string;
@@ -93,7 +94,7 @@ export function RegisteredUsers() {
     }
     setCreating(true);
     try {
-      await api.register({ ...createForm, terms_accepted: createTermsAccepted });
+      await api.register({ ...createForm, terms_accepted: createTermsAccepted, guardian_declaration: createTermsAccepted, terms_version: LEGAL.version });
       setShowCreateForm(false);
       setCreateForm({ name: '', last_name: '', email: '', password: '', role: 'student' });
       setShowPassword(false);

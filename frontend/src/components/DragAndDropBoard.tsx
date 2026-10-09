@@ -67,30 +67,38 @@ const getChallengeData = (id: string) => {
   return { items, correctOrder };
 };
 
-function SortableItem({ id, item }: { id: string, item: string }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id });
+function SortableItem({ id, item, index, done }: { id: string; item: string; index: number; done: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    zIndex: isDragging ? 20 : undefined,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-4 bg-surface-container-highest p-4 rounded-xl border border-outline-variant/30 shadow-sm mb-3"
+      {...attributes}
+      {...listeners}
+      className={`group flex cursor-grab touch-none items-center gap-3 rounded-xl border px-3 py-1.5 ${
+        isDragging
+          ? 'border-primary bg-primary/10 shadow-xl'
+          : done
+            ? 'border-emerald-500/50 bg-emerald-500/10'
+            : 'border-outline-variant/50 bg-surface hover:border-primary/60 hover:shadow-md'
+      }`}
     >
-      <button {...attributes} {...listeners} className="touch-none text-on-surface-variant/50 hover:text-primary cursor-grab">
-        <GripVertical className="w-5 h-5" />
-      </button>
-      <span className="font-medium text-on-surface">{item}</span>
+      <span
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+          done ? 'bg-emerald-500 text-white' : 'bg-primary/10 text-primary'
+        }`}
+      >
+        {index + 1}
+      </span>
+      <span className="flex-1 text-[13px] leading-snug text-on-surface">{item}</span>
+      <GripVertical className="h-4 w-4 shrink-0 text-on-surface-variant/40 group-hover:text-primary" />
     </div>
   );
 }
@@ -108,7 +116,7 @@ export function DragAndDropBoard({ challengeId, onValidation }: DragAndDropBoard
   }, [challengeId]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -122,15 +130,14 @@ export function DragAndDropBoard({ challengeId, onValidation }: DragAndDropBoard
         const oldIndex = items.indexOf(active.id as string);
         const newIndex = items.indexOf(over.id as string);
         const newItems = arrayMove(items, oldIndex, newIndex);
-        
+
         const success = JSON.stringify(newItems) === JSON.stringify(correctOrder);
         setIsCorrect(success);
         onValidation(success);
-        
+
         return newItems;
       });
     } else {
-      // Validate even if dropped in same place to re-trigger if needed
       const success = JSON.stringify(items) === JSON.stringify(correctOrder);
       setIsCorrect(success);
       onValidation(success);
@@ -138,36 +145,41 @@ export function DragAndDropBoard({ challengeId, onValidation }: DragAndDropBoard
   };
 
   return (
-    <div className="p-8 max-w-xl mx-auto w-full flex flex-col justify-center h-full">
-      <div className="mb-8 text-center">
-        <h4 className="text-xl font-black text-on-surface mb-2">Ordena los bloques lógicos</h4>
-        <p className="text-sm text-on-surface-variant">
-          Arrastra y suelta las piezas para organizar la secuencia correcta del algoritmo o proceso.
-        </p>
-      </div>
-      
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={items}
-          strategy={verticalListSortingStrategy}
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 p-3 md:p-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <div className="min-w-0 flex-1">
+          <h4 className="font-serif text-lg font-semibold text-on-surface">Ordena los pasos</h4>
+          <p className="text-[13px] text-on-surface-variant">
+            Arrastra cada tarjeta hasta su lugar: del primer paso (arriba) al último (abajo).
+          </p>
+        </div>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-colors ${
+            isCorrect ? 'bg-emerald-500 text-white' : 'bg-surface-container-high text-on-surface-variant'
+          }`}
         >
-          <div className={`p-6 rounded-2xl border-2 transition-colors duration-300 ${isCorrect ? 'bg-primary/5 border-primary/40' : 'bg-surface border-outline-variant/20'}`}>
-            {items.map((id) => (
-              <SortableItem key={id} id={id} item={id} />
+          <i className={`ti ${isCorrect ? 'ti-check' : 'ti-arrows-sort'}`} />
+          {isCorrect ? '¡Orden correcto!' : `${items.length} pasos`}
+        </span>
+      </div>
+
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={items} strategy={verticalListSortingStrategy}>
+          <div
+            className={`flex flex-col gap-1.5 rounded-xl border p-2 transition-colors duration-300 ${
+              isCorrect ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-outline-variant/40 bg-surface-container-low'
+            }`}
+          >
+            {items.map((id, i) => (
+              <SortableItem key={id} id={id} item={id} index={i} done={isCorrect} />
             ))}
           </div>
         </SortableContext>
       </DndContext>
 
-      <div className={`mt-6 text-center transition-all duration-300 ${isCorrect ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-        <div className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/30">
-          <i className="ti ti-check text-xl"></i> ¡Orden Correcto! Ya puedes terminar el reto.
-        </div>
-      </div>
+      {isCorrect && (
+        <p className="text-center text-[13px] font-semibold text-emerald-600">Ya puedes verificar y enviar el reto.</p>
+      )}
     </div>
   );
 }

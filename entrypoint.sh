@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-SOCKET_PATH=/tmp/mp-python.sock
+SOCKET_PATH=${PYTHON_SOCKET_PATH:-/tmp/mp-python.sock}
+export PYTHON_SOCKET_PATH="$SOCKET_PATH"
 WORKERS=${WEB_CONCURRENCY:-3}
 
 # Iniciar Python FastAPI en segundo plano (Unix socket)

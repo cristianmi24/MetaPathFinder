@@ -28,6 +28,12 @@ async def lifespan(app: FastAPI):
         await conn.execute(text(
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ"
         ))
+        await conn.execute(text(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_version VARCHAR(20)"
+        ))
+        await conn.execute(text(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS guardian_declaration BOOLEAN NOT NULL DEFAULT FALSE"
+        ))
 
     async with async_session_factory() as session:
         result = await session.execute(select(User).where(User.email == "admin@gmail.com"))

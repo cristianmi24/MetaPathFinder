@@ -72,7 +72,7 @@ export function CognitiveChallenge() {
     ? (nuevasEstrategias.find(e => e.id === activeStrategyId) || null)
     : null;
 
-  const boardWrapperClass = "flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-lg overflow-y-auto overflow-x-hidden p-1 md:p-4 min-h-0 relative border border-outline-variant/40";
+  const boardWrapperClass = "flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-lg overflow-y-auto overflow-x-hidden p-1 md:p-3 min-h-0 relative border border-outline-variant/40 [&>*]:min-h-0 [&>*]:w-full [&>*]:flex-1";
 
   const getBoardType = (id: string): 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone' | 'ide' => {
     const mappings: Record<string, 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone' | 'ide'> = {
@@ -136,6 +136,8 @@ export function CognitiveChallenge() {
   const [strategyEvidence, setStrategyEvidence] = useState<Partial<StrategyEvidence>>({});
   
   const [showHint, setShowHint] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [toolsAttention, setToolsAttention] = useState(false);
   const [activeHint, setActiveHint] = useState<null | 1 | 2>(null);
   const [boardSuccess, setBoardSuccess] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
@@ -545,29 +547,65 @@ export function CognitiveChallenge() {
         {/* Zona Central: Tablero o Editor */}
         <div className="fb-editor-zone" id="tour-activity-area">
           {activeStrategy && (
-            <StrategyHelpToolkit
-              variant="floating"
-              challengeId={challenge.id}
-              strategy={activeStrategy}
-              seconds={seconds}
-              editCount={editCount}
-              errCount={errCount}
-              totalRuns={totalRuns}
-              hintCount={hintCount}
-              clickCount={clickCount}
-              isChallengeDone={isChallengeDone}
-              criteriaCount={challenge.criterios.length}
-              criteriaLabels={challenge.criterios}
-              jolInicial={jolInicial}
-              estimatedMinutes={estimatedMinutes}
-              isCodeChallenge={
-                !componentMap[challenge.id]
-                  ? (getBoardType(challenge.id) === 'code' || getBoardType(challenge.id) === 'ide')
-                  : ['RA-C1-N2', 'RA-C2-N1', 'RA-C2-N2', 'RA-C2-N3', 'RA-C3-N2', 'RA-C3-N3'].includes(challenge.id)
-              }
-              onEvidence={handleStrategyEvidence}
-            />
+            <>
+              <div
+                id="tour-strategy-panel"
+                className="fb-panel-title"
+                style={{ margin: 0, flexShrink: 0, background: 'var(--fb-bg)', transition: 'background .2s' }}
+              >
+                <i className={`ti ${activeStrategy.icon}`} aria-hidden="true" style={{ fontSize: '13px', color: activeStrategy.color }}></i>
+                <span style={{ color: activeStrategy.color }}>Herramientas de apoyo</span>
+                <span className="hidden truncate sm:inline" style={{ textTransform: 'none', letterSpacing: 0, opacity: 0.8 }}>
+                  · {toolsAttention && !toolsOpen ? 'toca revisar tu confianza' : activeStrategy.nombre}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { setToolsOpen((o) => !o); setToolsAttention(false); }}
+                  className="fb-live-badge"
+                  style={{
+                    marginLeft: 'auto',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    background: toolsOpen ? activeStrategy.color : activeStrategy.iconBg,
+                    borderColor: `${activeStrategy.color}${toolsAttention ? 'ff' : '66'}`,
+                    color: toolsOpen ? 'var(--bg)' : activeStrategy.color,
+                    boxShadow: toolsAttention ? `0 0 0 3px ${activeStrategy.color}33` : 'none',
+                  }}
+                >
+                  {toolsOpen ? 'Volver' : 'Abrir'}
+                </button>
+              </div>
+
+              {/* El panel permanece montado (oculto) para no perder lo que el estudiante anotó */}
+              <div className={toolsOpen ? 'min-h-0 flex-1 overflow-y-auto p-3 md:p-5' : 'hidden'}>
+                <StrategyHelpToolkit
+                  challengeId={challenge.id}
+                  strategy={activeStrategy}
+                  seconds={seconds}
+                  editCount={editCount}
+                  errCount={errCount}
+                  totalRuns={totalRuns}
+                  hintCount={hintCount}
+                  clickCount={clickCount}
+                  isChallengeDone={isChallengeDone}
+                  criteriaCount={challenge.criterios.length}
+                  criteriaLabels={challenge.criterios}
+                  jolInicial={jolInicial}
+                  estimatedMinutes={estimatedMinutes}
+                  isCodeChallenge={
+                    !componentMap[challenge.id]
+                      ? (getBoardType(challenge.id) === 'code' || getBoardType(challenge.id) === 'ide')
+                      : ['RA-C1-N2', 'RA-C2-N1', 'RA-C2-N2', 'RA-C2-N3', 'RA-C3-N2', 'RA-C3-N3'].includes(challenge.id)
+                  }
+                  onEvidence={handleStrategyEvidence}
+                  onAttention={() => setToolsAttention((prev) => (toolsOpen ? prev : true))}
+                  onClose={() => setToolsOpen(false)}
+                />
+              </div>
+            </>
           )}
+          <div className={toolsOpen ? 'hidden' : 'contents'}>
           {componentMap[challenge.id] ? (
             <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
               {React.cloneElement(componentMap[challenge.id] as any, {
@@ -667,6 +705,7 @@ export function CognitiveChallenge() {
               </div>
             </>
           )}
+          </div>
         </div>
 
         {/* Lateral Derecho: Métricas y Progreso */}
@@ -703,7 +742,7 @@ export function CognitiveChallenge() {
                 </div>
               ))}
               <div style={{ marginTop: 6, fontSize: 9, color: activeStrategy.color }}>
-                Panel flotante de herramientas (esquina inferior izquierda). Puedes moverlo o minimizarlo.
+                Ábrelas con el botón «Herramientas de apoyo», arriba de la actividad.
               </div>
             </div>
           )}

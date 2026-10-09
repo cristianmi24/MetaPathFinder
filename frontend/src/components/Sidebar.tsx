@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, GraduationCap, BarChart3, TestTube2, Settings, FileText, Compass, LogOut, User, Users } from 'lucide-react';
+import { LayoutDashboard, GraduationCap, BarChart3, TestTube2, Settings, FileText, Compass, LogOut, User, Users, ListChecks } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
@@ -15,6 +15,7 @@ export function Sidebar() {
     { icon: LayoutDashboard, label: 'Dashboards', path: '/admin', roles: ['admin', 'teacher'] },
     { icon: Users, label: 'Usuarios Registrados', path: '/registered-users', roles: ['admin', 'teacher'] },
     { icon: Compass, label: 'Actividades', path: '/activities', roles: ['admin', 'teacher'] },
+    { icon: ListChecks, label: 'Banco de JOL', path: '/jol-bank', roles: ['admin', 'teacher'] },
     { icon: User, label: 'Mi Perfil', path: '/profile', roles: ['student'] },
     { icon: GraduationCap, label: 'Tutorial', path: '/tutorial', roles: ['student'] },
     { icon: BarChart3, label: 'Analíticas', path: '/analytics', roles: ['student'] },

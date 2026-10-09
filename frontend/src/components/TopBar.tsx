@@ -16,13 +16,7 @@ export function TopBar() {
   const { theme, toggleTheme } = useTheme();
 
   const userName = user ? `${user.name} ${user.lastName}` : (role === 'student' ? 'Mateo Reatiga' : role === 'teacher' ? 'Prof. García' : 'Dra. Silva');
-  const userInitials = user ? `${user.name[0]}${user.lastName[0]}`.toUpperCase() : (role === 'student' ? 'MR' : role === 'teacher' ? 'PG' : 'DS');
-
-  const avatarUrl = user 
-    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random&color=fff&bold=true`
-    : (role === 'student' 
-        ? "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=150&auto=format&fit=crop" 
-        : "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop");
+  const userInitials = user ? `${user.name?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase() : (role === 'student' ? 'MR' : role === 'teacher' ? 'PG' : 'DS');
 
   const mobileItems = role === 'student'
     ? [
@@ -121,12 +115,7 @@ export function TopBar() {
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             >
               <div className="w-10 h-10 rounded-full border-2 border-primary/20 overflow-hidden group-hover:scale-105 transition-transform shadow-sm bg-surface-container flex items-center justify-center">
-                <img 
-                  src={avatarUrl} 
-                  alt={userInitials} 
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
+                <span className="ui-sans text-sm font-bold text-primary select-none">{userInitials}</span>
               </div>
             </button>
 

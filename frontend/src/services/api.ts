@@ -91,7 +91,7 @@ export const api = {
       '/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }
     ),
 
-  register: (data: { name: string; last_name: string; email: string; password: string; role?: string; terms_accepted: boolean }) =>
+  register: (data: { name: string; last_name: string; email: string; password: string; role?: string; terms_accepted: boolean; guardian_declaration: boolean; terms_version: string }) =>
     request<{ id: string; name: string; last_name: string; email: string; role: string; created_at: string }>(
       '/api/auth/register', { method: 'POST', body: JSON.stringify(data) }
     ),

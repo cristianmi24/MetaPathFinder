@@ -15,6 +15,7 @@ import { ChallengeCalibration } from './pages/ChallengeCalibration';
 import { MetacognitiveStrategies } from './pages/MetacognitiveStrategies';
 import { RegisteredUsers } from './pages/RegisteredUsers';
 import { Activities } from './pages/Activities';
+import { JolBank } from './pages/JolBank';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCognitiveTracking } from './hooks/useCognitiveTracking';
 import { usePageLeaveSave } from './hooks/usePhaseSync';
@@ -22,12 +23,13 @@ import { CognitiveBrain } from './components/CognitiveBrain';
 import { Home } from './pages/Home';
 import { NotFound } from './pages/NotFound';
 import { AdminLogin } from './pages/Admin';
+import { LegalPage } from './pages/Legal';
+import { LEGAL_ROUTES } from './data/legalConfig';
 import { useCognitiveStore } from './stores/useCognitiveStore';
 import { useEffect } from 'react';
 import { api } from './services/api';
 import { cn } from './lib/utils';
 
-import { BackgroundNetwork } from './components/BackgroundNetwork';
 import { StudentDashboard } from './pages/StudentDashboard';
 
 function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -103,8 +105,6 @@ function StudentLayout({ children }: { children: React.ReactNode }) {
 function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen h-screen w-screen overflow-hidden bg-[#0F172A]">
-      <BackgroundNetwork />
-      <CognitiveBrain />
       <main className="absolute inset-0 p-0 m-0 flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -123,12 +123,7 @@ function AuthLayout({ children }: { children: React.ReactNode }) {
 }
 
 function RootRedirect() {
-  return (
-    <>
-      <BackgroundNetwork />
-      <Home />
-    </>
-  );
+  return <Home />;
 }
 
 function ProtectedRoute({ children, requiredRole, redirectTo = '/profile' }: { children: React.ReactNode; requiredRole?: 'admin' | 'student' | 'teacher'; redirectTo?: string; }) {
@@ -154,10 +149,13 @@ function ProtectedRoute({ children, requiredRole, redirectTo = '/profile' }: { c
 }
 
 const KNOWN_PATHS = [
-  '/', '/admin-login', '/student', '/admin', '/profile', '/registered-users', '/activities',
+  '/', '/admin-login', '/student', '/admin', '/profile', '/registered-users', '/activities', '/jol-bank',
   '/experiments', '/analytics', '/tutorial', '/evaluation-prep', '/pretest', '/challenge',
   '/calibration', '/metacognitive-strategies', '/settings',
 ];
+
+// Páginas públicas: se muestran sin layout ni importar si hay sesión iniciada
+const PUBLIC_PATHS = ['/', LEGAL_ROUTES.terms, LEGAL_ROUTES.privacy];
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -200,7 +198,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   useCognitiveTracking(true);
   usePageLeaveSave();
 
-  if (location.pathname === '/') return <>{children}</>;
+  if (PUBLIC_PATHS.includes(location.pathname)) return <>{children}</>;
 
   if (!KNOWN_PATHS.includes(location.pathname)) return <NotFound />;
 
@@ -228,12 +226,15 @@ export default function App() {
       <AppLayout>
         <Routes>
           <Route path="/" element={<RootRedirect />} />
+          <Route path={LEGAL_ROUTES.terms} element={<LegalPage doc="terms" />} />
+          <Route path={LEGAL_ROUTES.privacy} element={<LegalPage doc="privacy" />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/student" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><StudentDashboard /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute requiredRole="admin" redirectTo="/admin-login"><Dashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<StudentProfile />} />
           <Route path="/registered-users" element={<ProtectedRoute requiredRole="admin" redirectTo="/admin-login"><RegisteredUsers /></ProtectedRoute>} />
           <Route path="/activities" element={<ProtectedRoute requiredRole="admin" redirectTo="/admin-login"><Activities /></ProtectedRoute>} />
+          <Route path="/jol-bank" element={<ProtectedRoute requiredRole="admin" redirectTo="/admin-login"><JolBank /></ProtectedRoute>} />
 
           <Route path="/experiments" element={<ProtectedRoute redirectTo="/profile"><Experiments /></ProtectedRoute>} />
           <Route path="/analytics" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><Analytics /></ProtectedRoute>} />

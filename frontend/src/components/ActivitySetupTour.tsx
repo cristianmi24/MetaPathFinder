@@ -22,7 +22,7 @@ export function ActivitySetupTour({ isOpen, onClose }: ActivitySetupTourProps) {
       targetId: 'tour-strategy-panel',
       badge: 'Guía · paso 2 de 3',
       title: 'Tus herramientas',
-      description: 'Panel flotante con las herramientas de tu estrategia (listas, notas y guías). Puedes moverlo o minimizarlo.',
+      description: 'Botón con las herramientas de tu estrategia: al pulsarlo se abren en el área de la actividad y, al cerrarlas, vuelves a ella.',
       icon: 'ti-bulb',
     },
     {

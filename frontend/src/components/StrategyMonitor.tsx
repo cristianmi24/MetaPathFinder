@@ -44,12 +44,13 @@ interface Props {
   isCodeChallenge?: boolean;
   placeholderHint?: string;
   onEvidence: (evidence: Partial<StrategyEvidence>) => void;
+  onAttention?: () => void;
 }
 
 export function StrategyMonitor({
   strategy, seconds, editCount, errCount, totalRuns, hintCount, clickCount = 0,
   isChallengeDone, criteriaCount, criteriaLabels = [], jolInicial, estimatedMinutes,
-  isCodeChallenge = true, placeholderHint, onEvidence
+  isCodeChallenge = true, placeholderHint, onEvidence, onAttention
 }: Props) {
 
   const [subtasks, setSubtasks] = useState<string[]>([]);
@@ -92,6 +93,7 @@ export function StrategyMonitor({
       lastJolReminder.current = seconds;
       setJolReminder(true);
       setShowJolCapture(true);
+      onAttention?.();
     }
   }, [seconds, strategy.id]);
 

@@ -25,6 +25,8 @@ class User(Base):
     password_hash = Column(String(255))
     terms_accepted = Column(Boolean, nullable=False, default=False)
     terms_accepted_at = Column(DateTime(timezone=True))
+    terms_version = Column(String(20))
+    guardian_declaration = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
     updated_at = Column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
 

@@ -11,6 +11,8 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=4, max_length=128)
     role: str = "student"
     terms_accepted: bool = False
+    guardian_declaration: bool = False
+    terms_version: Optional[str] = Field(default=None, max_length=20)
 
 
 class UserResponse(BaseModel):

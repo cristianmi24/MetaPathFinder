@@ -53,7 +53,8 @@ export function normalizeJolValue(jolId: string, value: number | string, tiempoE
       const maxAttempts = 10;
       return clamp010(10 - (value / maxAttempts) * 10);
     }
-    if (/%/.test(general.escala)) {
+    // Las respuestas nuevas son siempre 1-10; los valores >10 vienen de sesiones antiguas en porcentaje.
+    if (/%/.test(general.escala) && value > 10) {
       return clamp010(value / 10);
     }
   }
