@@ -129,7 +129,7 @@ async def health_live():
     return {"status": "ok"}
 
 
-from app.routers import users, sessions, phase_a, phase_b, phase_c, analytics, experiments, monitor, tutor, tracking
+from app.routers import users, sessions, phase_a, phase_b, phase_c, analytics, experiments, monitor, tutor, tracking, tutor_admin
 
 app.include_router(auth_router)
 app.include_router(users.router)
@@ -142,3 +142,4 @@ app.include_router(analytics.router)
 app.include_router(experiments.router)
 app.include_router(tutor.router)
 app.include_router(tracking.router)
+app.include_router(tutor_admin.router)

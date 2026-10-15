@@ -71,6 +71,7 @@ Detección automática de:
 - **Reflexión/Fatiga**: Pausas de inactividad (> 30s)
 
 ### 🔬 7. Panel de Administrador y Diseño Experimental
+- **Intervenciones del tutor** (`/tutor-admin`): cuándo, cómo y cuántas veces interviene el tutor con cada estudiante y en cada actividad. Resumen de la clase (intervenciones por actividad, % de actividades con ayuda, superación con y sin ayuda, pedidas vs. iniciadas por el tutor), tipos de intervención, escalera de ayuda N0–N3 y pistas 1–3, tabla de estudiantes ordenable y paginada, tabla por reto y feed en vivo. El detalle de cada estudiante muestra su modelo (ZDP, estilo, calibración, 12 criterios) y, por actividad, una **línea de tiempo** con cada intervención (minuto, tipo, nivel, táctica, quién la inició, P(bloqueo) y respuesta del estudiante), el plan del tutor, las decisiones propias y el cierre de la Fase C.
 - **Mapa de progresión** (modelo de Griffin): la clase agrupada por ZDP, los 12 criterios por estudiante y el escalón técnico por componente, con los indicadores que pesaron en cada decisión
 - Comparación A/B entre grupos (Control vs. Experimental): el grupo control conserva la asignación aleatoria de estrategia
 - Gestión de sesiones y usuarios
@@ -348,7 +349,7 @@ MetaPathFinder/
 | Retroalimentación | «Ya logras ___. Tu siguiente paso es ___» | `engine.development_feedback` |
 | Curaduría de recursos | 👍/👎, sustitución en caliente, k-NN por pares | `routers/tutor.py` |
 
-**Endpoints:** `GET /api/tutor/domain` · `GET /api/tutor/state/{user}` · `POST /api/tutor/plan` · `POST /api/tutor/override` · `POST /api/tutor/learning-style` · `POST /api/tutor/resource-rating` · `GET /api/tutor/recommend/{user}` · `GET /api/tutor/class-map` (docentes) · `POST /api/tracking/events` · `POST /api/phase-c/complete` (con `tutor_observations`).
+**Endpoints:** `GET /api/tutor/admin/overview` y `GET /api/tutor/admin/student/{user}` (docentes) · `GET /api/tutor/domain` · `GET /api/tutor/state/{user}` · `POST /api/tutor/plan` · `POST /api/tutor/override` · `POST /api/tutor/learning-style` · `POST /api/tutor/resource-rating` · `GET /api/tutor/recommend/{user}` · `GET /api/tutor/class-map` (docentes) · `POST /api/tracking/events` · `POST /api/phase-c/complete` (con `tutor_observations`).
 
 Las decisiones de diseño que se cambiaron respecto a la propuesta (umbral de A4, observaciones mínimas, calibración solo con juicios de certeza, freno por mediana, etc.) están justificadas en [docs/TUTOR-GRIFFIN-BAYES.md](docs/TUTOR-GRIFFIN-BAYES.md), junto con el plan de validación con docentes (juicio de expertos, kappa de Cohen, Rasch).
 

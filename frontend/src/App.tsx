@@ -33,6 +33,7 @@ import { cn } from './lib/utils';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { MyMap } from './pages/MyMap';
 import { Progression } from './pages/Progression';
+import { TutorAdmin } from './pages/TutorAdmin';
 import { useTutorStore } from './stores/useTutorStore';
 
 function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -154,7 +155,7 @@ function ProtectedRoute({ children, requiredRole, redirectTo = '/profile' }: { c
 const KNOWN_PATHS = [
   '/', '/admin-login', '/student', '/admin', '/profile', '/registered-users', '/activities', '/jol-bank',
   '/experiments', '/analytics', '/tutorial', '/evaluation-prep', '/pretest', '/challenge',
-  '/calibration', '/metacognitive-strategies', '/settings', '/mi-mapa', '/progression',
+  '/calibration', '/metacognitive-strategies', '/settings', '/mi-mapa', '/progression', '/tutor-admin',
 ];
 
 // Páginas públicas: se muestran sin layout ni importar si hay sesión iniciada
@@ -255,6 +256,7 @@ export default function App() {
           <Route path="/settings" element={<ProtectedRoute redirectTo="/profile"><SettingsPage /></ProtectedRoute>} />
           <Route path="/mi-mapa" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><MyMap /></ProtectedRoute>} />
           <Route path="/progression" element={<ProtectedRoute requiredRole="admin" redirectTo="/admin-login"><Progression /></ProtectedRoute>} />
+          <Route path="/tutor-admin" element={<ProtectedRoute requiredRole="admin" redirectTo="/admin-login"><TutorAdmin /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AppLayout>

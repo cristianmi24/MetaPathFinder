@@ -7,6 +7,7 @@ import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell,
   ScatterChart, Scatter, ZAxis, ReferenceLine, BarChart, Bar, Legend,
 } from 'recharts';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useTheme } from '../ThemeContext';
 import { cn } from '../lib/utils';
@@ -432,7 +433,7 @@ export function Dashboard() {
                   return (
                     <tr key={r.id} className="border-b border-outline-variant/30 last:border-0 hover:bg-surface-container/50">
                       <td className="px-5 py-3">
-                        <div className="font-medium text-on-surface">{r.name}</div>
+                        <Link to={`/tutor-admin?student=${r.id}`} className="font-medium text-on-surface hover:text-primary hover:underline" title="Ver intervenciones del tutor">{r.name}</Link>
                         <div className="text-xs text-on-surface-variant">{r.email}</div>
                       </td>
                       <td className="px-3 py-3">

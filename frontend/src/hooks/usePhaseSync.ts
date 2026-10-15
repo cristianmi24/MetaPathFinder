@@ -198,14 +198,18 @@ export function usePhaseSync() {
           hints_used: (meta as any)?.metricas_tecnicas?.hints || 0,
           passed: score >= 60,
         },
-        cognitive_events: state.events
-          .filter(e => e.type !== 'CHALLENGE_COMPLETED')
-          .slice(-50)
-          .map(e => ({
-            event_type: e.type,
-            timestamp: new Date(e.timestamp).toISOString(),
-            metadata: e.metadata as Record<string, unknown>,
-          })),
+        cognitive_events: [
+          ...state.events
+            .filter(e => e.type !== 'CHALLENGE_COMPLETED')
+            .slice(-50)
+            .map(e => ({
+              event_type: e.type,
+              timestamp: new Date(e.timestamp).toISOString(),
+              metadata: e.metadata as Record<string, unknown>,
+            })),
+          // Intervenciones del tutor que no llegaron en vivo (el panel las deduplica por id)
+          ...(((meta as any)?.tutorPendingEvents ?? []) as { event_type: string; timestamp: string; metadata: Record<string, unknown> }[]),
+        ],
       });
 
       markSynced(`${currentSessionId}-phase-b`);

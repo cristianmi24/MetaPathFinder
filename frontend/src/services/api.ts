@@ -192,6 +192,8 @@ export const api = {
       `/api/tutor/recommend/${userId}?${new URLSearchParams({ ...(challengeId ? { challenge_id: challengeId } : {}), ...(exclude ? { exclude } : {}) })}`
     ),
   getClassMap: () => request<ClassMap>('/api/tutor/class-map'),
+  getTutorAdminOverview: () => request<TutorAdminOverview>('/api/tutor/admin/overview'),
+  getTutorAdminStudent: (userId: string) => request<TutorAdminStudent>(`/api/tutor/admin/student/${userId}`),
 
   // Session
   completeSession: (sessionId: string, data: {
@@ -325,4 +327,64 @@ export interface ClassMap {
   by_zdp: Record<TutorLevel, number>;
   levels: Record<TutorLevel, string>;
   criteria: TutorCriterion[];
+}
+
+// ---------------------------------------------------------------------------
+// Panel del administrador: intervenciones del tutor
+// ---------------------------------------------------------------------------
+export type InterventionKind = 'pista' | 'pista_auto' | 'andamiaje' | 'punto_control' | 'replanificacion' | 'freno';
+
+export interface TutorIntervention {
+  id: string; kind: InterventionKind; level: string | number | null; tactic: string | null;
+  initiator: 'tutor' | 'estudiante'; t_seconds: number | null; p_block: number | null; detail: string | null;
+  challenge_id: string; session_id: string; timestamp: string | null; response: string | null;
+}
+
+export interface TutorAdminStudentRow {
+  id: string; name: string; email: string; active_now: boolean; zdp: TutorLevel | null; learning_style: string | null;
+  last_profile: string | null; last_bias: number | null; activities: number; completed: number; passed: number;
+  interventions: number; per_activity: number | null; by_kind: Record<InterventionKind, number>;
+  with_help: number; passed_with_help: number; overrides: number; last_intervention: string | null;
+}
+
+export interface TutorAdminOverview {
+  generated_at: string;
+  kinds: InterventionKind[];
+  summary: {
+    students: number; active_now: number; activities: number; interventions: number; per_activity: number | null;
+    activities_with_help: number; pass_rate_helped: number | null; pass_rate_unhelped: number | null;
+    by_initiator: Record<string, number>; overrides: number; last_hour: number;
+  };
+  by_kind: Record<InterventionKind, number>;
+  ladder: Record<string, number>;
+  students: TutorAdminStudentRow[];
+  challenges: { challenge_id: string; attempts: number; interventions_per_attempt: number; hints_per_attempt: number; replans: number; pass_rate: number | null; pass_rate_helped: number | null; pass_rate_unhelped: number | null }[];
+  feed: (TutorIntervention & { student_id: string; student: string })[];
+}
+
+export interface TutorAdminActivity {
+  session_id: string; challenge_id: string; started_at: string | null; completed_at: string | null; strategy_id: string | null;
+  result: { score: number | null; passed: boolean; time_spent_seconds: number; attempts: number; hints_used: number; clicks: number } | null;
+  calibration: { jol: number | null; performance: number | null; gap: number | null; cluster: string; calibration_index: number | null; banda?: string; bias_index?: number } | null;
+  reading: TutorPhaseCResult['reading'] | null;
+  feedback: TutorPhaseCResult['feedback'] | null;
+  reflection_text: string | null;
+  plan: { strategy: TutorPlan['strategy'] | null; challenge_reason: string | null; group: string | null } | null;
+  overrides: { kind: string; chosen: string | null; suggested: string | null; reason: string | null; at: string | null }[];
+  interventions: TutorIntervention[];
+  counts: Record<InterventionKind, number>;
+  total_interventions: number;
+  ladder: Record<string, number>;
+}
+
+export interface TutorAdminStudent {
+  student: { id: string; name: string; email: string; created_at: string | null };
+  tutor: {
+    zdp: TutorZdp; criteria: Record<string, { p: number; n: number; mastered: boolean; level: TutorLevel; text: string }>;
+    overlay: Record<string, string>; learning_style: LearningStyle | null; last_profile: string | null; last_bias: number | null; last_strategy: string | null;
+  };
+  summary: { activities: number; completed: number; passed: number; interventions: number; per_activity: number | null; by_kind: Record<InterventionKind, number>; by_initiator: Record<string, number>; ladder: Record<string, number>; overrides: number };
+  kinds: InterventionKind[];
+  criteria_order: string[];
+  activities: TutorAdminActivity[];
 }

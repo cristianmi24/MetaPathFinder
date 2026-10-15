@@ -54,6 +54,10 @@ Cuatro dimensiones × tres niveles. Cada criterio describe una conducta observab
 
 **Fase C (`POST /api/phase-c/complete` con `tutor_observations`)** → indicadores → lectura del reto (NB) → actualización Beta por criterio y escalón → Thompson → ZDP → retroalimentación «Ya logras ___. Tu siguiente paso es ___» con los indicadores que pesaron. Todo queda en `tutor_decisions`.
 
+## 5 bis. Registro de intervenciones (panel del administrador)
+
+Cada intervención se envía en vivo a `/api/tracking/events` como evento `TUTOR_INTERVENTION` con `id`, `kind` (pista, pista_auto, andamiaje, punto_control, replanificacion, freno), `level`, `tactic`, `initiator` (tutor o estudiante), `t_seconds` (minuto dentro del reto), `p_block` y `detail`. La respuesta del estudiante (opción de replanificación, valor de confianza o certeza, 👍/👎 de la pista) llega como `TUTOR_RESPONSE` enlazada por `ref`. Si un envío en vivo falla, se reenvía en la Fase B y el panel deduplica por `id`. El panel agrupa por actividad = (sesión, reto).
+
 ## 6. Ejemplos verificados por pruebas (`backend-python/tests/test_tutor.py`)
 
 - Lectura del reto del documento: Básico 0,7 % · Medio 77,9 % · Avanzado 21,4 %.

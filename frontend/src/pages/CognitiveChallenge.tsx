@@ -48,6 +48,7 @@ import { getTutorHint3 } from '../data/tutorHints';
 import { useTutorStore } from '../stores/useTutorStore';
 import { blockingProbability, scaffoldLevel, longPauseThreshold, SCAFFOLD_INFO, type BlockingSignals } from '../lib/tutorEngine';
 import { api } from '../services/api';
+import { v4 as uuidv4 } from 'uuid';
 
 import './CognitiveChallenge.css';
 import '../components/tutor/tutor.css';
@@ -173,6 +174,37 @@ export function CognitiveChallenge() {
     attemptsAfterHint: 0, firstEditAt: null as number | null, brakeTriggered: false, scaffoldShown: [] as string[],
     replanShownAt: 0, lastValidationAt: Date.now(), evidenceBeforeHelp: null as boolean | null,
   });
+
+  // --- Registro de intervenciones del tutor (panel del administrador) ---
+  // Cada intervención se envía en vivo; las que no lleguen (sin red o sin sesión) se reenvían en la Fase B.
+  type TutorLogEvent = { event_type: 'TUTOR_INTERVENTION' | 'TUTOR_RESPONSE'; timestamp: string; metadata: Record<string, unknown>; sent: boolean };
+  const tutorLog = useRef<TutorLogEvent[]>([]);
+  const lastCheckpointRef = useRef<string | null>(null);
+  const lastCertaintyRef = useRef<string | null>(null);
+  const lastReplanRef = useRef<string | null>(null);
+  const secondsNowRef = useRef(0);
+  const sendTutorEvent = (ev: TutorLogEvent) => {
+    tutorLog.current.push(ev);
+    api.trackEvents({ session_id: currentSessionId, events: [{ event_type: ev.event_type, timestamp: ev.timestamp, metadata: ev.metadata }] })
+      .then((r) => { if (r.stored > 0) ev.sent = true; })
+      .catch(() => {});
+  };
+  const logIntervention = (kind: 'pista' | 'pista_auto' | 'andamiaje' | 'punto_control' | 'replanificacion' | 'freno',
+    data: { level?: string | number | null; tactic?: string | null; initiator?: 'tutor' | 'estudiante'; detail?: string | null; p_block?: number | null } = {}): string => {
+    const id = uuidv4();
+    sendTutorEvent({
+      event_type: 'TUTOR_INTERVENTION', timestamp: new Date().toISOString(), sent: false,
+      metadata: { id, kind, challenge_id: challenge.id, t_seconds: secondsNowRef.current, initiator: data.initiator ?? 'tutor',
+        level: data.level ?? null, tactic: data.tactic ?? null, detail: data.detail ?? null,
+        p_block: data.p_block ?? null, err_count: errCountRef.current, runs: runsRef.current },
+    });
+    return id;
+  };
+  const logResponse = (ref: string | null, response: unknown) => {
+    if (!ref) return;
+    sendTutorEvent({ event_type: 'TUTOR_RESPONSE', timestamp: new Date().toISOString(), sent: false,
+      metadata: { ref, response, challenge_id: challenge.id, t_seconds: secondsNowRef.current } });
+  };
   const [boardSuccess, setBoardSuccess] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultScore, setResultScore] = useState(0);
@@ -180,8 +212,12 @@ export function CognitiveChallenge() {
   const [alternativeChallenge, setAlternativeChallenge] = useState<DynamicChallenge | null>(null);
 
   const secondsRef = useRef(seconds);
+  const errCountRef = useRef(0);
+  const runsRef = useRef(0);
   const clickCountRef = useRef(clickCount);
   secondsRef.current = seconds;
+  errCountRef.current = errCount;
+  runsRef.current = totalRuns;
   clickCountRef.current = clickCount;
   const lastBoardValidationRef = useRef<boolean | null>(null);
 
@@ -294,6 +330,9 @@ export function CognitiveChallenge() {
       }
       recordShownResource({ id: `${challenge.id}:hint${n}`, challengeId: challenge.id, level: n, tactic: n === 1 ? 'pregunta_socratica' : n === 2 ? 'senalamiento' : 'solucion_guiada' });
       addEvent('HINT_OPENED', { challengeId: challenge.id, level: n, errCount, runs: totalRuns });
+      logIntervention('pista', { level: n, initiator: 'estudiante',
+        tactic: n === 1 ? 'Pregunta socrática' : n === 2 ? 'Señalamiento del error' : (alternativeHint?.variant === 'contraejemplo' ? 'Contraejemplo' : 'Analogía cotidiana'),
+        detail: n === 1 ? 'Pregunta reflexiva' : n === 2 ? 'Error frecuente del reto' : 'Solución análoga guiada' });
     }
   };
 
@@ -302,6 +341,8 @@ export function CognitiveChallenge() {
     const resourceId = `${challenge.id}:hint${level}`;
     if (dbUserId) api.rateResource({ user_id: dbUserId, resource_id: resourceId, challenge_id: challenge.id, helpful }).catch(() => {});
     addEvent('RESOURCE_RATED', { resourceId, helpful });
+    const hintEv = [...tutorLog.current].reverse().find(e => e.event_type === 'TUTOR_INTERVENTION' && e.metadata.kind === 'pista' && e.metadata.level === level);
+    logResponse((hintEv?.metadata.id as string) ?? null, helpful ? 'útil' : 'no útil');
     if (!helpful) {
       if (level === 3) {
         // Sustitución en caliente: si la analogía no ayudó, se muestra el contraejemplo (y viceversa).
@@ -312,7 +353,10 @@ export function CognitiveChallenge() {
       if (dbUserId) {
         api.recommendResource(dbUserId, challenge.id, resourceId).then((r) => {
           const m = r.resource_id?.match(/:hint([123])$/);
-          if (m) setPeerRecommendation({ level: Number(m[1]) as HintLevel, ratio: r.helpful_ratio ?? 0.5, neighbours: r.neighbours });
+          if (m) {
+            setPeerRecommendation({ level: Number(m[1]) as HintLevel, ratio: r.helpful_ratio ?? 0.5, neighbours: r.neighbours });
+            logIntervention('pista', { level: 'pares', tactic: 'Recomendación por pares (k-NN)', detail: `Pista ${m[1]} recomendada por ${r.neighbours} compañeros parecidos` });
+          }
         }).catch(() => null);
       }
     }
@@ -322,6 +366,7 @@ export function CognitiveChallenge() {
     setCheckpoints(prev => [...prev, value]);
     setCheckpointDue(false);
     addEvent('CONFIDENCE_CHECKPOINT', { challengeId: challenge.id, value, seconds, errCount });
+    if (lastCheckpointRef.current) { logResponse(lastCheckpointRef.current, `confianza ${value}/10`); lastCheckpointRef.current = null; }
   };
 
   // JOL promedio de Fase A, normalizado a 0-10 según la escala real de cada pregunta
@@ -378,6 +423,13 @@ export function CognitiveChallenge() {
     };
   }, [challenge.id]);
 
+  secondsNowRef.current = seconds;
+  const brakeActive = useCognitiveStore((s) => s.isReflexiveBrakeActive);
+  const brakeMessage = useCognitiveStore((s) => s.brakeMessage);
+  useEffect(() => {
+    if (brakeActive) logIntervention('freno', { tactic: 'Pausa reflexiva', detail: brakeMessage ?? 'Respuesta más rápida que su propio ritmo' });
+  }, [brakeActive]);
+
   // Cambios de pestaña durante el reto (señal de bloqueo / distracción).
   useEffect(() => {
     const onVis = () => { if (document.hidden) { setTabChanges(t => t + 1); setLastTabChangeAt(Date.now()); } };
@@ -389,7 +441,10 @@ export function CognitiveChallenge() {
   const mandatoryCheckpoints = Boolean(tutorPlan?.scaffold?.mandatory_checkpoints) && activeStrategyId !== 'est2';
   useEffect(() => {
     if (!mandatoryCheckpoints) return;
-    if (seconds > 0 && seconds % 180 === 0) setCheckpointDue(true);
+    if (seconds > 0 && seconds % 180 === 0) {
+      setCheckpointDue(true);
+      lastCheckpointRef.current = logIntervention('punto_control', { level: 'confianza', tactic: 'Punto de control obligatorio', detail: '¿Qué tan seguro/a vas? (ZDP Básico)' });
+    }
   }, [seconds, mandatoryCheckpoints]);
 
   useEffect(() => {
@@ -455,6 +510,7 @@ export function CognitiveChallenge() {
         setShowHint(true);
         setActiveHint(1); // tras 2 intentos fallidos, la pista aparece sola (no cuenta contra la calibración)
         tutorMeta.current.autoHintShown = true;
+        logIntervention('pista_auto', { level: 1, tactic: 'Pregunta socrática', detail: 'Pista 1 automática tras 2 intentos fallidos' });
       }
     }
     setEditsSinceRun(0);
@@ -462,7 +518,11 @@ export function CognitiveChallenge() {
   };
 
   const handleVerify = () => {
-    if (!certainty) { setCertaintyOpen(true); return; }
+    if (!certainty) {
+      setCertaintyOpen(true);
+      lastCertaintyRef.current = logIntervention('punto_control', { level: 'certeza', tactic: 'Juicio de certeza', detail: '¿Qué tan seguro/a estás antes de verificar?' });
+      return;
+    }
     runVerify();
   };
 
@@ -568,6 +628,8 @@ export function CognitiveChallenge() {
         p_block_final: pBlock,
       },
       challengeMeta: { titulo: challenge.titulo, criterios: challenge.criterios },
+      tutorPendingEvents: tutorLog.current.filter(e => !e.sent).map(({ sent, ...e }) => e),
+      tutorInterventionCount: tutorLog.current.filter(e => e.event_type === 'TUTOR_INTERVENTION').length,
     };
 
     console.log('🚀 Enviando métricas reales a Fase C:', payload);
@@ -605,6 +667,9 @@ export function CognitiveChallenge() {
     if (scaffold && !tutorMeta.current.scaffoldShown.includes(scaffold)) {
       tutorMeta.current.scaffoldShown.push(scaffold);
       addEvent('SCAFFOLD_SHOWN', { challengeId: challenge.id, level: scaffold, p_block: Number(pBlock.toFixed(3)), tactic: SCAFFOLD_INFO[scaffold].tactic });
+      const active = (Object.entries(signals) as [string, boolean][]).filter(([, v]) => v).map(([k]) => k.replace(/_/g, ' '));
+      logIntervention('andamiaje', { level: scaffold, tactic: SCAFFOLD_INFO[scaffold].tacticLabel, p_block: Number(pBlock.toFixed(3)),
+        detail: `${SCAFFOLD_INFO[scaffold].name} · señales: ${active.join(', ') || '—'}` });
     }
   }, [scaffold]);
 
@@ -614,6 +679,7 @@ export function CognitiveChallenge() {
       tutorMeta.current.replanShownAt = consecutiveErrors;
       setReplanOpen(true);
       addEvent('REPLAN_TRIGGERED', { challengeId: challenge.id, consecutiveErrors });
+      lastReplanRef.current = logIntervention('replanificacion', { level: consecutiveErrors, tactic: 'Cambio de táctica', detail: `${consecutiveErrors} errores seguidos: pantalla atenuada con caminos alternativos` });
     }
   }, [consecutiveErrors, isChallengeDone]);
 
@@ -625,6 +691,7 @@ export function CognitiveChallenge() {
     setReplanOpen(false);
     setReplanChoice(choice);
     addEvent('REPLAN_CHOICE', { challengeId: challenge.id, choice });
+    logResponse(lastReplanRef.current, choice === 'guiado' ? 'modo guiado paso a paso' : choice === 'simplificado' ? 'versión simplificada N1' : 'seguir por su cuenta');
     if (choice === 'continuar' && dbUserId) {
       api.tutorOverride({ user_id: dbUserId, session_id: currentSessionId, kind: 'advance', reason: 'continuar tras replanificación' }).catch(() => {});
     }
@@ -1170,6 +1237,7 @@ export function CognitiveChallenge() {
           setCertainty({ value, label });
           setCertaintyOpen(false);
           addEvent('CERTAINTY_JUDGMENT', { challengeId: challenge.id, value, label, seconds });
+          logResponse(lastCertaintyRef.current, `${label} (${value}/10)`);
           setTimeout(runVerify, 0);
         }}
       />
