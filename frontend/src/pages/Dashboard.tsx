@@ -11,7 +11,7 @@ import { api } from '../services/api';
 import { useTheme } from '../ThemeContext';
 import { cn } from '../lib/utils';
 import { dynamicChallengeBank } from '../data/dynamicChallengeBank';
-import { nuevasEstrategias } from '../data/metacognitiveStrategies';
+import { getEstrategia, NOMBRES_ESTRATEGIAS_RETIRADAS } from '../data/metacognitiveStrategies';
 
 /* ── Tipos de /api/analytics/monitor ─────────────────────────────────────── */
 type Status = 'activo' | 'terminado' | 'sin_empezar' | 'inactivo';
@@ -69,7 +69,7 @@ const CLUSTER_META: Record<string, { label: string; color: string }> = {
 const challengeTitle = (id: string | null) =>
   (id && dynamicChallengeBank.find((c) => c.id === id)?.titulo) || id || '—';
 const strategyName = (id: string | null) =>
-  (id && nuevasEstrategias.find((s) => s.id === id)?.nombre) || id || '—';
+  (id && (NOMBRES_ESTRATEGIAS_RETIRADAS[id] ?? getEstrategia(id)?.nombre)) || id || '—';
 
 function fmtDuration(sec: number | null | undefined) {
   if (sec == null) return '—';

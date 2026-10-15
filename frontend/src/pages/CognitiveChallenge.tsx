@@ -32,7 +32,7 @@ import { DigitalIdentityBoard } from '../components/DigitalIdentityBoard';
 import { ArduinoHuertaBoard } from '../components/ArduinoHuertaBoard';
 import { SandwichAlgorithm } from '../components/SandwichAlgorithm';
 import LibraryPseudocode from '../components/LibraryPseudocode';
-import { nuevasEstrategias } from '../data/metacognitiveStrategies';
+import { getEstrategia } from '../data/metacognitiveStrategies';
 import { getChallengeInstructions } from '../data/challengeInstructions';
 import { getChallengeProfile } from '../data/challengeProfiles';
 import { getChallengeBriefing } from '../data/challengeBriefings';
@@ -68,9 +68,7 @@ export function CognitiveChallenge() {
 
   // Obtener estrategia activa (desde location state o desde el store)
   const activeStrategyId = location.state?.assignedStrategyId || assignedStrategyId;
-  const activeStrategy = activeStrategyId
-    ? (nuevasEstrategias.find(e => e.id === activeStrategyId) || null)
-    : null;
+  const activeStrategy = getEstrategia(activeStrategyId);
 
   const boardWrapperClass = "flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-lg overflow-y-auto overflow-x-hidden p-1 md:p-3 min-h-0 relative border border-outline-variant/40 [&>*]:min-h-0 [&>*]:w-full [&>*]:flex-1";
 
@@ -601,6 +599,7 @@ export function CognitiveChallenge() {
                   onEvidence={handleStrategyEvidence}
                   onAttention={() => setToolsAttention((prev) => (toolsOpen ? prev : true))}
                   onClose={() => setToolsOpen(false)}
+                  onRequestHint={() => { setToolsOpen(false); openHint(showHint ? 2 : 1); }}
                 />
               </div>
             </>

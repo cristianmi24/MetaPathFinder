@@ -7,7 +7,7 @@ import { jolGenerales } from '../data/jolGenerales';
 import { getChallengeBriefing } from '../data/challengeBriefings';
 import { EvaluationTracker } from '../components/EvaluationTracker';
 import { usePhaseSync } from '../hooks/usePhaseSync';
-import { nuevasEstrategias, Estrategia } from '../data/metacognitiveStrategies';
+import { nuevasEstrategias, getEstrategia, Estrategia } from '../data/metacognitiveStrategies';
 import { ChallengeBriefing } from '../components/ChallengeBriefing';
 import { JolQuestion, JolReady, type JolItem } from '../components/JolFlow';
 import './EvaluationStart.css';
@@ -19,9 +19,7 @@ export function EvaluationStart() {
   const { addEvent, currentLevel, currentChallengeId, setCurrentChallengeId, setCurrentSessionId, currentSessionId, assignedStrategyId, strategyAssignedRandomly, setAssignedStrategyId } = useCognitiveStore();
   const { syncPhaseA } = usePhaseSync();
 
-  const assignedStrategy: Estrategia | null = assignedStrategyId
-    ? (nuevasEstrategias.find(e => e.id === assignedStrategyId) || null)
-    : null;
+  const assignedStrategy: Estrategia | null = getEstrategia(assignedStrategyId);
 
   const strategyAssignedRef = useRef(false);
   useEffect(() => {

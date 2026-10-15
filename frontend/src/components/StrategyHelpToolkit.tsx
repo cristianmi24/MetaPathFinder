@@ -1,6 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
 import { Estrategia } from '../data/metacognitiveStrategies';
-import { getStrategyChallengeGuidance } from '../data/strategyChallengeGuidance';
 import { getStrategyBenefit } from '../data/strategyBenefits';
 import { StrategyMonitor, StrategyEvidence } from './StrategyMonitor';
 
@@ -24,6 +23,8 @@ interface StrategyHelpToolkitProps {
   onAttention?: () => void;
   /** Cierra el panel y vuelve a la actividad. */
   onClose: () => void;
+  /** Abre la siguiente pista del reto. */
+  onRequestHint?: () => void;
 }
 
 /**
@@ -37,7 +38,6 @@ export function StrategyHelpToolkit({
   onClose,
   ...monitorProps
 }: StrategyHelpToolkitProps) {
-  const guidance = getStrategyChallengeGuidance(challengeId, strategy.id);
   const benefit = getStrategyBenefit(strategy.id);
 
   const card: React.CSSProperties = {
@@ -127,7 +127,6 @@ export function StrategyHelpToolkit({
           <StrategyMonitor
             strategy={strategy}
             criteriaLabels={criteriaLabels}
-            placeholderHint={guidance.placeholderMonitor}
             {...monitorProps}
           />
         </div>

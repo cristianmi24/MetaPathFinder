@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useTheme } from '../ThemeContext';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { EvaluationTracker } from '../components/EvaluationTracker';
-import { nuevasEstrategias, Estrategia } from '../data/metacognitiveStrategies';
+import { nuevasEstrategias, getEstrategia, Estrategia } from '../data/metacognitiveStrategies';
 import './MetacognitiveStrategies.css';
 
 const nivelLabel: Record<number, string> = { 1: 'Básico', 2: 'Medio', 3: 'Avanzado' };
@@ -26,17 +26,15 @@ export function MetacognitiveStrategies() {
   } = useCognitiveStore();
 
   // Estrategia que estuvo activa durante el nivel recién completado
-  const currentStrategy: Estrategia | null = assignedStrategyId
-    ? (nuevasEstrategias.find(e => e.id === assignedStrategyId) || null)
-    : null;
+  const currentStrategy: Estrategia | null = getEstrategia(assignedStrategyId);
 
   // Estrategia que el estudiante selecciona para el próximo nivel
-  const [selectedId, setSelectedId] = useState<string>(assignedStrategyId || '');
+  const [selectedId, setSelectedId] = useState<string>(getEstrategia(assignedStrategyId)?.id || '');
   const [confirmed, setConfirmed] = useState(false);
   const [tooltipId, setTooltipId] = useState<string | null>(null);
 
   const selectedStrategy = nuevasEstrategias.find(e => e.id === selectedId) || null;
-  const isSameStrategy = selectedId === assignedStrategyId;
+  const isSameStrategy = selectedId === currentStrategy?.id;
 
   // Resumen de monitoreo de Fase B (métricas capturadas)
   const lastChallenge = [...events].reverse().find(e => e.type === 'CHALLENGE_COMPLETED');

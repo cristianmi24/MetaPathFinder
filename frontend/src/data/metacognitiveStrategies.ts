@@ -21,16 +21,88 @@ export interface PerfilData {
   estrategias: Estrategia[];
 }
 
+/**
+ * Estrategias metacognitivas activas. Se eligieron 4 que cubren el ciclo de
+ * autorregulación (Zimmerman): planear metas → monitorear la confianza →
+ * regular el tiempo → evaluar los errores. Todas se usan tocando o
+ * seleccionando, sin escribir. Se conservan los ids para no romper los datos guardados.
+ */
 export const nuevasEstrategias: Estrategia[] = [
-  { id:'est1', color:'#f2cc60', iconBg:'rgba(242,204,96,0.1)', icon:'ti-list', badge:'Planificación', badgeBg:'rgba(242,204,96,0.1)', badgeColor:'#f2cc60', nombre:'Descomposición previa del problema', teoria:'Monitoreo: Si el estudiante planifica antes de empezar', desc:'Evidencias: Número de subtareas creadas, uso de checklist, tiempo antes de escribir código.', pasos:['Dibuja el flujo general en papel','Identifica los componentes mínimos','Estima el tiempo de cada componente'], pasoColor:'#f2cc60', pasoBg:'rgba(242,204,96,0.15)', teoriaDetail:'El sistema monitoreará si existe planificación previa antes de iniciar la escritura de código.', herramientas:[{id:'h1',nombre:'Lista de subtareas',descripcion:'Agrega pasos pequeños antes de tocar la actividad. Escribe y pulsa +.',icon:'ti-list-check'},{id:'h2',nombre:'Cronómetro de planificación',descripcion:'Mide cuántos segundos pasas planificando antes de tu primera acción.',icon:'ti-clock-pause'}] },
-  { id:'est2', color:'#388bfd', iconBg:'rgba(56,139,253,0.1)', icon:'ti-adjustments-horizontal', badge:'Monitoreo', badgeBg:'rgba(56,139,253,0.1)', badgeColor:'#388bfd', nombre:'Control de confianza en puntos de control', teoria:'Monitoreo: Cambios en la seguridad del estudiante', desc:'Evidencias: JOL inicial/final, actualizaciones de confianza durante la actividad.', pasos:['Pon un temporizador','Al sonar: ¿sigo tan seguro como al inicio?','Ajusta tu expectativa (JOL)'], pasoColor:'#388bfd', pasoBg:'rgba(56,139,253,0.15)', teoriaDetail:'El sistema verificará las fluctuaciones de confianza (JOL) reportadas a lo largo de la prueba.', herramientas:[{id:'h1',nombre:'Checkpoint de confianza',descripcion:'Cada 3 min te recordará registrar tu nivel de seguridad (1–10).',icon:'ti-bell-ringing'},{id:'h2',nombre:'Comparador JOL',descripcion:'Compara tu confianza inicial de la Fase A con la actual en tiempo real.',icon:'ti-arrows-left-right'}] },
-  { id:'est3', color:'#d2a8ff', iconBg:'rgba(210,168,255,0.1)', icon:'ti-message-question', badge:'Autodiagnóstico', badgeBg:'rgba(210,168,255,0.1)', badgeColor:'#d2a8ff', nombre:'Verificación de supuestos antes de ejecutar', teoria:'Monitoreo: Si piensa antes de ejecutar', desc:'Evidencias: Predicción escrita antes de correr el código, comparación con resultado real.', pasos:['Escribe "Espero que esto haga: ___"','Ejecuta y observa la diferencia','Anota la causa de la discrepancia'], pasoColor:'#d2a8ff', pasoBg:'rgba(210,168,255,0.15)', teoriaDetail:'El sistema registrará si formulas hipótesis o predicciones claras antes de cada ejecución.', herramientas:[{id:'h1',nombre:'Cuaderno de predicciones',descripcion:'Escribe qué esperas que ocurra antes de ejecutar o validar.',icon:'ti-notebook'},{id:'h2',nombre:'Verificador sí/no',descripcion:'Tras ejecutar, indica si coincidió con tu predicción.',icon:'ti-circle-check'}] },
-  { id:'est4', color:'#5dcaa5', iconBg:'rgba(93,202,165,0.1)', icon:'ti-clock', badge:'Regulación temporal', badgeBg:'rgba(93,202,165,0.1)', badgeColor:'#5dcaa5', nombre:'Estimación segmentada del tiempo', teoria:'Monitoreo: Precisión en la percepción temporal', desc:'Evidencias: Tiempo estimado vs tiempo real.', pasos:['Fase de análisis: ___ min','Fase de implementación: ___ min','Fase de prueba y corrección: ___ min'], pasoColor:'#5dcaa5', pasoBg:'rgba(93,202,165,0.15)', teoriaDetail:'El sistema contrastará tus tiempos estimados con los tiempos de ejecución reales.', herramientas:[{id:'h1',nombre:'Reloj vs estimado',descripcion:'Barra que compara el tiempo real con lo que estimaste en la Fase A.',icon:'ti-hourglass'},{id:'h2',nombre:'Alerta de desfase',descripcion:'Te avisa si llevas más tiempo del planificado.',icon:'ti-alert-circle'}] },
-  { id:'est5', color:'#ff7b72', iconBg:'rgba(255,123,114,0.1)', icon:'ti-zoom-question', badge:'Conocimiento', badgeBg:'rgba(255,123,114,0.1)', badgeColor:'#ff7b72', nombre:'Mapeo explícito de lo que no sé', teoria:'Monitoreo: Reconocimiento de dudas reales', desc:'Evidencias: Lista de dudas iniciales y solicitudes de ayuda.', pasos:['Sé que ___ (certeza alta)','Creo que ___ (podría equivocarme)','No sé cómo ___ (necesito verificar)'], pasoColor:'#ff7b72', pasoBg:'rgba(255,123,114,0.15)', teoriaDetail:'El sistema buscará que enuncies tus dudas de forma clara mediante solicitudes de ayuda o notas.', herramientas:[{id:'h1',nombre:'Registro de dudas',descripcion:'Anota explícitamente lo que no sabes con «No sé cómo…».',icon:'ti-help'},{id:'h2',nombre:'Mapa sé/creo/no sé',descripcion:'Clasifica ideas en tres niveles de certeza.',icon:'ti-map'}] },
-  { id:'est6', color:'#388bfd', iconBg:'rgba(56,139,253,0.1)', icon:'ti-trophy', badge:'Autoeficacia', badgeBg:'rgba(56,139,253,0.1)', badgeColor:'#388bfd', nombre:'Registro de evidencias de competencia', teoria:'Monitoreo: Reconocimiento de avances logrados', desc:'Evidencias: Errores corregidos, tareas completadas, hitos alcanzados.', pasos:['Abre un bloc de notas junto al editor','Anota cada cosa que funcione','Al final, lee la lista antes de calificarte'], pasoColor:'#388bfd', pasoBg:'rgba(56,139,253,0.15)', teoriaDetail:'El sistema observará si logras reconocer y registrar progresivamente tus propios avances.', herramientas:[{id:'h1',nombre:'Bloc de avances',descripcion:'Registra cada logro pequeño: «Logré que…» o «Ya entiendo…».',icon:'ti-trophy'},{id:'h2',nombre:'Contador de victorias',descripcion:'Lleva la cuenta de avances que vas anotando.',icon:'ti-star'}] },
-  { id:'est7', color:'#5dcaa5', iconBg:'rgba(93,202,165,0.1)', icon:'ti-stairs', badge:'Graduación', badgeBg:'rgba(93,202,165,0.1)', badgeColor:'#5dcaa5', nombre:'Submetas visibles y celebrables', teoria:'Monitoreo: Persistencia y progreso gradual', desc:'Evidencias: Porcentaje de pasos completados y continuidad de trabajo.', pasos:['Define hitos mínimos del reto','Marca cada uno al completarlo','Antes de rendirte, cuenta cuántos lograste'], pasoColor:'#5dcaa5', pasoBg:'rgba(93,202,165,0.15)', teoriaDetail:'El sistema registrará la continuidad y porcentaje de compleción paso a paso.', herramientas:[{id:'h1',nombre:'Checklist de hitos',descripcion:'Marca cada criterio del reto al completarlo.',icon:'ti-checkbox'},{id:'h2',nombre:'Barra de progreso',descripcion:'Visualiza el % de hitos que ya lograste.',icon:'ti-progress'}] },
-  { id:'est8', color:'#ffa657', iconBg:'rgba(255,166,87,0.1)', icon:'ti-message-share', badge:'Atribución', badgeBg:'rgba(255,166,87,0.1)', badgeColor:'#ffa657', nombre:'Reencuadre de errores como datos', teoria:'Monitoreo: Forma de interpretar los errores', desc:'Evidencias: Respuestas cortas después de errores y acciones tomadas tras fallar.', pasos:['Al recibir un error, respira y anota','"Este error indica que ___ necesita revisión"','Busca exactamente esa cosa'], pasoColor:'#ffa657', pasoBg:'rgba(255,166,87,0.15)', teoriaDetail:'El sistema medirá el tiempo de reacción tras un fallo y los ajustes inmediatos que apliques.', herramientas:[{id:'h1',nombre:'Diario de errores',descripcion:'Tras cada fallo, escribe qué te indica el error.',icon:'ti-writing'},{id:'h2',nombre:'Guía de reencuadre',descripcion:'Plantilla: «Este error me dice que ___ necesita revisión».',icon:'ti-message-share'}] }
+  {
+    id: 'est7', color: '#a371f7', iconBg: 'rgba(163,113,247,0.1)', icon: 'ti-stairs',
+    badge: 'Planificación', badgeBg: 'rgba(163,113,247,0.1)', badgeColor: '#a371f7',
+    nombre: 'Metas paso a paso',
+    teoria: 'Planear y ver el avance en metas pequeñas',
+    desc: 'Divide el reto en metas cortas, elige por cuál empezar y márcalas al cumplirlas.',
+    pasos: ['Mira las metas del reto', 'Elige por cuál empiezas', 'Márcala cuando la cumplas'],
+    pasoColor: '#a371f7', pasoBg: 'rgba(163,113,247,0.08)',
+    teoriaDetail: 'Ver el reto en metas pequeñas reduce la carga y mantiene la motivación. El sistema registra cuántas metas cumples y en qué orden.',
+    herramientas: [
+      { id: 'h1', nombre: 'Mis metas', descripcion: 'Toca una meta para elegirla como la siguiente y márcala al cumplirla.', icon: 'ti-checkbox' },
+      { id: 'h2', nombre: 'Barra de avance', descripcion: 'Muestra qué parte del reto ya lograste.', icon: 'ti-progress' },
+    ],
+  },
+  {
+    id: 'est2', color: '#388bfd', iconBg: 'rgba(56,139,253,0.1)', icon: 'ti-temperature',
+    badge: 'Monitoreo', badgeBg: 'rgba(56,139,253,0.1)', badgeColor: '#388bfd',
+    nombre: 'Termómetro de confianza',
+    teoria: 'Revisar qué tan seguro/a te sientes mientras trabajas',
+    desc: 'Cada pocos minutos marcas del 1 al 10 qué tan seguro/a te sientes y lo comparas con el inicio.',
+    pasos: ['Cuando te avise, marca tu confianza', 'Compárala con la del inicio', 'Si baja, pide una pista'],
+    pasoColor: '#388bfd', pasoBg: 'rgba(56,139,253,0.08)',
+    teoriaDetail: 'Revisar la propia confianza durante la tarea mejora la calibración: aprendes cuándo confiar en lo que sabes. El sistema registra cada marca.',
+    herramientas: [
+      { id: 'h1', nombre: 'Marcar mi confianza', descripcion: 'Cada 3 minutos te avisa; tocas un número del 1 al 10.', icon: 'ti-hand-click' },
+      { id: 'h2', nombre: 'Mi termómetro', descripcion: 'Muestra cómo cambió tu confianza desde el inicio.', icon: 'ti-chart-line' },
+    ],
+  },
+  {
+    id: 'est4', color: '#2da77a', iconBg: 'rgba(45,167,122,0.1)', icon: 'ti-clock',
+    badge: 'Regulación del tiempo', badgeBg: 'rgba(45,167,122,0.1)', badgeColor: '#2da77a',
+    nombre: 'Reloj del reto',
+    teoria: 'Comparar el tiempo real con el que calculaste',
+    desc: 'Ves tu tiempo frente a los minutos que estimaste y, a mitad de camino, eliges cómo vas.',
+    pasos: ['Mira el reloj de vez en cuando', 'A mitad del tiempo, elige cómo vas', 'Si te atascas, pide ayuda'],
+    pasoColor: '#2da77a', pasoBg: 'rgba(45,167,122,0.08)',
+    teoriaDetail: 'Contrastar el tiempo estimado con el real entrena la planificación. El sistema compara tu estimación con lo que realmente tardas.',
+    herramientas: [
+      { id: 'h1', nombre: 'Reloj vs. mi cálculo', descripcion: 'Una barra compara el tiempo real con los minutos que estimaste.', icon: 'ti-hourglass' },
+      { id: 'h2', nombre: '¿Cómo voy?', descripcion: 'A mitad de tiempo eliges: voy bien, necesito más tiempo o estoy atascado/a.', icon: 'ti-traffic-lights' },
+    ],
+  },
+  {
+    id: 'est8', color: '#e8833a', iconBg: 'rgba(232,131,58,0.1)', icon: 'ti-bulb',
+    badge: 'Evaluación', badgeBg: 'rgba(232,131,58,0.1)', badgeColor: '#e8833a',
+    nombre: '¿Qué me dice el error?',
+    teoria: 'Usar cada error como una pista',
+    desc: 'Después de un intento fallido eliges por qué pasó y qué harás ahora.',
+    pasos: ['Si fallas, elige por qué pasó', 'Elige qué harás distinto', 'Vuelve a intentarlo'],
+    pasoColor: '#e8833a', pasoBg: 'rgba(232,131,58,0.08)',
+    teoriaDetail: 'Atribuir el error a algo que puedes cambiar (no a "soy malo/a") sostiene la motivación y orienta el siguiente intento. El sistema registra tus elecciones.',
+    herramientas: [
+      { id: 'h1', nombre: '¿Por qué pasó?', descripcion: 'Eliges la causa del error entre opciones sencillas.', icon: 'ti-help-circle' },
+      { id: 'h2', nombre: 'Mi siguiente paso', descripcion: 'Eliges qué harás distinto en el próximo intento.', icon: 'ti-arrow-forward-up' },
+    ],
+  },
 ];
+
+/** Estrategias retiradas → estrategia activa equivalente (para sesiones guardadas antes del cambio). */
+const ALIAS_ESTRATEGIAS: Record<string, string> = { est1: 'est7', est3: 'est8', est5: 'est2', est6: 'est7' };
+
+/** Nombres de las estrategias retiradas, para mostrar el historial en el panel de administración. */
+export const NOMBRES_ESTRATEGIAS_RETIRADAS: Record<string, string> = {
+  est1: 'Descomposición previa del problema',
+  est3: 'Verificación de supuestos',
+  est5: 'Mapeo de lo que no sé',
+  est6: 'Registro de evidencias de competencia',
+};
+
+/** Busca una estrategia por id; las retiradas se resuelven a su equivalente activa. */
+export function getEstrategia(id: string | null | undefined): Estrategia | null {
+  if (!id) return null;
+  const resolved = ALIAS_ESTRATEGIAS[id] ?? id;
+  return nuevasEstrategias.find((e) => e.id === resolved) ?? null;
+}
 
 export const perfilesData: Record<string, PerfilData> = {
   over: {
