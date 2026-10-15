@@ -27,7 +27,14 @@ services:
       PORT: "3000"
       # Express usa este socket para hablar con FastAPI (mismo contenedor)
       PYTHON_SOCKET_PATH: /tmp/mp-python.sock
+      # Capacidad: 3 workers × (8 + 12) conexiones = 60 ≤ max_connections de Postgres (150).
+      # Con 50 estudiantes simultáneos el API atiende ~100 peticiones/min por estudiante sin saturarse.
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-3}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-8}
+      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-12}
+      API_RATE_LIMIT_PER_MINUTE: ${API_RATE_LIMIT_PER_MINUTE:-400}
+      API_ANON_RATE_LIMIT_PER_MINUTE: ${API_ANON_RATE_LIMIT_PER_MINUTE:-300}
+      TUTOR_DEFAULT_GROUP: ${TUTOR_DEFAULT_GROUP:-experimental}
       ENVIRONMENT: ${ENVIRONMENT:-production}
       # Obligatoria: clave aleatoria de 32+ caracteres (la app no arranca sin ella en producción)
       SECRET_KEY: ${SECRET_KEY:?Define SECRET_KEY en .env}
@@ -40,11 +47,17 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/api/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   db:
     image: postgres:16-alpine
     container_name: metapathfinder-db
     restart: unless-stopped
+    command: ["postgres", "-c", "max_connections=150", "-c", "shared_buffers=256MB", "-c", "work_mem=8MB"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-metapath}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-metapath}

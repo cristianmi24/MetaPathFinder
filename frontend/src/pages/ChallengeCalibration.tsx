@@ -34,7 +34,13 @@ import { usePhaseSync } from '../hooks/usePhaseSync';
 import { normalizeJolAverage, clamp010 } from '../lib/jolNormalization';
 import { evaluateMetacognitiveReflection, getPrescribedInterventions } from '../lib/metacognitiveEvaluator';
 import { dynamicChallengeBank } from '../data/dynamicChallengeBank';
+import { useTutorStore } from '../stores/useTutorStore';
+import { TutorFeedbackCard } from '../components/tutor/TutorFeedbackCard';
+import { WhyThis } from '../components/tutor/WhyThis';
+import { api } from '../services/api';
+import { nuevasEstrategias } from '../data/metacognitiveStrategies';
 import './ChallengeCalibration.css';
+import '../components/tutor/tutor.css';
 
 ChartJS.register(
   RadialLinearScale,
@@ -49,8 +55,11 @@ export function ChallengeCalibration() {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useTheme();
-  const { currentLevel, setCurrentLevel, setCurrentChallengeId, addEvent, user, events, consolidateSession, currentSessionId } = useCognitiveStore();
+  const { currentLevel, setCurrentLevel, setCurrentChallengeId, addEvent, user, events, consolidateSession, currentSessionId, dbUserId } = useCognitiveStore();
   const { syncPhaseC, syncSessionComplete } = usePhaseSync();
+  const lastPhaseC = useTutorStore((s) => s.lastPhaseC);
+  const tutorDomain = useTutorStore((s) => s.domain);
+  const strategyNames = Object.fromEntries(nuevasEstrategias.map(e => [e.id, e.nombre]));
   
   const metrics = useMemo(() => {
     if (location.state) return location.state;
@@ -84,6 +93,11 @@ export function ChallengeCalibration() {
   const gap = Number((jolAvg - performance).toFixed(1));
   
   const isZeroAttempt = jolAvg < 1.0 && performance < 1.0;
+  const band = Math.abs(gap) <= 1 ? 'calibrado' : Math.abs(gap) <= 2 ? 'leve' : 'marcada';
+  const certaintyValue: number | null = metrics.tutor?.certainty_value ?? null;
+  const estMin = Number(metrics.estimatedTime) || 0;
+  const realMin = (metrics.biometricas?.total_time || 0) / 60;
+  const timeDev = estMin > 0 ? (realMin - estMin) / estMin : null;
 
   const profile = useMemo(() => {
     if (isZeroAttempt) {
@@ -229,12 +243,15 @@ export function ChallengeCalibration() {
             <div className="fc-stat-card">
               <div className="fc-stat-label">Tu desempeño</div>
               <div className="fc-stat-val" style={{ color: '#cf5a4e' }}>{performance} <span className="fc-stat-unit">/ 10</span></div>
-              <div className="fc-stat-delta" style={{ color: 'var(--text-muted)' }}>{gap > 0 ? `${gap} pts por debajo` : `${Math.abs(gap)} pts por encima`}</div>
+              <div className="fc-stat-delta" style={{ color: 'var(--text-muted)' }}>{gap > 0 ? `${gap} pts por debajo` : `${Math.abs(gap)} pts por encima`} · desfase {band}</div>
+              {certaintyValue !== null && <div className="fc-stat-delta" style={{ color: 'var(--text-muted)' }}>certeza al verificar: {certaintyValue}/10</div>}
             </div>
             <div className="fc-stat-card">
               <div className="fc-stat-label">Tiempo</div>
               <div className="fc-stat-val" style={{ color: 'var(--text)' }}>{Math.round(metrics.biometricas.total_time / 60)} <span className="fc-stat-unit">min</span></div>
-              <div className="fc-stat-delta" style={{ color: 'var(--text-muted)' }}>+{Math.max(0, Math.round(metrics.biometricas.total_time / 60) - metrics.estimatedTime)} min sobre lo estimado</div>
+              <div className="fc-stat-delta" style={{ color: 'var(--text-muted)' }}>
+                {timeDev === null ? 'sin estimación previa' : Math.abs(timeDev) <= 0.3 ? `estimación realista (${estMin} min previstos)` : timeDev > 0 ? `+${Math.round(timeDev * 100)} % sobre los ${estMin} min previstos` : `${Math.round(timeDev * 100)} % bajo los ${estMin} min previstos`}
+              </div>
             </div>
             <div className="fc-stat-card">
               <div className="fc-stat-label">Intentos</div>
@@ -329,11 +346,39 @@ export function ChallengeCalibration() {
             </div>
           </div>
 
+          {isReflected && lastPhaseC && (
+            <TutorFeedbackCard
+              result={lastPhaseC}
+              strategyNames={strategyNames}
+              onRate={(resourceId, helpful) => {
+                addEvent('RESOURCE_RATED', { resourceId, helpful });
+                if (dbUserId) api.rateResource({ user_id: dbUserId, resource_id: resourceId, challenge_id: metrics.challengeId, helpful }).catch(() => {});
+              }}
+            />
+          )}
+          {isReflected && !lastPhaseC && (
+            <div className="tut-bubble warn">Tu reflexión quedó guardada. La lectura del tutor aparecerá cuando el servidor termine de procesarla (o en tu perfil).</div>
+          )}
+
           <div className="fc-interv-card">
             <div className="fc-interv-label">
               <Sparkles className="w-4 h-4" />
               Qué te recomendamos ahora
             </div>
+            {lastPhaseC?.feedback?.next_criterion && (
+              <div className="fc-interv-item">
+                <div className="fc-interv-icon act"><i className="ti ti-stairs" /></div>
+                <div className="fc-interv-body">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="fc-interv-title">Tu siguiente criterio: {lastPhaseC.feedback.next_criterion}</h4>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-gray-400 border border-white/10">próximo reto · ZDP</span>
+                  </div>
+                  <p className="fc-interv-desc">
+                    {tutorDomain?.criteria.find(c => c.id === lastPhaseC.feedback.next_criterion)?.text ?? lastPhaseC.criteria[lastPhaseC.feedback.next_criterion!]?.text}
+                  </p>
+                </div>
+              </div>
+            )}
             {dynamicInterventions.map((interv) => (
               <div key={interv.id} className="fc-interv-item">
                 <div className={`fc-interv-icon ${interv.iconType}`}>
@@ -359,6 +404,15 @@ export function ChallengeCalibration() {
           <div className={`fc-profile-card ${profile.type}`}>
             <div className="fc-profile-card-name">{profile.label}</div>
             <p className="fc-profile-card-desc">{profile.desc}</p>
+            <div style={{ marginTop: 8 }}>
+              <WhyThis title="Cómo se calcula tu calibración">
+                <p style={{ margin: 0 }}>
+                  Sesgo = confianza declarada ({jolAvg.toFixed(1)}) − desempeño ({performance}) = <b>{gap > 0 ? '+' : ''}{gap}</b>.
+                  Solo cuentan los juicios de certeza (no el tiempo ni los intentos, que se reportan aparte).
+                  |sesgo| ≤ 1 calibrado · ≤ 2 leve · &gt; 2 marcado. Más de +2 indica sobreconfianza; menos de −2, subestimación.
+                </p>
+              </WhyThis>
+            </div>
           </div>
 
           <details className="fc-vector-card">

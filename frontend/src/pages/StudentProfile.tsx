@@ -14,11 +14,20 @@ import { TermsCheckbox } from '../components/TermsAndConditions';
 import { LEGAL } from '../data/legalConfig';
 import { StudentHome } from '../components/StudentHome';
 import WalkingScene from '../components/WalkingScene/WalkingScene';
+import { LearningStyleQuiz } from '../components/tutor/LearningStyleQuiz';
+import { LearnerProfileCard } from '../components/tutor/LearnerProfileCard';
+import { ChallengeMap } from '../components/tutor/ChallengeMap';
+import { useTutorStore } from '../stores/useTutorStore';
 
 export function StudentProfile() {
-  const { cognitiveLoad, calibration, events, user, setUser, setRole, setToken, currentLevel, role, token } = useCognitiveStore();
+  const { cognitiveLoad, calibration, events, user, setUser, setRole, setToken, currentLevel, role, token, dbUserId } = useCognitiveStore();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const { learningStyle, dismissedStyleQuiz, state: tutorState } = useTutorStore();
+  const [styleQuizOpen, setStyleQuizOpen] = useState(false);
+  useEffect(() => {
+    if (user && token && role === 'student' && !learningStyle && !dismissedStyleQuiz && !tutorState?.learning_style) setStyleQuizOpen(true);
+  }, [user, token, role, learningStyle, dismissedStyleQuiz, tutorState]);
 
   const navigateEffect = useNavigate();
 
@@ -359,19 +368,29 @@ export function StudentProfile() {
   }
 
   return (
-    <StudentHome
-      name={user.name}
-      hasStarted={hasStarted}
-      level={currentLevel}
-      steps={[phase1Complete, phase2Complete, phase3Complete]}
-      ctaLabel={beginButtonLabel}
-      onBegin={handleBeginDiagnosis}
-      metrics={{
-        calibration: Math.round(calibration * 100),
-        load: Math.round(cognitiveLoad * 100),
-        readiness: Math.round(useCognitiveStore.getState().transferReadiness * 100),
-      }}
-    />
+    <>
+      <StudentHome
+        name={user.name}
+        hasStarted={hasStarted}
+        level={currentLevel}
+        steps={[phase1Complete, phase2Complete, phase3Complete]}
+        ctaLabel={beginButtonLabel}
+        onBegin={handleBeginDiagnosis}
+        metrics={{
+          calibration: Math.round(calibration * 100),
+          load: Math.round(cognitiveLoad * 100),
+          readiness: Math.round(useCognitiveStore.getState().transferReadiness * 100),
+        }}
+      />
+      <div className="max-w-5xl mx-auto mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
+        <div className="bento-card p-5">
+          <h2 className="font-serif text-lg font-semibold text-on-surface mb-3">Mi mapa de retos</h2>
+          <ChallengeMap compact />
+        </div>
+        <LearnerProfileCard onEditStyle={() => setStyleQuizOpen(true)} />
+      </div>
+      <LearningStyleQuiz open={styleQuizOpen} userId={dbUserId} onClose={() => setStyleQuizOpen(false)} />
+    </>
   );
 }
 

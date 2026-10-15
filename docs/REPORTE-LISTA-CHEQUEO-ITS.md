@@ -1,196 +1,90 @@
 # Reporte: MetaPathFinder frente a la lista de chequeo de Sistemas Tutores Inteligentes
 
-**Lista evaluada:** *Lista de Chequeo para la Verificación del Frontend: Sistemas Tutores Inteligentes (STI / ITS)*, Universidad de Córdoba, Departamento de Informática Educativa.
+**Lista evaluada:** *Lista de Chequeo para la Verificación del Frontend: Sistemas Tutores Inteligentes (STI / ITS)*, Universidad de Córdoba, Departamento de Informática Educativa (docente evaluador: Prof. Raúl Toscano Miranda).
 **Referencia teórica:** Caro Piñeres, M. F. (2015). *Metamodel for personalized adaptation of pedagogical strategies using metacognition in Intelligent Tutoring Systems*. Tesis doctoral, Universidad Nacional de Colombia.
-**Sistema:** MetaPathFinder · rama `main` · revisión del 14 de octubre de 2026.
+**Sistema:** MetaPathFinder · rama `ccr-0381a356-znff55` · revisión del 15 de octubre de 2026.
+**Modelo tutor:** Griffin (progresiones y ZDP) + inferencia bayesiana. Diseño detallado en [TUTOR-GRIFFIN-BAYES.md](TUTOR-GRIFFIN-BAYES.md).
 
-> Es una autoevaluación hecha revisando el código del frontend y del backend, para planear el trabajo. La calificación oficial la asigna el evaluador en la demo.
+> Autoevaluación hecha revisando el código. La calificación oficial la asigna el evaluador en la demo; por eso cada criterio indica **dónde se ve en la interfaz** y **qué archivo lo implementa**, para que la verificación sea directa.
 
 ## Resumen
 
-| Bloque | Puntos | Cumplimiento |
-|---|---|---|
-| 1 · Reflejo de los cuatro módulos canónicos | 3 / 8 | 37,5 % |
-| 2 · Características que reflejan la inteligencia del tutor | 2 / 10 | 20 % |
-| 3 · Metacognición computacional (FUNPRO) | 4 / 6 | 66,7 % |
-| **Total** | **9 / 24** | **37,5 % · Insuficiente** |
+| Bloque | Antes (14 oct.) | Ahora | Cumplimiento |
+|---|---|---|---|
+| 1 · Reflejo de los cuatro módulos canónicos | 3 / 8 | **8 / 8** | 100 % |
+| 2 · Características que reflejan la inteligencia del tutor | 2 / 10 | **10 / 10** | 100 % |
+| 3 · Metacognición computacional (FUNPRO) | 4 / 6 | **6 / 6** | 100 % |
+| **Total** | **9 / 24 (37,5 %)** | **24 / 24 (100 %)** | **Sobresaliente** |
 
-Escala de la lista: C = cumple (2), CP = cumple parcialmente (1), NC = no cumple (0), NA = no aplica.
+Escala: C = cumple (2), CP = cumple parcialmente (1), NC = no cumple (0), NA = no aplica.
+Nota sobre UI-04: la recomendación por pares está implementada y visible, pero solo aparece cuando existen valoraciones de compañeros parecidos (k-NN). En la demo conviene tener al menos dos cuentas con pistas valoradas; de lo contrario se muestra la sustitución local (analogía ↔ contraejemplo).
 
-### Hasta dónde puede subir
+## Bloque 1 · Cuatro módulos canónicos (8 / 8)
 
-| Momento | Puntos | Cumplimiento |
-|---|---|---|
-| Hoy | 9 / 24 | 37,5 % · Insuficiente |
-| Tras la fase 1 | 15 / 24 | 62,5 % · Básico |
-| Tras la fase 2 | 20 / 24 | 83 % · Aceptable |
-| Tras la fase 3 | 24 / 24 | 100 % · Sobresaliente |
+### MOD-01 · Módulo del experto / dominio — C (2/2)
+- **Dónde se ve:** «Mi mapa de retos» (`/mi-mapa` y en el perfil): cuadrícula de 4 componentes MEN × 9 escalones con estado (dominado / en proceso / pendiente), **candado con razón** («Completa RB · N1 de este componente para desbloquearlo») y borde de ZDP. Cada tablero valida la lógica al instante (36 tableros interactivos).
+- **Código:** `frontend/src/components/tutor/ChallengeMap.tsx`, `backend-python/app/services/tutor/domain.py` (escalera técnica, criterios), `engine.tech_unlocked`.
+- **Unidades básicas:** cada reto conserva objetivo, criterios y pasos (`dynamicChallengeBank.ts`, `challengeInstructions.ts`).
 
-## Bloque 1 · Cuatro módulos canónicos (3 / 8)
+### MOD-02 · Módulo del estudiante (overlay y perfil cognitivo) — C (2/2)
+- **Dónde se ve:** tarjeta «Mi perfil de aprendizaje» (perfil, analíticas y mapa): estilo Felder-Silverman (Visual/Verbal · Global/Secuencial) obtenido con un cuestionario de 8 ítems al primer ingreso; anillo de dominio (verde dominado, amarillo en proceso, gris pendiente); barras de probabilidad de los 12 criterios metacognitivos con intervalo; última calibración; **concepción errónea** cuando el mismo error frecuente se repite en varios intentos («No es un descuido: conviene revisar la idea de fondo»).
+- **Código:** `LearningStyleQuiz.tsx`, `LearnerProfileCard.tsx`, `lib/tutorEngine.ts` (`scoreLearningStyle`, `detectMisconception`), tabla `student_tutor_state`, `POST /api/tutor/learning-style`.
 
-### MOD-01 · Módulo del experto / dominio — CP (1/2)
-- **Lo que hay:**
-  - 36 retos organizados por nivel (básico, medio, avanzado), componente MEN (C1–C4) y subnivel (N1–N3), con objetivos y criterios explícitos.
-  - Tableros interactivos que validan la respuesta al instante: editores de código, simuladores, ordenadores y cuestionarios.
-- **Lo que falta:**
-  - El estudiante no ve un mapa del dominio con prerrequisitos.
-  - No hay temas bloqueados con candado explicativo.
-- **Cómo resolverlo:**
-  - Crear «Mi mapa de retos»: cuadrícula componente × subnivel con estado (dominado, en curso, bloqueado).
-  - Mostrar el candado con su razón, por ejemplo «Completa N1 de este componente».
-  - Los datos ya existen en `frontend/src/data/dynamicChallengeBank.ts`.
-- **Esfuerzo:** medio · fase 2.
+### MOD-03 · Módulo del tutor / pedagógico — C (2/2)
+- **Dónde se ve:** cada ayuda lleva su **táctica nombrada** (Pregunta socrática → Señalamiento → Analogía cotidiana / Contraejemplo → Desglose paso a paso → Solución análoga guiada); ruta visible Fase › Tarea › Actividad (A · B · C en el encabezado); **dosificación dinámica**: el reto se elige en el escalón de la ZDP técnica con Beta-Bernoulli y el andamiaje según la ZDP metacognitiva (conciencia / monitoreo / transferencia, con *fading*).
+- **Código:** `domain.TACTICS`, `domain.SCAFFOLD_LADDER`, `engine.plan_session`, `engine.scaffold_plan`, `TutorAdvisor.tsx`, `ReplanModal.tsx`.
 
-### MOD-02 · Módulo del estudiante (overlay y perfil cognitivo) — NC (0/2)
-- **Lo que hay:**
-  - Perfil de calibración por actividad: calibrado, sobreconfianza o subestimación.
-  - Historial metacognitivo del estudiante.
-- **Lo que falta:**
-  - Estilo de aprendizaje Felder-Silverman.
-  - Modelo overlay del conocimiento (verde, amarillo, gris).
-  - Diagnóstico de concepciones erróneas.
-- **Cómo resolverlo:**
-  - Cuestionario corto del Índice de Estilos de Aprendizaje (Felder-Soloman), de 8 a 12 ítems, al primer ingreso.
-  - Tarjeta «Mi perfil de aprendizaje» con el estilo, el overlay por componente y la calibración.
-  - Catálogo de errores frecuentes por reto (ya existe como «Pista 2») para nombrar la concepción errónea cuando se repite.
-- **Esfuerzo:** alto · fase 2. El estilo también habilita UI-01 y UI-02.
+### MOD-04 · Interfaz como traductor ergonómico y afectivo — C (2/2)
+- **Dónde se ve:** mensajes reescritos en tono de tutor («¡Buen intento! Estuviste cerca. Un error es información…», «Aún no, pero vas por buen camino»); la consola dice «Buen intento 2: aún no cumple. Mira la condición que falta…» en lugar de «Error: validación fallida»; freno con explicación personal («Respondiste en 1,4 s, mucho más rápido que tu propio ritmo (3,2 s)…»). Interfaz despejada: un solo panel de tutor a la derecha, herramientas de apoyo plegadas.
+- **Código:** `CognitiveChallenge.tsx` (mensajes), `MetacognitiveBrakeModal.tsx`, `TutorAdvisor.tsx`.
 
-### MOD-03 · Módulo del tutor / pedagógico — CP (1/2)
-- **Lo que hay:**
-  - Fases visibles: Antes (juicios), Durante (reto con estrategia) y Después (calibración).
-  - Ajuste de dificultad: si falla, pasa a un reto N1; si aprueba, sube de nivel.
-  - 8 estrategias metacognitivas con sus herramientas.
-- **Lo que falta:** las tácticas didácticas formales (analogía, contraejemplo, desglose paso a paso, simulación) no aparecen nombradas ni se eligen según el desempeño.
-- **Cómo resolverlo:**
-  - Etiquetar cada ayuda con su táctica.
-  - Usar una táctica distinta tras fallar (ver UI-05).
-  - Mostrar la ruta como «Fase › Tarea › Actividad».
-- **Esfuerzo:** bajo · fase 1.
+## Bloque 2 · Inteligencia del tutor en la interfaz (10 / 10)
 
-### MOD-04 · Interfaz como traductor ergonómico y afectivo — CP (1/2)
-- **Lo que hay:**
-  - Lenguaje cercano: «Un análisis, no una prueba», «Sin presión de nota».
-  - Interfaz minimalista y responsiva, con tema claro y oscuro.
-- **Lo que falta:** quedan mensajes técnicos y fríos en la actividad, por ejemplo «Alta latencia detectada. Posible bloqueo conceptual» y «Múltiples errores detectados».
-- **Cómo resolverlo:**
-  - Reescribir esos mensajes de `frontend/src/pages/CognitiveChallenge.tsx` en tono de tutor.
-  - Felicitar el esfuerzo en cada reintento.
-- **Esfuerzo:** bajo · fase 1.
+### UI-01 · Adaptación multimodal (verbal / visual) — C (2/2)
+- **Dónde se ve:** en el planteamiento del reto, conmutador **Verbal / Visual**. Verbal: pasos en prosa; Visual: **diagrama de flujo** generado desde los mismos pasos (inicio → pasos numerados → rombo «¿cumple los criterios?» → fin). Se abre por defecto en la modalidad del estilo del estudiante y se puede alternar a voluntad.
+- **Código:** `ChallengeBriefing.tsx`, `VisualFlow.tsx`, `useTutorStore.presentationMode`.
 
-## Bloque 2 · Inteligencia del tutor en la interfaz (2 / 10)
+### UI-02 · Navegación adaptativa (global / secuencial) — C (2/2)
+- **Dónde se ve:** en el mapa, estilo **secuencial** = tarjeta «Siguiente reto · paso k de 9» y solo la ruta del componente actual; estilo **global** = pestañas por componente con saltos libres. **Desbloqueo**: al dominar el 90 % de los escalones practicados (mínimo 3), aparece el logro «la navegación libre quedó habilitada» y el modo global se activa para cualquier estudiante.
+- **Código:** `ChallengeMap.tsx` (`navigationMode`, `freeNavigationUnlocked`).
 
-### UI-01 · Adaptación multimodal (verbal / visual) — NC (0/2)
-- **Lo que hay:** el planteamiento combina texto e íconos, pero es igual para todos.
-- **Lo que falta:** no hay presentación distinta según el estilo, ni un conmutador «Verbal / Visual».
-- **Cómo resolverlo:**
-  - Añadir un conmutador en `ChallengeBriefing` con dos versiones del mismo objetivo.
-  - Verbal: explicación en prosa paso a paso.
-  - Visual: diagrama de flujo generado desde los pasos del reto.
-  - Abrir por defecto la del estilo del estudiante (MOD-02).
-- **Esfuerzo:** medio · fase 2.
+### UI-03 · Andamiaje proactivo y asesor (Advisor) — C (2/2)
+- **Dónde se ve:** panel permanente **«Tu tutor»** a la derecha durante todo el reto: mensaje del tutor, medidor «¿Qué tan atascado/a pareces?» (P(bloqueo)), escalera N0–N3, pistas **1/3 · 2/3 · 3/3** con candado progresivo, punto de control de confianza y criterios de la ZDP en los que se trabaja. Intervención no invasiva: la ayuda sube solo si la probabilidad de bloqueo se mantiene y baja cuando avanza (contingencia de Wood).
+- **Código:** `TutorAdvisor.tsx`, `lib/tutorEngine.ts` (`blockingProbability`, `scaffoldLevel`), `data/tutorHints.ts` (36 pistas de nivel 3 con analogía, contraejemplo y pasos guiados).
 
-### UI-02 · Navegación adaptativa (global / secuencial) — NC (0/2)
-- **Lo que hay:** navegación lineal fija para todos (secuencial).
-- **Lo que falta:** no cambia según el estilo, ni se desbloquea la navegación libre con alto dominio.
-- **Cómo resolverlo:**
-  - Secuencial: botón «Siguiente reto (paso 2 de 5)».
-  - Global: pestañas del mapa de retos (MOD-01).
-  - Desbloquear las pestañas al superar el 90 %, con un mensaje de logro.
-- **Esfuerzo:** medio · fase 3. Depende de MOD-01 y MOD-02.
+### UI-04 · Curaduría dinámica y resiliencia de recursos — C (2/2)
+- **Dónde se ve:** cada pista y la retroalimentación final tienen **👍 / 👎**. Al marcar 👎: (a) en la pista 3 el tutor **sustituye en caliente** la analogía por el contraejemplo (y viceversa) sin romper la pantalla; (b) consulta a los **pares parecidos (k-NN** sobre estilo, ZDP y sesgo) y muestra «A N compañeros con un perfil parecido les sirvió la pista k (xx %)» con el botón «Verla». Las pistas son locales: no hay 404 ni *timeouts*; si no hay pares con valoraciones, se usa el respaldo local.
+- **Código:** `POST /api/tutor/resource-rating`, `GET /api/tutor/recommend/{user}` (media de Laplace), tabla `resource_ratings`, `rateHint` en `CognitiveChallenge.tsx`, `TutorAdvisor.tsx` (`peerRecommendation`).
 
-### UI-03 · Andamiaje proactivo y asesor (Advisor) — CP (1/2)
-- **Lo que hay:**
-  - Dos pistas escalonadas; la pista 1 aparece sola tras 2 intentos fallidos.
-  - Panel lateral con mensajes y freno de reflexión ante respuestas impulsivas.
-- **Lo que falta:**
-  - Tercer nivel de pista (contraejemplo o solución análoga guiada).
-  - Un asesor con presencia propia y permanente.
-- **Cómo resolverlo:**
-  - Agregar la pista 3 por reto.
-  - Convertir el panel en «Tu tutor» con botón «Solicitar pista (1/3)».
-  - Ofrecer ayuda tras inactividad prolongada sin interrumpir.
-- **Esfuerzo:** bajo a medio (redactar 36 pistas nuevas) · fase 1.
+### UI-05 · Replanificación en tiempo real ante bloqueos — C (2/2)
+- **Dónde se ve:** sensores de tiempos atípicos (relativos al propio ritmo), errores seguidos, ediciones sin verificar y cambio de pestaña. **Al tercer error seguido la pantalla se atenúa** y aparece «Parece que este reto se resiste. Vamos a abordarlo de otra forma» con tres caminos: **modo guiado paso a paso** (pasos marcables dentro del mismo reto, táctica «Desglose»), **versión simplificada N1** del mismo componente, o seguir por cuenta propia (agencia, registrada).
+- **Código:** `ReplanModal.tsx`, `CognitiveChallenge.tsx` (`consecutiveErrors`, `handleReplanChoice`).
 
-### UI-04 · Curaduría dinámica y resiliencia de recursos — NC (0/2)
-- **Lo que hay:** recursos locales (íconos en lugar de imágenes externas), pero sin sustitución automática.
-- **Lo que falta:**
-  - Calificación de utilidad por el estudiante.
-  - Recomendación por pares (k-NN).
-  - Recurso alternativo cuando uno falla.
-- **Cómo resolverlo:**
-  - Botones «¿Te sirvió? 👍 / 👎» guardados en la base de datos.
-  - Al marcar 👎, recomendar el recurso mejor valorado por los compañeros más parecidos (k-NN sobre estilo, nivel y calibración).
-  - Respaldo local cuando un recurso no carga.
-- **Esfuerzo:** alto · fase 3. Si no cabe en el alcance, negociar NA con el docente.
-
-### UI-05 · Replanificación en tiempo real ante bloqueos — CP (1/2)
-- **Lo que hay:**
-  - Sensores de tiempo, clics, ediciones e intentos fallidos.
-  - Aviso por latencia o errores y pista automática tras 2 fallos.
-  - El cambio a un reto más simple ocurre solo al terminar.
-- **Lo que falta:** al tercer error seguido, la pantalla no se reconfigura en el momento con otro enfoque.
-- **Cómo resolverlo:** al tercer error, atenuar la pantalla y ofrecer en ese momento un modo guiado paso a paso o la versión N1 del mismo componente, con una táctica distinta.
-- **Esfuerzo:** medio · fase 1.
-
-## Bloque 3 · Metacognición computacional (4 / 6)
+## Bloque 3 · Metacognición computacional (6 / 6)
 
 ### META-01 · Doble lazo: nivel objeto y metanivel — C (2/2)
-- **Lo que hay:**
-  - La zona de trabajo (nivel objeto) está separada de «Herramientas de apoyo» y «Métricas de proceso» (metanivel).
-  - Indicadores de tiempo, intentos y ritmo.
-  - Cada estrategia explica para qué ayuda.
-- **Mejora opcional:** gráfica de autoeficacia acumulada en el metanivel.
+- **Dónde se ve:** zona central = tarea (nivel objeto); panel derecho = «Tu tutor» + «Métricas de proceso» (metanivel) con el bloque **«Mi autorregulación · en lo que estamos trabajando»** (criterios de la ZDP) y, al cerrar, la lectura del reto con probabilidades por nivel. El tutor explicita el motivo pedagógico de cada sugerencia («¿Por qué veo esto?»).
+- **Código:** `TutorAdvisor.tsx`, `TutorFeedbackCard.tsx`, `LearnerProfileCard.tsx` (barras de autoeficacia por criterio).
 
-### META-02 · Juicios metacognitivos y calibración (COP / CSRD) — CP (1/2)
-- **Lo que hay:**
-  - Juicios de aprendizaje (JOL) antes del reto, en escala de 1 a 10.
-  - Pantalla de calibración que contrasta la confianza con el resultado y clasifica el perfil.
-- **Lo que falta:** la estrategia inicial se asigna al azar (`frontend/src/pages/EvaluationStart.tsx`); no se elige por el perfil.
-- **Cómo resolverlo:**
-  - Elegir la estrategia por regla según los juicios y la última calibración:
-    - sobreconfianza → monitoreo o autodiagnóstico;
-    - subestimación → autoeficacia;
-    - estimación de tiempo poco realista → regulación temporal.
-  - Añadir un juicio rápido de certeza antes de «Verificar».
-- **Esfuerzo:** bajo · fase 1.
+### META-02 · Juicios metacognitivos y calibración (COP / CSRD) — C (2/2)
+- **Dónde se ve:** JOL antes del reto (3 generales + 2 específicos), **puntos de control** durante el reto y **juicio de certeza** (Dudoso / Confiado / Seguro) **antes de verificar**; contraste inmediato: «Marcaste “Seguro” (9/10) y obtuviste 60/100: te sentías más seguro/a de lo que mostró el resultado». Calibración con sesgo, exactitud absoluta, Brier, discriminación, gamma y calibración temporal aparte. La **estrategia ya no se asigna al azar**: muestreo de Thompson por perfil de calibración (grupo experimental) con explicación.
+- **Código:** `CertaintyPrompt.tsx`, `services/calibration.py`, `engine.choose_strategy`, `JolFlow.tsx` (JolReady).
 
-### META-03 · Transparencia algorítmica y agencia compartida — CP (1/2)
-- **Lo que hay:**
-  - Evaluación no punitiva.
-  - Al terminar un nivel, el estudiante elige la estrategia del siguiente.
-  - Se explica para qué sirve cada herramienta.
-- **Lo que falta:**
-  - No se explica por qué el sistema eligió ese reto o esa estrategia.
-  - No se puede rechazar la sugerencia.
-- **Cómo resolverlo:**
-  - Botón «¿Por qué veo esto?» con la razón concreta.
-  - Opción «Prefiero otra estrategia» o «Avanzar bajo mi responsabilidad», registrada como evento.
-- **Esfuerzo:** bajo · fase 1.
+### META-03 · Transparencia algorítmica y agencia compartida — C (2/2)
+- **Dónde se ve:** botones **«¿Por qué veo esto?»** en el reto sugerido, la estrategia, el medidor de bloqueo, el perfil de calibración, el mapa y la retroalimentación (con los indicadores que pesaron y su signo). **«Prefiero otro reto»**, **«Prefiero otra estrategia»** y «Seguir por mi cuenta» registran la decisión (`POST /api/tutor/override`) y el tutor sigue adaptándose. Evaluación sin castigo: la certeza y las pistas no restan nota; el lenguaje es de desarrollo («Ya logras… tu siguiente paso es…»).
+- **Código:** `WhyThis.tsx`, `tutor_decisions` (tabla), `ChallengeBriefing.tsx`, `JolFlow.tsx`.
 
-## Plan para solucionarlo
+## Qué cambió en la calibración (precisión)
 
-### Fase 1 · Mejoras rápidas (+6 puntos → 15/24)
-1. Reescribir los mensajes técnicos en tono de tutor (MOD-04).
-2. Pista 3 y panel «Tu tutor» con pistas 1/3, 2/3 y 3/3 (UI-03).
-3. Etiquetar las ayudas con su táctica didáctica y variarla tras fallar (MOD-03).
-4. Reconfigurar la pantalla al tercer error con modo guiado o versión simplificada (UI-05).
-5. Elegir la estrategia por regla según los juicios y la calibración, en lugar de al azar (META-02).
-6. Botón «¿Por qué veo esto?» y opción de elegir otra estrategia (META-03).
+1. Solo los juicios de certeza cuentan en el sesgo; tiempo e intentos se reportan como calibración temporal y de esfuerzo.
+2. Bandas: |sesgo| ≤ 1 calibrado · ≤ 2 leve · > 2 marcado; sobre/subestimación siguen en ±2 para los perfiles.
+3. Nuevas medidas: Brier, discriminación (confianza en ítems superados − no superados), gamma de Goodman-Kruskal.
+4. Criterio A4 «predicción coincide» con ±1,5 en vez de ±2.
+5. Freno metacognitivo personalizado (mediana propia / 2, piso 2 s) y pausa larga relativa al propio ritmo.
 
-### Fase 2 · Perfil del estudiante (+5 puntos → 20/24)
-1. Cuestionario Felder-Soloman y tarjeta «Mi perfil de aprendizaje» con overlay por componente (MOD-02).
-2. «Mi mapa de retos» con prerrequisitos y candados explicados (MOD-01).
-3. Conmutador verbal / visual en el planteamiento del reto (UI-01).
+## Lo que queda por hacer (y no depende del código)
 
-### Fase 3 · Adaptación avanzada (+4 puntos → 24/24)
-1. Navegación global o secuencial según el estilo, con desbloqueo por dominio (UI-02).
-2. Valoración 👍 / 👎 de recursos, recomendación por pares (k-NN) y respaldo local (UI-04).
-3. Opcional: gráfica de autoeficacia en el metanivel (META-01).
-
-Si UI-04 no cabe en el alcance, la lista permite marcarlo como «No aplica» por acuerdo con el docente; el porcentaje se calcula entonces sobre 22 puntos.
-
-## Pendiente en el encabezado de la lista
-La lista pide datos que no están en el código y que hay que completar antes de entregarla:
-- nombres y códigos de los integrantes;
-- URL del repositorio o de la demo;
-- fecha de evaluación.
+- Validación con docentes de los criterios y las probabilidades de experto (juicio de expertos, kappa, Rasch): ver sección 8 de [TUTOR-GRIFFIN-BAYES.md](TUTOR-GRIFFIN-BAYES.md).
+- Ampliar los léxicos de los indicadores de texto con reflexiones reales del piloto.
+- Para la demo de UI-04, preparar dos o tres cuentas con pistas valoradas para que aparezca la recomendación por pares.
+- Encabezado de la lista: nombres y códigos de los integrantes, URL de la demo y fecha de evaluación.

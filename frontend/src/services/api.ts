@@ -162,11 +162,36 @@ export const api = {
   // Phase C — Calibration (server computes calibration from raw JOLs + scores)
   completePhaseC: (data: {
     session_id: string;
-    jols: { tipo: string; valor: number | string; tiempo_maximo?: number }[];
+    jols: { tipo: string; valor: number | string; tiempo_maximo?: number; kind?: string; id?: string }[];
     actual_scores: number[];
     reflection_text?: string | null;
     cognitive_events?: { event_type: string; timestamp: string; metadata?: Record<string, unknown> }[];
-  }) => request<{ status: string; session_id: string; calibration: Record<string, unknown> }>('/api/phase-c/complete', { method: 'POST', body: JSON.stringify(data) }),
+    tutor_observations?: Record<string, unknown>;
+    challenge?: { id: string; titulo?: string; criterios?: string[] };
+    estimated_minutes?: number;
+    actual_minutes?: number;
+  }) => request<{ status: string; session_id: string; calibration: Record<string, unknown>; tutor: TutorPhaseCResult | null }>('/api/phase-c/complete', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Tracking en tiempo real (lotes)
+  trackEvents: (data: { session_id?: string | null; events: { event_type: string; timestamp: string; metadata?: Record<string, unknown> }[] }) =>
+    request<{ status: string; stored: number }>('/api/tracking/events', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Sistema tutor (Griffin + Bayes)
+  getTutorDomain: () => request<TutorDomain>('/api/tutor/domain'),
+  getTutorState: (userId: string) => request<TutorState>(`/api/tutor/state/${userId}`),
+  tutorPlan: (data: { user_id: string; level_name: string; available: { id: string }[]; session_id?: string | null }) =>
+    request<TutorPlan>('/api/tutor/plan', { method: 'POST', body: JSON.stringify(data) }),
+  tutorOverride: (data: { user_id: string; session_id?: string | null; kind: 'strategy' | 'challenge' | 'advance'; chosen?: string; suggested?: string; reason?: string }) =>
+    request<{ status: string }>('/api/tutor/override', { method: 'POST', body: JSON.stringify(data) }),
+  saveLearningStyle: (data: { user_id: string; visual_verbal: number; global_sequential: number; answers?: Record<string, unknown> }) =>
+    request<{ status: string; learning_style: LearningStyle }>('/api/tutor/learning-style', { method: 'POST', body: JSON.stringify(data) }),
+  rateResource: (data: { user_id: string; resource_id: string; challenge_id?: string; helpful: boolean }) =>
+    request<{ status: string }>('/api/tutor/resource-rating', { method: 'POST', body: JSON.stringify(data) }),
+  recommendResource: (userId: string, challengeId?: string, exclude?: string) =>
+    request<{ resource_id: string | null; helpful_ratio?: number; neighbours: number; source: string }>(
+      `/api/tutor/recommend/${userId}?${new URLSearchParams({ ...(challengeId ? { challenge_id: challengeId } : {}), ...(exclude ? { exclude } : {}) })}`
+    ),
+  getClassMap: () => request<ClassMap>('/api/tutor/class-map'),
 
   // Session
   completeSession: (sessionId: string, data: {
@@ -219,3 +244,85 @@ export const api = {
   assignToExperiment: (experimentId: string, data: { user_id: string; group_name?: string }) =>
     request<{ status: string; group?: string }>(`/api/experiments/${experimentId}/assign`, { method: 'POST', body: JSON.stringify(data) }),
 };
+
+
+// ---------------------------------------------------------------------------
+// Tipos del sistema tutor
+// ---------------------------------------------------------------------------
+export type TutorLevel = 'basico' | 'medio' | 'avanzado';
+
+export interface TutorCriterion {
+  id: string; level: TutorLevel; dimension: string; phase: string; text: string; evidence: string; next_step: string; achieved: string;
+}
+
+export interface TutorDomain {
+  levels: TutorLevel[];
+  level_labels: Record<TutorLevel, string>;
+  dimensions: Record<string, string>;
+  criteria: TutorCriterion[];
+  indicators: { id: string; text: string; source: string; criteria: string[]; p: Record<TutorLevel, number> }[];
+  blocking_prior: number;
+  blocking_signals: Record<string, { blocked: number; flowing: number }>;
+  scaffold_ladder: { level: string; name: string; min_p: number; max_p: number; tactic: string; requires_consecutive?: number; on_request_only?: boolean }[];
+  tactics: Record<string, string>;
+  thresholds: Record<string, number>;
+  tech_ladder: string[];
+  components: Record<string, string>;
+  strategies: Record<string, string>;
+}
+
+export interface LearningStyle {
+  visual_verbal: number; global_sequential: number; label: string; answers?: Record<string, unknown>;
+}
+
+export interface CriterionSummary {
+  level: TutorLevel; dimension: string; text: string; p: number; ci: [number, number]; n: number; mastered: boolean; faded: boolean;
+}
+
+export interface TechOverlay {
+  [component: string]: { name: string; steps: Record<string, { p: number; n: number; status: 'dominado' | 'en_proceso' | 'pendiente' }>; zdp_step: string };
+}
+
+export interface TutorZdp {
+  consolidated: TutorLevel | null; zdp: TutorLevel; zdp_label: string; pending_criteria: string[]; fading: boolean;
+}
+
+export interface TutorScaffold {
+  zdp: TutorLevel; type: 'conciencia' | 'monitoreo' | 'transferencia'; mandatory_checkpoints: boolean; ask_before_hint: boolean; messages: string[];
+}
+
+export interface TutorState {
+  user_id: string; group: string; zdp: TutorZdp; criteria: Record<string, CriterionSummary>; overlay: TechOverlay;
+  learning_style: LearningStyle | null; last_profile: string | null; last_bias: number | null; last_strategy: string | null;
+  strategies: Record<string, Record<string, [number, number]>>; challenges_done: string[];
+  history: { session_id: string; challenge_id: string; level: TutorLevel; posterior: Record<TutorLevel, number>; bias: number | null; score?: number; passed: boolean; zdp: TutorLevel; criteria: Record<string, boolean> }[];
+  scaffold: TutorScaffold;
+}
+
+export interface TutorPlan {
+  group: string; zdp: TutorZdp;
+  challenge: { challenge_id: string | null; reason: string; alternatives: { id: string; p_dominio: number; unlocked: boolean }[]; p_dominio?: number };
+  strategy: { strategy_id: string; method: 'thompson' | 'aleatoria'; profile: string; reason: string; samples: Record<string, number> };
+  scaffold: TutorScaffold; overlay: TechOverlay;
+}
+
+export interface TutorPhaseCResult {
+  group: string;
+  reading: { posterior: Record<TutorLevel, number>; level: TutorLevel; level_label: string; contributions: { indicator: string; weight: number; text: string }[]; missing_for_next: { indicator: string; text: string }[] };
+  indicators: Record<string, boolean | null>;
+  text_analysis: { f1: boolean; f2: boolean; f3: boolean; f4: boolean; experience_cited: boolean; reflection_words: number; anchor_similarity: Record<string, number> };
+  criteria_observed: Record<string, boolean | null>;
+  newly_mastered: string[];
+  zdp_before: TutorZdp; zdp_after: TutorZdp;
+  criteria: Record<string, CriterionSummary>;
+  strategy_outcome: { strategy_id: string; profile: string; success: boolean; prev_bias: number; bias: number } | null;
+  feedback: { message: string; achieved_criterion: string | null; next_criterion: string | null; newly_mastered: string[]; level_change: string | null; reading_sentence: string };
+  overlay: TechOverlay;
+}
+
+export interface ClassMap {
+  students: { user_id: string; name: string; email: string; zdp: TutorLevel; consolidated: TutorLevel | null; pending: string[]; criteria: Record<string, number>; tech: Record<string, string>; last_profile: string | null; last_bias: number | null; learning_style: string | null; challenges_done: number; last_reading: TutorLevel | null }[];
+  by_zdp: Record<TutorLevel, number>;
+  levels: Record<TutorLevel, string>;
+  criteria: TutorCriterion[];
+}

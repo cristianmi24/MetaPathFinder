@@ -69,6 +69,9 @@ class JolInput(BaseModel):
     tipo: str  # "escala" | "tiempo" | "capacidad"
     valor: float | str
     tiempo_maximo: Optional[float] = None
+    # "confianza" | "capacidad" | "tiempo" | "esfuerzo": solo las dos primeras cuentan como confianza.
+    kind: Optional[str] = None
+    id: Optional[str] = None
 
 
 class PhaseAComplete(BaseModel):
@@ -91,8 +94,48 @@ class PhaseCComplete(BaseModel):
     session_id: str
     jols: List[JolInput]
     actual_scores: List[float]
-    reflection_text: Optional[str] = None
+    reflection_text: Optional[str] = Field(default=None, max_length=4000)
     cognitive_events: List[CognitiveEventCreate] = []
+    # Observaciones crudas para el tutor (ver services/tutor/indicators.py). Opcional.
+    tutor_observations: Optional[Dict[str, Any]] = None
+    challenge: Optional[Dict[str, Any]] = None  # {id, titulo, criterios}
+    estimated_minutes: Optional[float] = None
+    actual_minutes: Optional[float] = None
+
+
+class TutorPlanRequest(BaseModel):
+    user_id: UUID
+    level_name: str = "Básico"
+    available: List[Dict[str, Any]] = []  # [{id, nivel, sub_nivel}]
+    session_id: Optional[str] = None
+
+
+class TutorOverride(BaseModel):
+    user_id: UUID
+    session_id: Optional[str] = None
+    kind: Literal["strategy", "challenge", "advance"]
+    chosen: Optional[str] = None
+    suggested: Optional[str] = None
+    reason: Optional[str] = Field(default=None, max_length=300)
+
+
+class LearningStyleInput(BaseModel):
+    user_id: UUID
+    visual_verbal: float = Field(..., ge=-1, le=1)     # +1 visual · −1 verbal
+    global_sequential: float = Field(..., ge=-1, le=1) # +1 global · −1 secuencial
+    answers: Dict[str, Any] = {}
+
+
+class ResourceRatingInput(BaseModel):
+    user_id: UUID
+    resource_id: str = Field(..., max_length=80)
+    challenge_id: Optional[str] = Field(default=None, max_length=20)
+    helpful: bool
+
+
+class TrackingBatch(BaseModel):
+    session_id: Optional[str] = None
+    events: List[CognitiveEventCreate] = Field(default_factory=list, max_length=500)
 
 
 class SessionComplete(BaseModel):

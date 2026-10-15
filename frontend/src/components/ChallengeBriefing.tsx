@@ -4,6 +4,12 @@ import {
   Sparkles, Target, TriangleAlert, Wrench,
 } from 'lucide-react';
 import type { getChallengeBriefing } from '../data/challengeBriefings';
+import { useEffect, useState } from 'react';
+import { Eye, Bot } from 'lucide-react';
+import { VisualFlow } from './tutor/VisualFlow';
+import './tutor/tutor.css';
+import { WhyThis } from './tutor/WhyThis';
+import { useTutorStore } from '../stores/useTutorStore';
 
 type Briefing = ReturnType<typeof getChallengeBriefing>;
 
@@ -15,6 +21,10 @@ interface ChallengeBriefingProps {
   briefing: Briefing;
   isRetryVariation: boolean;
   onBegin: () => void;
+  tutorReason?: string | null;
+  alternatives?: { id: string; titulo: string; p: number }[];
+  onChangeChallenge?: (id: string) => void;
+  presentationHint?: 'visual' | 'verbal' | null;
 }
 
 const cap = (t: string) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : t);
@@ -42,7 +52,12 @@ const Chip = ({ children, tone = 'neutral' }: { children: React.ReactNode; tone?
 
 export function ChallengeBriefing({
   titulo, nivel, subNivel, componente, briefing, isRetryVariation, onBegin,
+  tutorReason, alternatives = [], onChangeChallenge, presentationHint,
 }: ChallengeBriefingProps) {
+  const { presentationMode, setPresentationMode } = useTutorStore();
+  const mode = presentationMode ?? presentationHint ?? 'verbal';
+  const [showAlt, setShowAlt] = useState(false);
+  useEffect(() => { if (!presentationMode && presentationHint) setPresentationMode(presentationHint); }, [presentationHint, presentationMode, setPresentationMode]);
   return (
     <div className="max-w-4xl mx-auto space-y-5">
       {/* Cabecera del reto */}
@@ -64,10 +79,38 @@ export function ChallengeBriefing({
             )}
             {isRetryVariation ? (
               <Chip tone="warning"><LifeBuoy className="w-3.5 h-3.5" /> Variación de apoyo</Chip>
+            ) : tutorReason ? (
+              <Chip tone="primary"><Bot className="w-3.5 h-3.5" /> Elegido por tu tutor</Chip>
             ) : (
               <Chip><Shuffle className="w-3.5 h-3.5" /> Reto al azar</Chip>
             )}
           </div>
+          {(tutorReason || alternatives.length > 0) && (
+            <div className="relative z-10 mt-3 flex flex-wrap items-center gap-4">
+              {tutorReason && (
+                <WhyThis title="Por qué este reto">
+                  <p style={{ margin: 0 }}>{tutorReason}</p>
+                </WhyThis>
+              )}
+              {alternatives.length > 0 && onChangeChallenge && (
+                <button type="button" className="ui-sans text-xs font-semibold underline decoration-dotted text-on-surface-variant" onClick={() => setShowAlt((v) => !v)}>
+                  {showAlt ? 'Mantener este reto' : 'Prefiero otro reto'}
+                </button>
+              )}
+            </div>
+          )}
+          {showAlt && onChangeChallenge && (
+            <div className="relative z-10 mt-3 grid gap-2 sm:grid-cols-3">
+              {alternatives.map((a) => (
+                <button key={a.id} type="button" onClick={() => { onChangeChallenge(a.id); setShowAlt(false); }}
+                  className="ui-sans rounded-xl border border-outline-variant/70 bg-surface-container-lowest/80 p-3 text-left text-xs hover:border-primary transition">
+                  <span className="block font-semibold text-on-surface">{a.titulo}</span>
+                  <span className="text-on-surface-variant">{a.id} · dominio estimado {Math.round(a.p * 100)} %</span>
+                </button>
+              ))}
+              <p className="ui-sans text-[10.5px] text-on-surface-variant sm:col-span-3">Avanzas bajo tu criterio: el tutor registra la decisión y sigue adaptándose.</p>
+            </div>
+          )}
 
           <h1 className="font-serif mt-5 text-2xl sm:text-4xl font-semibold leading-tight text-on-surface">{titulo}</h1>
           <p className="ui-sans mt-3 max-w-2xl text-on-surface-variant leading-relaxed line-clamp-2">
@@ -101,16 +144,28 @@ export function ChallengeBriefing({
           ))}
         </div>
 
-        {/* Pasos */}
+        {/* Pasos: modalidad verbal (prosa paso a paso) o visual (diagrama de flujo), con conmutador */}
         <motion.section
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           className="bento-card p-5 sm:p-6"
         >
-          <h2 className="font-serif text-lg font-semibold text-on-surface flex items-center gap-2">
-            <ListChecks className="w-5 h-5 text-primary" /> Pasos
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-serif text-lg font-semibold text-on-surface flex items-center gap-2">
+              <ListChecks className="w-5 h-5 text-primary" /> Pasos
+            </h2>
+            <div className="tut-toggle" role="group" aria-label="Formato de presentación">
+              <button type="button" className={mode === 'verbal' ? 'on' : ''} onClick={() => setPresentationMode('verbal')}><BookOpen className="w-3.5 h-3.5" /> Verbal</button>
+              <button type="button" className={mode === 'visual' ? 'on' : ''} onClick={() => setPresentationMode('visual')}><Eye className="w-3.5 h-3.5" /> Visual</button>
+            </div>
+          </div>
+          {mode === 'visual' ? (
+            <div className="mt-4">
+              <VisualFlow steps={briefing.pasosDetallados} meta={briefing.tareaConcreta} />
+              <p className="ui-sans mt-2 text-xs text-on-surface-variant">El diagrama muestra los mismos pasos que la versión verbal; cambia de formato cuando quieras.</p>
+            </div>
+          ) : (
           <ol className="mt-4 space-y-0">
             {briefing.pasosDetallados.map((step: string, i: number, arr: string[]) => (
               <li key={i} className="relative flex gap-4 pb-4 last:pb-0">
@@ -124,6 +179,7 @@ export function ChallengeBriefing({
               </li>
             ))}
           </ol>
+          )}
         </motion.section>
 
         {/* Recuerda */}

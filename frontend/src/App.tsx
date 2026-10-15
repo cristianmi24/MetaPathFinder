@@ -31,6 +31,9 @@ import { api } from './services/api';
 import { cn } from './lib/utils';
 
 import { StudentDashboard } from './pages/StudentDashboard';
+import { MyMap } from './pages/MyMap';
+import { Progression } from './pages/Progression';
+import { useTutorStore } from './stores/useTutorStore';
 
 function AdminLayout({ children }: { children: React.ReactNode }) {
   const isCollapsed = useCognitiveStore((s) => s.isSidebarCollapsed);
@@ -151,7 +154,7 @@ function ProtectedRoute({ children, requiredRole, redirectTo = '/profile' }: { c
 const KNOWN_PATHS = [
   '/', '/admin-login', '/student', '/admin', '/profile', '/registered-users', '/activities', '/jol-bank',
   '/experiments', '/analytics', '/tutorial', '/evaluation-prep', '/pretest', '/challenge',
-  '/calibration', '/metacognitive-strategies', '/settings',
+  '/calibration', '/metacognitive-strategies', '/settings', '/mi-mapa', '/progression',
 ];
 
 // Páginas públicas: se muestran sin layout ni importar si hay sesión iniciada
@@ -185,6 +188,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         if (!mounted) return;
         setUser({ name: me.name, lastName: me.last_name, email: me.email });
         setRole(me.role as any);
+        if (!useCognitiveStore.getState().dbUserId) setToken(token, me.id);
+        // Base de conocimiento y estado del tutor (una sola carga por sesión de navegación)
+        const tutor = useTutorStore.getState();
+        if (!tutor.domain) api.getTutorDomain().then(tutor.setDomain).catch(() => {});
+        if (me.role === 'student') api.getTutorState(me.id).then(tutor.setState).catch(() => {});
       })
       .catch(() => {
         if (!mounted) return;
@@ -245,6 +253,8 @@ export default function App() {
           <Route path="/calibration" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><ChallengeCalibration /></ProtectedRoute>} />
           <Route path="/metacognitive-strategies" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><MetacognitiveStrategies /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute redirectTo="/profile"><SettingsPage /></ProtectedRoute>} />
+          <Route path="/mi-mapa" element={<ProtectedRoute requiredRole="student" redirectTo="/profile"><MyMap /></ProtectedRoute>} />
+          <Route path="/progression" element={<ProtectedRoute requiredRole="admin" redirectTo="/admin-login"><Progression /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AppLayout>

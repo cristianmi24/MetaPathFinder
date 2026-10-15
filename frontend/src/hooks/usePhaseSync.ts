@@ -2,13 +2,27 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { api } from '../services/api';
 import { normalizeJolValue } from '../lib/jolNormalization';
+import { useTutorStore } from '../stores/useTutorStore';
+import { dynamicChallengeBank } from '../data/dynamicChallengeBank';
+import { jolGenerales } from '../data/jolGenerales';
 
 const syncChannel = typeof BroadcastChannel !== 'undefined'
   ? new BroadcastChannel('mp-sync')
   : null;
 
-function normalizeJolForSync(jolId: string, value: number | string, tiempoEstimado?: number): { tipo: 'escala'; valor: number } {
-  return { tipo: 'escala', valor: Math.round(normalizeJolValue(jolId, value, tiempoEstimado) * 100) / 100 };
+/** Tipo de juicio: solo confianza/capacidad cuentan para la calibración; tiempo y esfuerzo se reportan aparte. */
+function jolKind(jolId: string): 'confianza' | 'capacidad' | 'tiempo' | 'esfuerzo' {
+  const g = jolGenerales.find(j => j.id === jolId);
+  if (g) {
+    if (/min/i.test(g.escala)) return 'tiempo';
+    if (/intentos/i.test(g.escala)) return 'esfuerzo';
+    if (/JG-(B3|M3|A3)/.test(jolId)) return 'capacidad';
+  }
+  return 'confianza';
+}
+
+function normalizeJolForSync(jolId: string, value: number | string, tiempoEstimado?: number): { tipo: 'escala'; valor: number; kind: string; id: string } {
+  return { tipo: 'escala', valor: Math.round(normalizeJolValue(jolId, value, tiempoEstimado) * 100) / 100, kind: jolKind(jolId), id: jolId };
 }
 
 const SYNCED_SESSIONS_KEY = 'mp-synced-sessions';
@@ -221,14 +235,45 @@ export function usePhaseSync() {
       if (entries.length === 0) return;
 
       const jolInputs = entries.map(([key, value]) => normalizeJolForSync(key, value, estimatedTime));
-      const performanceScore = ((meta as any)?.metricas_tecnicas?.score ?? 50) / 10;
+      const tech = (meta as any)?.metricas_tecnicas || {};
+      const bio = (meta as any)?.biometricas || {};
+      const tutorMeta = (meta as any)?.tutor || {};
+      const performanceScore = (tech.score ?? 50) / 10;
+      const challengeId = (meta.challengeId as string) || state.currentChallengeId || '';
+      const bank = dynamicChallengeBank.find(c => c.id === challengeId);
+      const challengeMeta = (meta as any)?.challengeMeta || {};
+      const jolRaw: Record<string, number | string> = { ...jolAnswers };
+      const textOf = (id: string) => (typeof jolRaw[id] === 'string' ? (jolRaw[id] as string) : null);
 
-      await api.completePhaseC({
+      const res = await api.completePhaseC({
         session_id: currentSessionId,
         jols: jolInputs,
         actual_scores: entries.map(() => performanceScore),
         reflection_text: (meta.reflection_text as string) || null,
+        estimated_minutes: estimatedTime || undefined,
+        actual_minutes: bio.total_time ? bio.total_time / 60 : undefined,
+        challenge: { id: challengeId, titulo: challengeMeta.titulo ?? bank?.titulo, criterios: challengeMeta.criterios ?? bank?.criterios ?? [] },
+        tutor_observations: {
+          ...tutorMeta,
+          estimated_minutes: estimatedTime,
+          total_time_seconds: bio.total_time || 0,
+          runs: tech.runs || 0,
+          score: tech.score ?? 0,
+          passed: Boolean(tech.passed),
+          jol_inicial: entries.length ? normalizeJolValue(entries[0][0], entries[0][1], estimatedTime) : null,
+          jol_raw: jolRaw,
+          jg_m3_text: textOf('JG-M3'),
+          jg_a3_text: textOf('JG-A3'),
+          strategy_evidence: (meta as any)?.evidencias_estrategia || {},
+          strategy_id: (meta as any)?.estrategia_monitoreada || state.assignedStrategyId,
+          reflection_text: (meta.reflection_text as string) || null,
+        },
       });
+      if (res.tutor) {
+        useTutorStore.getState().setLastPhaseC(res.tutor);
+        const uid = state.dbUserId || getDbUserId();
+        if (uid) api.getTutorState(uid).then(st => useTutorStore.getState().setState(st)).catch(() => {});
+      }
 
       markSynced(`${currentSessionId}-phase-c`);
       console.log('[PhaseSync] Fase C sincronizada');

@@ -10,25 +10,62 @@ import { usePhaseSync } from '../hooks/usePhaseSync';
 import { nuevasEstrategias, getEstrategia, Estrategia } from '../data/metacognitiveStrategies';
 import { ChallengeBriefing } from '../components/ChallengeBriefing';
 import { JolQuestion, JolReady, type JolItem } from '../components/JolFlow';
+import { useTutorStore } from '../stores/useTutorStore';
+import { api } from '../services/api';
+import { LearningStyleQuiz } from '../components/tutor/LearningStyleQuiz';
 import './EvaluationStart.css';
+
+const RECOMMENDED_BY_PROFILE: Record<string, string[]> = { over: ['est2', 'est8'], sub: ['est7', 'est2'], cal: ['est4', 'est7'] };
+
+const levelMap: Record<number, string> = { 1: "Básico", 2: "Medio", 3: "Avanzado" };
 
 export function EvaluationStart() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const { addEvent, currentLevel, currentChallengeId, setCurrentChallengeId, setCurrentSessionId, currentSessionId, assignedStrategyId, strategyAssignedRandomly, setAssignedStrategyId } = useCognitiveStore();
+  const { addEvent, currentLevel, currentChallengeId, setCurrentChallengeId, setCurrentSessionId, currentSessionId, assignedStrategyId, strategyAssignedRandomly, setAssignedStrategyId, dbUserId } = useCognitiveStore();
   const { syncPhaseA } = usePhaseSync();
+  const { plan, setPlan, setState: setTutorState, state: tutorState, learningStyle, dismissedStyleQuiz } = useTutorStore();
+  const [showStyleQuiz, setShowStyleQuiz] = useState(false);
 
   const assignedStrategy: Estrategia | null = getEstrategia(assignedStrategyId);
 
-  const strategyAssignedRef = useRef(false);
+  // Plan del tutor (Fase A): reto del escalón de la ZDP técnica + estrategia por muestreo de Thompson
+  // (grupo experimental) o al azar (grupo control). Si el servidor no responde, regla local por perfil.
+  const planRequestedRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!assignedStrategyId && !strategyAssignedRef.current) {
-      strategyAssignedRef.current = true;
-      const randomIdx = Math.floor(Math.random() * nuevasEstrategias.length);
-      setAssignedStrategyId(nuevasEstrategias[randomIdx].id, true);
-    }
-  }, [assignedStrategyId, setAssignedStrategyId]);
+    const forced = location.state?.forcedChallengeId as string | undefined;
+    const key = `${currentLevel}-${forced ?? ''}-${currentChallengeId ?? ''}`;
+    if (planRequestedRef.current === key) return;
+    if (assignedStrategyId && (currentChallengeId || forced)) { planRequestedRef.current = key; return; }
+    planRequestedRef.current = key;
+    const levelName = levelMap[currentLevel] || 'Básico';
+    const available = dynamicChallengeBank.filter(c => c.nivel === levelName).map(c => ({ id: c.id }));
+    const applyFallback = () => {
+      if (!assignedStrategyId) {
+        const profile = tutorState?.last_profile;
+        const rec = profile ? RECOMMENDED_BY_PROFILE[profile] : null;
+        const pick = rec ? rec[Math.floor(Math.random() * rec.length)] : nuevasEstrategias[Math.floor(Math.random() * nuevasEstrategias.length)].id;
+        setAssignedStrategyId(pick, !rec);
+      }
+    };
+    if (!dbUserId) { applyFallback(); return; }
+    api.tutorPlan({ user_id: dbUserId, level_name: levelName, available, session_id: currentSessionId })
+      .then((p) => {
+        setPlan(p);
+        if (!assignedStrategyId) setAssignedStrategyId(p.strategy.strategy_id, p.strategy.method === 'aleatoria');
+        if (!forced && !currentChallengeId && p.challenge.challenge_id) setCurrentChallengeId(p.challenge.challenge_id);
+      })
+      .catch(() => applyFallback());
+  }, [currentLevel, currentChallengeId, assignedStrategyId, dbUserId, location.state]);
+
+  useEffect(() => {
+    if (dbUserId && !tutorState) api.getTutorState(dbUserId).then(setTutorState).catch(() => {});
+  }, [dbUserId]);
+
+  useEffect(() => {
+    if (!learningStyle && !dismissedStyleQuiz && !tutorState?.learning_style) setShowStyleQuiz(true);
+  }, [learningStyle, dismissedStyleQuiz, tutorState]);
   
   useEffect(() => {
     if (currentLevel === 1 || !currentSessionId) {
@@ -40,7 +77,6 @@ export function EvaluationStart() {
     }
   }, [currentLevel, setCurrentSessionId]);
 
-  const levelMap: Record<number, string> = { 1: "Básico", 2: "Medio", 3: "Avanzado" };
   const currentLevelString = levelMap[currentLevel] || "Básico";
   
   useEffect(() => {
@@ -65,18 +101,12 @@ export function EvaluationStart() {
       }
     }
 
-    if (!currentChallengeId) {
-      const candidates = dynamicChallengeBank.filter(c => c.nivel === currentLevelString);
-      const n1n2Candidates = candidates.filter(c => c.sub_nivel === 'N1' || c.sub_nivel === 'N2');
-      
-      if (n1n2Candidates.length > 0) {
-        const randomIdx = Math.floor(Math.random() * n1n2Candidates.length);
-        setCurrentChallengeId(n1n2Candidates[randomIdx].id);
-      } else if (candidates.length > 0) {
-        setCurrentChallengeId(candidates[0].id);
-      }
+    if (!currentChallengeId && !dbUserId) {
+      // Sin usuario autenticado no hay plan del tutor: escalón más bajo del nivel.
+      const candidates = dynamicChallengeBank.filter(c => c.nivel === currentLevelString && c.sub_nivel === 'N1');
+      if (candidates.length > 0) setCurrentChallengeId(candidates[0].id);
     }
-  }, [currentLevelString, currentChallengeId, setCurrentChallengeId, location.state]);
+  }, [currentLevelString, currentChallengeId, setCurrentChallengeId, location.state, dbUserId]);
 
   const currentChallenge = currentChallengeId
     ? dynamicChallengeBank.find(r => r.id === currentChallengeId)
@@ -172,6 +202,18 @@ export function EvaluationStart() {
     : null;
   const isRetryVariation = Boolean(location.state?.retryVariation);
 
+  const handleChangeStrategy = (id: string) => {
+    if (dbUserId) api.tutorOverride({ user_id: dbUserId, session_id: currentSessionId, kind: 'strategy', chosen: id, suggested: assignedStrategyId ?? undefined }).catch(() => {});
+    addEvent('TUTOR_OVERRIDE', { kind: 'strategy', chosen: id, suggested: assignedStrategyId });
+    setAssignedStrategyId(id, false);
+  };
+  const handleChangeChallenge = (id: string) => {
+    if (dbUserId) api.tutorOverride({ user_id: dbUserId, session_id: currentSessionId, kind: 'challenge', chosen: id, suggested: currentChallengeId ?? undefined }).catch(() => {});
+    addEvent('TUTOR_OVERRIDE', { kind: 'challenge', chosen: id, suggested: currentChallengeId });
+    setCurrentChallengeId(id);
+  };
+  const planMatchesChallenge = Boolean(plan && currentChallenge && plan.challenge.challenge_id === currentChallenge.id);
+
   if (!currentChallenge || selectedJols.length === 0) {
     return (
       <div className={`mp-root ${theme} flex items-center justify-center`} style={{ height: 'calc(100vh - 4rem)' }}>
@@ -186,6 +228,7 @@ export function EvaluationStart() {
   return (
     <div className={`mp-root ${theme}`}>
       <EvaluationTracker currentPhase="A" />
+      <LearningStyleQuiz open={showStyleQuiz} userId={dbUserId} onClose={() => setShowStyleQuiz(false)} />
 
       <div className={`mp-body sidebar-closed`}>
         <div className="mp-main">
@@ -199,6 +242,10 @@ export function EvaluationStart() {
                 briefing={briefing}
                 isRetryVariation={isRetryVariation}
                 onBegin={handleBeginJol}
+                tutorReason={planMatchesChallenge ? plan!.challenge.reason : (location.state?.fromMap ? 'Lo elegiste tú en el mapa de retos.' : null)}
+                alternatives={planMatchesChallenge ? plan!.challenge.alternatives.filter(a => a.unlocked).map(a => ({ id: a.id, titulo: dynamicChallengeBank.find(c => c.id === a.id)?.titulo ?? a.id, p: a.p_dominio })) : []}
+                onChangeChallenge={handleChangeChallenge}
+                presentationHint={learningStyle ? (learningStyle.visual_verbal >= 0 ? 'visual' : 'verbal') : null}
               />
             ) : (
               <h1 className="mp-reto-title">{currentChallenge.titulo}</h1>
@@ -209,6 +256,10 @@ export function EvaluationStart() {
               strategy={assignedStrategy}
               randomly={strategyAssignedRandomly}
               onStart={handleStart}
+              reason={plan && plan.strategy.strategy_id === assignedStrategyId ? plan.strategy.reason : (strategyAssignedRandomly ? 'Se asignó al azar (grupo de comparación o sin conexión con el tutor).' : 'La elegiste tú.')}
+              onChangeStrategy={handleChangeStrategy}
+              scaffoldMessage={plan?.scaffold?.messages?.[0] ?? null}
+              zdpLabel={plan?.zdp?.zdp_label ?? null}
             />
           ) : (
             <JolQuestion

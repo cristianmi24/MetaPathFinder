@@ -156,3 +156,44 @@ class CognitiveEvent(Base):
     metadata_ = Column("metadata", JSONB, default=dict)
 
     session = relationship("Session", back_populates="cognitive_events")
+
+
+class StudentTutorState(Base):
+    """Estado bayesiano del estudiante (Módulo Estudiante del tutor). Un registro por usuario."""
+    __tablename__ = "student_tutor_state"
+
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    state = Column(JSONB, nullable=False, default=dict)
+    learning_style = Column(JSONB)
+    zdp_meta = Column(String(20))
+    zdp_tech = Column(String(20))
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
+
+
+class TutorDecision(Base):
+    """Registro de cada decisión del tutor con los indicadores que pesaron (explicabilidad)."""
+    __tablename__ = "tutor_decisions"
+    __table_args__ = (
+        Index("idx_tutor_decisions_user", "user_id"),
+        Index("idx_tutor_decisions_session", "session_id"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    session_id = Column(String(50))
+    kind = Column(String(30), nullable=False)  # plan | override | phase_c | scaffold | rating
+    payload = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class ResourceRating(Base):
+    """Valoración de utilidad de un recurso (pista, explicación, táctica) por el estudiante."""
+    __tablename__ = "resource_ratings"
+    __table_args__ = (Index("idx_resource_ratings_resource", "resource_id"),)
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    resource_id = Column(String(80), nullable=False)
+    challenge_id = Column(String(20))
+    helpful = Column(Boolean, nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)

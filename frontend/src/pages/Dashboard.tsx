@@ -10,6 +10,7 @@ import {
 import { api } from '../services/api';
 import { useTheme } from '../ThemeContext';
 import { cn } from '../lib/utils';
+import { ProgressionMap } from '../components/tutor/ProgressionMap';
 import { dynamicChallengeBank } from '../data/dynamicChallengeBank';
 import { getEstrategia, NOMBRES_ESTRATEGIAS_RETIRADAS } from '../data/metacognitiveStrategies';
 
@@ -544,6 +545,9 @@ export function Dashboard() {
           </div>
         </Card>
       )}
+      <Card title="Mapa de progresión (modelo de Griffin)" subtitle="Cada estudiante en su zona de desarrollo próximo, con los indicadores que pesaron en cada decisión.">
+        <ProgressionMap />
+      </Card>
     </div>
   );
 }

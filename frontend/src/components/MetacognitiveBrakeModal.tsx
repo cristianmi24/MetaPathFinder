@@ -49,11 +49,11 @@ export function MetacognitiveBrakeModal() {
           </div>
 
           <h3 className="text-2xl font-bold tracking-tight text-on-surface mb-3">
-            Pausa de Reflexión
+            Pausa para pensar
           </h3>
 
           <p className="text-sm text-on-surface-variant leading-relaxed mb-6 font-medium">
-            {brakeMessage || 'Detectamos una respuesta impulsiva en tiempo récord (< 5s). El aprendizaje profundo requiere verificar supuestos antes de confirmar.'}
+            {brakeMessage || 'Respondiste mucho más rápido que tu propio ritmo. Una pausa corta para revisar tu razonamiento vale más que un intento al azar.'}
           </p>
 
           <div className="bg-surface-container-high rounded-2xl p-4 mb-6 border border-outline-variant/20 flex items-center justify-center gap-3">

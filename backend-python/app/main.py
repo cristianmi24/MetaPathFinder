@@ -123,7 +123,13 @@ async def health_check(user=Depends(get_current_user)):
     return {"status": "ok", "service": "MetaPathFinder API"}
 
 
-from app.routers import users, sessions, phase_a, phase_b, phase_c, analytics, experiments, monitor
+@app.get("/api/health/live")
+async def health_live():
+    """Sonda ligera para balanceadores y Railway (sin autenticación ni base de datos)."""
+    return {"status": "ok"}
+
+
+from app.routers import users, sessions, phase_a, phase_b, phase_c, analytics, experiments, monitor, tutor, tracking
 
 app.include_router(auth_router)
 app.include_router(users.router)
@@ -134,3 +140,5 @@ app.include_router(phase_c.router)
 app.include_router(monitor.router)
 app.include_router(analytics.router)
 app.include_router(experiments.router)
+app.include_router(tutor.router)
+app.include_router(tracking.router)

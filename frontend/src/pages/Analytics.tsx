@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useCognitiveStore, stateTranslations } from '../stores/useCognitiveStore';
 import { format } from 'date-fns';
+import { LearnerProfileCard } from '../components/tutor/LearnerProfileCard';
 
 export function Analytics() {
   const { events, calibration, cognitiveLoad, currentLevel } = useCognitiveStore();
@@ -96,6 +97,8 @@ export function Analytics() {
           <Filter className="w-4 h-4" /> Filtrar por Curso
         </button>
       </header>
+
+      <LearnerProfileCard />
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
         {/* Main Chart Card */}

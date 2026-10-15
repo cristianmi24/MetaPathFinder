@@ -41,15 +41,28 @@ import { StrategyEvidence } from '../components/StrategyMonitor';
 import { StrategyHelpToolkit } from '../components/StrategyHelpToolkit';
 import { normalizeJolAverage } from '../lib/jolNormalization';
 import { ActivitySetupTour } from '../components/ActivitySetupTour';
+import { TutorAdvisor, type HintLevel } from '../components/tutor/TutorAdvisor';
+import { ReplanModal, type ReplanChoice } from '../components/tutor/ReplanModal';
+import { CertaintyPrompt, certaintyContrast } from '../components/tutor/CertaintyPrompt';
+import { getTutorHint3 } from '../data/tutorHints';
+import { useTutorStore } from '../stores/useTutorStore';
+import { blockingProbability, scaffoldLevel, longPauseThreshold, SCAFFOLD_INFO, type BlockingSignals } from '../lib/tutorEngine';
+import { api } from '../services/api';
 
 import './CognitiveChallenge.css';
+import '../components/tutor/tutor.css';
 
 export function CognitiveChallenge() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const { addEvent, currentLevel, assignedStrategyId, currentSessionId, user } = useCognitiveStore();
+  const { addEvent, currentLevel, assignedStrategyId, currentSessionId, user, dbUserId } = useCognitiveStore();
   const { syncPhaseB } = usePhaseSync();
+  const tutorPlan = useTutorStore((s) => s.plan);
+  const tutorState = useTutorStore((s) => s.state);
+  const tutorDomain = useTutorStore((s) => s.domain);
+  const pushLatency = useTutorStore((s) => s.pushLatency);
+  const recordShownResource = useTutorStore((s) => s.recordShownResource);
 
   // Estado del Tutorial Spotlight para la actividad interactiva
   const [isActivityTourOpen, setIsActivityTourOpen] = useState(false);
@@ -136,7 +149,30 @@ export function CognitiveChallenge() {
   const [showHint, setShowHint] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [toolsAttention, setToolsAttention] = useState(false);
-  const [activeHint, setActiveHint] = useState<null | 1 | 2>(null);
+  const [activeHint, setActiveHint] = useState<null | HintLevel>(null);
+
+  // --- Estado del tutor (Fase B) ---
+  const [consecutiveErrors, setConsecutiveErrors] = useState(0);
+  const [consecutiveHigh, setConsecutiveHigh] = useState(0);
+  const [openedHints, setOpenedHints] = useState<HintLevel[]>([]);
+  const [hintRatings, setHintRatings] = useState<Partial<Record<HintLevel, boolean>>>({});
+  const [alternativeHint, setAlternativeHint] = useState<{ level: HintLevel; variant: 'analogia' | 'contraejemplo' } | null>(null);
+  const [peerRecommendation, setPeerRecommendation] = useState<{ level: HintLevel; ratio: number; neighbours: number } | null>(null);
+  const [checkpoints, setCheckpoints] = useState<number[]>([]);
+  const [checkpointDue, setCheckpointDue] = useState(false);
+  const [certainty, setCertainty] = useState<{ value: number; label: string } | null>(null);
+  const [certaintyOpen, setCertaintyOpen] = useState(false);
+  const [tabChanges, setTabChanges] = useState(0);
+  const [lastTabChangeAt, setLastTabChangeAt] = useState<number | null>(null);
+  const [editsSinceRun, setEditsSinceRun] = useState(0);
+  const [replanOpen, setReplanOpen] = useState(false);
+  const [replanChoice, setReplanChoice] = useState<ReplanChoice | null>(null);
+  const [pauseSamples, setPauseSamples] = useState<number[]>([]);
+  const tutorMeta = useRef({
+    autoHintShown: false, hintAfterError: null as boolean | null, hintBeforeThird: null as boolean | null,
+    attemptsAfterHint: 0, firstEditAt: null as number | null, brakeTriggered: false, scaffoldShown: [] as string[],
+    replanShownAt: 0, lastValidationAt: Date.now(), evidenceBeforeHelp: null as boolean | null,
+  });
   const [boardSuccess, setBoardSuccess] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultScore, setResultScore] = useState(0);
@@ -156,15 +192,23 @@ export function CognitiveChallenge() {
 
     setBoardSuccess(success);
     setTotalRuns(prev => prev + 1);
+    // Latencia entre verificaciones: alimenta el freno metacognitivo personalizado.
+    const now = Date.now();
+    pushLatency((now - tutorMeta.current.lastValidationAt) / 1000);
+    tutorMeta.current.lastValidationAt = now;
+    setEditsSinceRun(0);
+    if (tutorMeta.current.hintAfterError !== null || tutorMeta.current.autoHintShown) tutorMeta.current.attemptsAfterHint += 1;
 
     if (success) {
       setConsoleMessages([{
         type: 'ok',
-        text: customMessage || '> ¡Reto interactivo completado con éxito! Puedes avanzar.'
+        text: customMessage || '> ¡Lo lograste! La actividad quedó completa. Revisa los criterios y envía cuando quieras.'
       }]);
       setErrCount(0);
+      setConsecutiveErrors(0);
     } else {
       setErrCount(prev => prev + 1);
+      setConsecutiveErrors(prev => prev + 1);
       addEvent('QUIZ_ANSWER', {
         questionId: challenge.id,
         correct: false,
@@ -230,15 +274,54 @@ export function CognitiveChallenge() {
 
   const handleBoardAreaClick = () => {
     setClickCount(p => p + 1);
+    setEditsSinceRun(c => c + 1);
+    lastEditTime.current = Date.now();
   };
 
-  // Abre una pista como alerta modal y la contabiliza para la calibración.
-  // La Pista 2 se habilita en cuanto ya se pidió la Pista 1.
-  const openHint = (n: 1 | 2) => {
-    if (n === 2 && !showHint) return;
+  // Pistas escalonadas (1 pregunta reflexiva · 2 señalamiento · 3 solución análoga).
+  // Cada nivel se habilita tras el anterior. Se registra cuándo se pidió (tras error, antes del 3.er intento).
+  const openHint = (n: HintLevel) => {
+    if (n > 1 && !openedHints.includes((n - 1) as HintLevel) && !(n === 2 && showHint)) return;
     setActiveHint(n);
     setShowHint(true);
-    setHintCount(hc => hc + 1);
+    if (!openedHints.includes(n)) {
+      setOpenedHints(prev => [...prev, n]);
+      setHintCount(hc => hc + 1);
+      if (tutorMeta.current.hintAfterError === null) {
+        tutorMeta.current.hintAfterError = errCount > 0;
+        tutorMeta.current.hintBeforeThird = totalRuns < 3;
+        tutorMeta.current.evidenceBeforeHelp = Object.values(strategyEvidence).some(v => v !== undefined && v !== null && v !== 0 && v !== '' && !(Array.isArray(v) && v.length === 0));
+      }
+      recordShownResource({ id: `${challenge.id}:hint${n}`, challengeId: challenge.id, level: n, tactic: n === 1 ? 'pregunta_socratica' : n === 2 ? 'senalamiento' : 'solucion_guiada' });
+      addEvent('HINT_OPENED', { challengeId: challenge.id, level: n, errCount, runs: totalRuns });
+    }
+  };
+
+  const rateHint = (level: HintLevel, helpful: boolean) => {
+    setHintRatings(prev => ({ ...prev, [level]: helpful }));
+    const resourceId = `${challenge.id}:hint${level}`;
+    if (dbUserId) api.rateResource({ user_id: dbUserId, resource_id: resourceId, challenge_id: challenge.id, helpful }).catch(() => {});
+    addEvent('RESOURCE_RATED', { resourceId, helpful });
+    if (!helpful) {
+      if (level === 3) {
+        // Sustitución en caliente: si la analogía no ayudó, se muestra el contraejemplo (y viceversa).
+        const current = alternativeHint?.variant ?? 'analogia';
+        setAlternativeHint({ level: 3, variant: current === 'analogia' ? 'contraejemplo' : 'analogia' });
+      }
+      // Recuperación por pares (k-NN): qué pista les sirvió a compañeros con un perfil parecido.
+      if (dbUserId) {
+        api.recommendResource(dbUserId, challenge.id, resourceId).then((r) => {
+          const m = r.resource_id?.match(/:hint([123])$/);
+          if (m) setPeerRecommendation({ level: Number(m[1]) as HintLevel, ratio: r.helpful_ratio ?? 0.5, neighbours: r.neighbours });
+        }).catch(() => null);
+      }
+    }
+  };
+
+  const handleCheckpoint = (value: number) => {
+    setCheckpoints(prev => [...prev, value]);
+    setCheckpointDue(false);
+    addEvent('CONFIDENCE_CHECKPOINT', { challengeId: challenge.id, value, seconds, errCount });
   };
 
   // JOL promedio de Fase A, normalizado a 0-10 según la escala real de cada pregunta
@@ -295,6 +378,24 @@ export function CognitiveChallenge() {
     };
   }, [challenge.id]);
 
+  // Cambios de pestaña durante el reto (señal de bloqueo / distracción).
+  useEffect(() => {
+    const onVis = () => { if (document.hidden) { setTabChanges(t => t + 1); setLastTabChangeAt(Date.now()); } };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
+
+  // Puntos de control obligatorios (ZDP Básico) cada 3 minutos, salvo que la estrategia ya los pida.
+  const mandatoryCheckpoints = Boolean(tutorPlan?.scaffold?.mandatory_checkpoints) && activeStrategyId !== 'est2';
+  useEffect(() => {
+    if (!mandatoryCheckpoints) return;
+    if (seconds > 0 && seconds % 180 === 0) setCheckpointDue(true);
+  }, [seconds, mandatoryCheckpoints]);
+
+  useEffect(() => {
+    if (editCount === 1 && tutorMeta.current.firstEditAt === null) tutorMeta.current.firstEditAt = seconds;
+  }, [editCount, seconds]);
+
   useEffect(() => {
     if (iframeRef.current) {
       const doc = iframeRef.current.contentDocument;
@@ -347,16 +448,25 @@ export function CognitiveChallenge() {
       setConsoleMessages(prev => [...prev, { type: 'ok', text: `> Reto completado con éxito. Puedes terminar la fase.` }]);
       setErrCount(0);
     } else {
-      setConsoleMessages(prev => [...prev, { type: 'err', text: `> Error: Validación fallida (Intento ${newRuns}). Revisa tu lógica.` }]);
+      setConsoleMessages(prev => [...prev, { type: 'err', text: `> Buen intento ${newRuns}: aún no cumple. Mira la condición que falta y prueba otra vez.` }]);
       setErrCount(prev => prev + 1);
+      setConsecutiveErrors(prev => prev + 1);
       if (newRuns >= 2 && !showHint) {
         setShowHint(true);
         setActiveHint(1); // tras 2 intentos fallidos, la pista aparece sola (no cuenta contra la calibración)
+        tutorMeta.current.autoHintShown = true;
       }
     }
+    setEditsSinceRun(0);
+    if (isSuccess) setConsecutiveErrors(0);
   };
 
   const handleVerify = () => {
+    if (!certainty) { setCertaintyOpen(true); return; }
+    runVerify();
+  };
+
+  function runVerify() {
     let score = 0;
     let passed = false;
 
@@ -406,7 +516,7 @@ export function CognitiveChallenge() {
     setResultScore(Math.round(Math.max(0, Math.min(100, score))));
     setResultPassed(passed);
     setShowResultModal(true);
-  };
+  }
 
   const handleSubmit = async () => {
     const isSuccess = boardSuccess || consoleMessages.some(m => m.type === 'ok');
@@ -433,7 +543,31 @@ export function CognitiveChallenge() {
         mouse_distance: Math.round(mouseDistance),
         mouse_history: mouseHistory,
         total_time: seconds,
-      }
+      },
+      tutor: {
+        err_count: errCount,
+        hint_count: hintCount,
+        auto_hint_shown: tutorMeta.current.autoHintShown,
+        hint_requested_after_error: tutorMeta.current.hintAfterError,
+        hint_requested_before_third_attempt: tutorMeta.current.hintBeforeThird,
+        attempts_after_hint: tutorMeta.current.attemptsAfterHint,
+        reflexive_brake_triggered: useCognitiveStore.getState().events.some(e => e.metadata?.is_reflexive_brake && e.timestamp > Date.now() - seconds * 1000 - 5000),
+        checkpoints: [...checkpoints, ...(strategyEvidence.checkpointsConfianza ?? []), ...(certainty ? [certainty.value] : [])],
+        checkpoints_requested: mandatoryCheckpoints || activeStrategyId === 'est2' || Boolean(certainty),
+        certainty_prompted: Boolean(certainty),
+        certainty_answered: Boolean(certainty),
+        certainty_value: certainty?.value ?? null,
+        tab_changes: tabChanges,
+        time_before_first_edit: tutorMeta.current.firstEditAt,
+        subtasks_created: strategyEvidence.subtasksCreated ?? 0,
+        strategy_evidence_before_help: tutorMeta.current.evidenceBeforeHelp,
+        mouse_erratic: mouseDistance > 15000 * Math.max(1, seconds / 300),
+        scaffold_levels_shown: tutorMeta.current.scaffoldShown,
+        replan_choice: replanChoice,
+        hint_ratings: hintRatings,
+        p_block_final: pBlock,
+      },
+      challengeMeta: { titulo: challenge.titulo, criterios: challenge.criterios },
     };
 
     console.log('🚀 Enviando métricas reales a Fase C:', payload);
@@ -447,33 +581,63 @@ export function CognitiveChallenge() {
     return `JOL inicial: ${jolInicial.toFixed(1)}/10`;
   };
 
-  const getDynamicAlert = () => {
-    if (pauseSecs > 15) {
-      return {
-        icon: "ti ti-alert-triangle",
-        text: "Alta latencia detectada. Posible bloqueo conceptual. Intenta usar las pistas de andamiaje."
-      };
+  const isChallengeDone = boardSuccess || consoleMessages.some(m => m.type === 'ok');
+
+  // --- Probabilidad de bloqueo (Naive Bayes de dos clases) y escalera de andamiaje ---
+  const pauseThreshold = longPauseThreshold(pauseSamples);
+  const signals: BlockingSignals = {
+    errores_seguidos: consecutiveErrors >= 2,
+    pausa_larga: !isChallengeDone && pauseSecs > pauseThreshold,
+    ediciones_sin_exito: !isChallengeDone && editsSinceRun > 10,
+    cambio_pestana: lastTabChangeAt !== null && Date.now() - lastTabChangeAt < 60000,
+  };
+  const pBlock = isChallengeDone ? 0 : blockingProbability(signals, tutorDomain);
+  const scaffold = isChallengeDone ? null : scaffoldLevel(pBlock, consecutiveHigh);
+
+  // Muestras de pausa (para el umbral relativo al propio ritmo) y racha de probabilidad alta (N3).
+  useEffect(() => {
+    if (pauseSecs > 0 && pauseSecs % 15 === 0) setPauseSamples(prev => [...prev.slice(-19), pauseSecs]);
+  }, [pauseSecs]);
+  useEffect(() => {
+    setConsecutiveHigh(prev => (pBlock >= 0.7 ? prev + 1 : 0));
+  }, [errCount, totalRuns, signals.pausa_larga, signals.ediciones_sin_exito]);
+  useEffect(() => {
+    if (scaffold && !tutorMeta.current.scaffoldShown.includes(scaffold)) {
+      tutorMeta.current.scaffoldShown.push(scaffold);
+      addEvent('SCAFFOLD_SHOWN', { challengeId: challenge.id, level: scaffold, p_block: Number(pBlock.toFixed(3)), tactic: SCAFFOLD_INFO[scaffold].tactic });
     }
-    if (errCount >= 2) {
-      return {
-        icon: "ti ti-bug",
-        text: "Múltiples errores detectados. Revisa los criterios de aceptación y las pistas."
-      };
+  }, [scaffold]);
+
+  // Replanificación en tiempo real: al tercer error seguido, la pantalla se atenúa y cambia la táctica.
+  useEffect(() => {
+    if (consecutiveErrors >= 3 && consecutiveErrors !== tutorMeta.current.replanShownAt && !isChallengeDone) {
+      tutorMeta.current.replanShownAt = consecutiveErrors;
+      setReplanOpen(true);
+      addEvent('REPLAN_TRIGGERED', { challengeId: challenge.id, consecutiveErrors });
     }
-    if (editCount > 30 && !boardSuccess) {
-      return {
-        icon: "ti ti-info-circle",
-        text: "Alta densidad de edición. Te recomendamos repasar los criterios del reto."
-      };
+  }, [consecutiveErrors, isChallengeDone]);
+
+  const simplifiedChallenge = challenge.sub_nivel !== 'N1'
+    ? dynamicChallengeBank.find(c => c.componente === challenge.componente && c.sub_nivel === 'N1' && c.id !== challenge.id) ?? null
+    : null;
+
+  const handleReplanChoice = (choice: ReplanChoice) => {
+    setReplanOpen(false);
+    setReplanChoice(choice);
+    addEvent('REPLAN_CHOICE', { challengeId: challenge.id, choice });
+    if (choice === 'continuar' && dbUserId) {
+      api.tutorOverride({ user_id: dbUserId, session_id: currentSessionId, kind: 'advance', reason: 'continuar tras replanificación' }).catch(() => {});
     }
-    return {
-      icon: "ti ti-activity",
-      text: "Capturando métricas de ejecución. Tu proceso de calibración cognitiva se registra en tiempo real."
-    };
+    if (choice === 'simplificado' && simplifiedChallenge) {
+      useCognitiveStore.getState().setCurrentChallengeId(simplifiedChallenge.id);
+      navigate('/evaluation-prep', { state: { retryVariation: true, previousChallengeId: challenge.id, forcedChallengeId: simplifiedChallenge.id } });
+    }
+    if (choice === 'guiado') setConsecutiveErrors(0);
   };
 
-  const isChallengeDone = boardSuccess || consoleMessages.some(m => m.type === 'ok');
-  const alertInfo = getDynamicAlert();
+  const pendingCriteriaTexts = (tutorPlan?.zdp?.pending_criteria ?? tutorState?.zdp?.pending_criteria ?? [])
+    .map(id => ({ id, text: tutorDomain?.criteria.find(c => c.id === id)?.text ?? tutorState?.criteria?.[id]?.text ?? '' }))
+    .filter(c => c.text);
 
   return (
     <div className={`fb-root ${theme} clean-ui`}>
@@ -667,7 +831,7 @@ export function CognitiveChallenge() {
                 <textarea
                   className="fb-editor-field"
                   value={code}
-                  onChange={(e) => { setCode(e.target.value); setEditCount(c => c+1); lastEditTime.current = Date.now(); }}
+                  onChange={(e) => { setCode(e.target.value); setEditCount(c => c+1); setEditsSinceRun(c => c + 1); lastEditTime.current = Date.now(); }}
                   spellCheck={false}
                   placeholder="# Desarrolla tu código aquí..."
                 />
@@ -794,26 +958,31 @@ export function CognitiveChallenge() {
             </div>
           </div>
 
-          <div className="fb-alert">
-            <i className={alertInfo.icon} aria-hidden="true" style={{ fontSize: '13px', color: 'var(--fb-warn)', marginTop: '2px' }}></i>
-            <span>{alertInfo.text}</span>
-          </div>
-
-          <div className="fb-andamiaje">
-            <div className="fb-andamiaje-title">Pistas de ayuda</div>
-            <div className="fb-hint-item" onClick={() => openHint(1)}>
-              <i className="ti ti-bulb" aria-hidden="true" style={{ color: 'var(--fb-blue)' }}></i>
-              Pista 1: consejo para empezar
-            </div>
-            <div
-              className={`fb-hint-item ${!showHint ? 'locked' : ''}`}
-              onClick={() => openHint(2)}
-              title={!showHint ? 'Pide primero la Pista 1' : undefined}
-            >
-              <i className={`ti ${showHint ? 'ti-bulb' : 'ti-lock'}`} aria-hidden="true" style={{ color: showHint ? 'var(--fb-blue)' : 'inherit' }}></i>
-              Pista 2: errores frecuentes {!showHint && '(pide antes la Pista 1)'}
-            </div>
-          </div>
+          <TutorAdvisor
+            challengeId={challenge.id}
+            criteria={challenge.criterios}
+            profile={challengeProfile}
+            strategy={activeStrategy}
+            pBlock={pBlock}
+            scaffold={scaffold}
+            signals={signals}
+            consecutiveErrors={consecutiveErrors}
+            openedHints={openedHints}
+            activeHint={activeHint}
+            onOpenHint={openHint}
+            onRateHint={rateHint}
+            ratings={hintRatings}
+            alternativeHint={alternativeHint}
+            zdp={tutorPlan?.zdp ?? tutorState?.zdp ?? null}
+            scaffoldPlan={tutorPlan?.scaffold ?? tutorState?.scaffold ?? null}
+            jolInicial={jolInicial}
+            checkpoints={checkpoints}
+            onCheckpoint={handleCheckpoint}
+            checkpointDue={checkpointDue}
+            isDone={isChallengeDone}
+            pendingCriteriaTexts={pendingCriteriaTexts}
+            peerRecommendation={peerRecommendation}
+          />
 
           <div className="fb-checkpoint">
             <div className="fb-checkpoint-title">
@@ -893,14 +1062,20 @@ export function CognitiveChallenge() {
               <div style={{ fontSize: '40px', marginBottom: '14px' }}>
                 {resultPassed ? '✓' : '✕'}
               </div>
-              <h3 style={{ fontSize: '20px', fontWeight: 700, color: resultPassed ? 'var(--ok)' : 'var(--danger)', marginBottom: '8px' }}>
-                {resultPassed ? '¡Correcto!' : 'Resultado: No superado'}
+              <h3 style={{ fontSize: '20px', fontWeight: 700, color: resultPassed ? 'var(--ok)' : 'var(--warn)', marginBottom: '8px' }}>
+                {resultPassed ? '¡Lo lograste!' : 'Aún no, pero vas por buen camino'}
               </h3>
-              <p style={{ fontSize: '14px', color: 'var(--fb-text-muted, #8b949e)', marginBottom: '20px' }}>
+              <p style={{ fontSize: '14px', color: 'var(--fb-text-muted, #8b949e)', marginBottom: '12px' }}>
                 {resultPassed
-                  ? 'Tu respuesta es correcta. Continúa a tu análisis de calibración.'
-                  : 'La actividad no se completó del todo. Te proponemos una actividad de apoyo más sencilla.'}
+                  ? 'Tu solución cumple los criterios. Sigamos a tu análisis de calibración.'
+                  : 'El esfuerzo cuenta: cada intento te acerca. Puedes seguir aquí o reconstruir la base con una actividad de apoyo.'}
               </p>
+              {certaintyContrast(certainty?.value ?? null, certainty?.label ?? null, resultScore) && (
+                <div className="tut-bubble" style={{ textAlign: 'left', marginBottom: 16 }}>
+                  <div className="tut-bubble-tag">Tu juicio de certeza vs. el resultado</div>
+                  {certaintyContrast(certainty?.value ?? null, certainty?.label ?? null, resultScore)}
+                </div>
+              )}
               <div style={{
                 background: 'var(--surface-2)', borderRadius: 'var(--radius-md)',
                 padding: '18px', marginBottom: '18px'
@@ -989,6 +1164,23 @@ export function CognitiveChallenge() {
         )}
       </AnimatePresence>
 
+      <CertaintyPrompt
+        open={certaintyOpen}
+        onAnswer={(value, label) => {
+          setCertainty({ value, label });
+          setCertaintyOpen(false);
+          addEvent('CERTAINTY_JUDGMENT', { challengeId: challenge.id, value, label, seconds });
+          setTimeout(runVerify, 0);
+        }}
+      />
+      <ReplanModal
+        open={replanOpen}
+        challengeId={challenge.id}
+        challengeTitle={challenge.titulo}
+        hasSimplified={Boolean(simplifiedChallenge)}
+        onChoose={handleReplanChoice}
+      />
+
       {/* Alerta de Pista */}
       <AnimatePresence>
         {activeHint !== null && (
@@ -1023,11 +1215,24 @@ export function CognitiveChallenge() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                 <i className="ti ti-bulb" style={{ fontSize: 22, color: 'var(--tour-hl)' }} />
                 <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--tour-hl)' }}>
-                  {activeHint === 1 ? 'Pista 1 · Consejo para empezar' : 'Pista 2 · Errores frecuentes'}
+                  {activeHint === 1 ? 'Pista 1/3 · Pregunta reflexiva' : activeHint === 2 ? 'Pista 2/3 · Señalamiento del error' : 'Pista 3/3 · Solución análoga guiada'}
+                </span>
+                <span className="tut-chip" style={{ marginLeft: 'auto' }}>
+                  Táctica · {activeHint === 1 ? 'Pregunta socrática' : activeHint === 2 ? 'Señalamiento' : (alternativeHint?.variant === 'contraejemplo' ? 'Contraejemplo' : 'Analogía cotidiana')}
                 </span>
               </div>
 
-              {activeHint === 1 ? (
+              {activeHint === 3 ? (
+                <div style={{ fontSize: '14px', color: 'var(--text)', lineHeight: 1.6 }}>
+                  <p style={{ margin: '0 0 10px 0' }}>
+                    {alternativeHint?.variant === 'contraejemplo' ? getTutorHint3(challenge.id).contraejemplo : getTutorHint3(challenge.id).analogia}
+                  </p>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>
+                    <strong style={{ color: 'var(--text)' }}>Si aún no sale: </strong>
+                    {alternativeHint?.variant === 'contraejemplo' ? getTutorHint3(challenge.id).analogia : getTutorHint3(challenge.id).contraejemplo}
+                  </p>
+                </div>
+              ) : activeHint === 1 ? (
                 <div style={{ fontSize: '14px', color: 'var(--text)', lineHeight: 1.6 }}>
                   <p style={{ margin: '0 0 10px 0' }}>
                     {challengeProfile?.consejoProfesor || challengeBriefing?.resumenSuave || 'Lee con calma la meta y los criterios del reto antes de actuar. Divídelo en pasos pequeños.'}

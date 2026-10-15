@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { normalizeJolAverage } from '../lib/jolNormalization';
+import { brakeThreshold } from '../lib/tutorEngine';
 
 export type CognitiveState = 'Flow' | 'Frustration' | 'Boredom' | 'Confusion' | 'Focus' | 'Distraction' | 'Metacognitive_Mismatch';
 export type UserRole = 'student' | 'admin' | null;
@@ -173,7 +174,14 @@ export const useCognitiveStore = create<CognitiveStore>()(
         set((state) => {
           const durationSinceLast = now - state.lastEventTime;
 
-          const threshold = type === 'QUIZ_ANSWER' ? 5000 : 1000;
+          // Freno personalizado: la mitad de la mediana de las latencias propias (5 s hasta tener 3 muestras).
+          let personalThreshold = 5;
+          try {
+            const raw = localStorage.getItem('meta-pathfinder-tutor');
+            const samples: number[] = raw ? (JSON.parse(raw).state?.latencySamples ?? []) : [];
+            personalThreshold = brakeThreshold(samples);
+          } catch {}
+          const threshold = type === 'QUIZ_ANSWER' ? personalThreshold * 1000 : 1000;
           const isReflexiveBrake = (type === 'UI_CLICK' || type === 'QUIZ_ANSWER') && durationSinceLast < threshold;
 
           const enhancedMetadata = { ...metadata };
@@ -211,7 +219,7 @@ export const useCognitiveStore = create<CognitiveStore>()(
 
           if (shouldTriggerBrakeModal) {
             nextState.isReflexiveBrakeActive = true;
-            nextState.brakeMessage = '🛑 Freno Metacognitivo Activo: Has respondido en menos de 5 segundos. Tómate una pausa reflexiva para verificar tu razonamiento.';
+            nextState.brakeMessage = `Respondiste en ${(durationSinceLast / 1000).toFixed(1)} s, mucho más rápido que tu propio ritmo (${personalThreshold.toFixed(1)} s). Una pausa corta para revisar tu razonamiento vale más que un intento al azar.`;
           }
 
           if (type === 'EVALUATION_COMPLETED' && metadata?.score > 80) {
@@ -260,21 +268,26 @@ export const useCognitiveStore = create<CognitiveStore>()(
 
       flushEvents: async () => {
         const state = get();
-        const { events, userId } = state;
-        if (events.length === 0) return;
-
+        const { events, token, currentSessionId } = state;
+        if (events.length === 0 || !token) return;
+        // Solo se envían los eventos nuevos desde el último envío (se conservan en el store
+        // para la consolidación local); el servidor los asocia a la sesión en curso.
+        const lastSent = (state as any)._lastFlushedTs || 0;
+        const pending = events.filter(e => e.timestamp > lastSent && e.type !== 'CHALLENGE_COMPLETED');
+        if (pending.length === 0) return;
         try {
-          await fetch('/api/tracking/events', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, events })
+          const { api } = await import('../services/api');
+          await api.trackEvents({
+            session_id: currentSessionId,
+            events: pending.slice(-200).map(e => ({
+              event_type: e.type,
+              timestamp: new Date(e.timestamp).toISOString(),
+              metadata: e.metadata as Record<string, unknown>,
+            })),
           });
-          set((prev) => {
-            if (prev.events === events) return { events: [] };
-            return {};
-          });
+          set({ _lastFlushedTs: pending[pending.length - 1].timestamp } as any);
         } catch (err) {
-          console.error('Failed to flush cognitive events', err);
+          console.warn('No se pudieron enviar los eventos de seguimiento', err);
         }
       },
 

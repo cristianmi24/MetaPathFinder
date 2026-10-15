@@ -1,8 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, Check, Clock, MousePointer2, Play } from 'lucide-react';
 import type { Estrategia } from '../data/metacognitiveStrategies';
 import { getStrategyBenefit } from '../data/strategyBenefits';
+import { nuevasEstrategias } from '../data/metacognitiveStrategies';
+import { WhyThis } from './tutor/WhyThis';
 
 /* ───────────────── Tipos de escala (se detectan por el texto de la escala) ───────────────── */
 
@@ -432,10 +434,15 @@ interface JolReadyProps {
   strategy: Estrategia | null;
   randomly: boolean;
   onStart: () => void;
+  reason?: string | null;
+  onChangeStrategy?: (id: string) => void;
+  scaffoldMessage?: string | null;
+  zdpLabel?: string | null;
 }
 
-export function JolReady({ minutes, strategy, randomly, onStart }: JolReadyProps) {
+export function JolReady({ minutes, strategy, randomly, onStart, reason, onChangeStrategy, scaffoldMessage, zdpLabel }: JolReadyProps) {
   const benefit = strategy ? getStrategyBenefit(strategy.id) : null;
+  const [choosing, setChoosing] = useState(false);
 
   return (
     <motion.div
@@ -468,7 +475,7 @@ export function JolReady({ minutes, strategy, randomly, onStart }: JolReadyProps
             </span>
             <div className="text-left">
               <p className="ui-sans text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: strategy.color }}>
-                El sistema eligió para ti{randomly ? ' (al azar)' : ''}
+                Tu tutor eligió para ti{randomly ? ' (al azar)' : ''}
               </p>
               <p className="font-serif text-lg font-semibold leading-snug text-on-surface">{strategy.nombre}</p>
             </div>
@@ -507,6 +514,35 @@ export function JolReady({ minutes, strategy, randomly, onStart }: JolReadyProps
           <p className="ui-sans mt-4 text-xs text-on-surface-variant">
             {benefit?.cuando} Las encontrarás arriba de la actividad, en el botón <strong>«Herramientas de apoyo»</strong>.
           </p>
+
+          {(reason || onChangeStrategy) && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-left">
+              {reason && (
+                <WhyThis title="Por qué esta estrategia">
+                  <p style={{ margin: 0 }}>{reason}</p>
+                  {zdpLabel && <p style={{ margin: '6px 0 0' }}>Tu zona de desarrollo metacognitiva: <b>{zdpLabel}</b>.{scaffoldMessage ? ` Durante el reto el tutor te preguntará, por ejemplo: «${scaffoldMessage}»` : ''}</p>}
+                </WhyThis>
+              )}
+              {onChangeStrategy && (
+                <button type="button" className="ui-sans text-xs font-semibold underline decoration-dotted text-on-surface-variant" onClick={() => setChoosing((c) => !c)}>
+                  {choosing ? 'Mantener la sugerida' : 'Prefiero otra estrategia'}
+                </button>
+              )}
+            </div>
+          )}
+          {choosing && onChangeStrategy && (
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 text-left">
+              {nuevasEstrategias.filter((e) => e.id !== strategy.id).map((e) => (
+                <button key={e.id} type="button" onClick={() => { onChangeStrategy(e.id); setChoosing(false); }}
+                  className="ui-sans rounded-xl border p-3 text-xs hover:border-primary transition"
+                  style={{ borderColor: `${e.color}55`, background: e.iconBg }}>
+                  <span className="flex items-center gap-2 font-semibold text-on-surface"><i className={`ti ${e.icon}`} style={{ color: e.color }} /> {e.nombre}</span>
+                  <span className="mt-1 block text-on-surface-variant">{e.teoria}</span>
+                </button>
+              ))}
+              <p className="ui-sans text-[10.5px] text-on-surface-variant sm:col-span-2">Tu elección queda registrada: el tutor aprende también de lo que decides.</p>
+            </div>
+          )}
         </div>
       )}
 
