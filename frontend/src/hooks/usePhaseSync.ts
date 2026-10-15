@@ -183,6 +183,9 @@ export function usePhaseSync() {
 
       const meta = lastChallengeEvent.metadata;
       const score = (meta as any)?.metricas_tecnicas?.score || 0;
+      // Lo ya enviado en vivo no se repite: primero se vacía la cola y luego solo va lo restante.
+      await useCognitiveStore.getState().flushEvents();
+      const lastFlushed = (useCognitiveStore.getState() as any)._lastFlushedTs || 0;
       const biometricas = (meta as any)?.biometricas || {};
 
       await api.completePhaseB({
@@ -200,8 +203,7 @@ export function usePhaseSync() {
         },
         cognitive_events: [
           ...state.events
-            .filter(e => e.type !== 'CHALLENGE_COMPLETED')
-            .slice(-50)
+            .filter(e => e.type !== 'CHALLENGE_COMPLETED' && e.timestamp > lastFlushed)
             .map(e => ({
               event_type: e.type,
               timestamp: new Date(e.timestamp).toISOString(),

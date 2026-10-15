@@ -87,7 +87,7 @@ interface CognitiveStore {
   addEvent: (type: string, metadata?: any) => void;
   updateCognitiveMetrics: (load: number, calibration: number, score?: number) => void;
   setCognitiveState: (state: CognitiveState) => void;
-  flushEvents: () => Promise<void>;
+  flushEvents: (keepalive?: boolean) => Promise<void>;
   reset: () => void;
   
   // Student management
@@ -120,6 +120,9 @@ interface CognitiveStore {
   removeStudent: (id: string) => void;
   consolidateSession: () => void;
 }
+
+// Evita dos envíos simultáneos del mismo lote (intervalo + cambio de pestaña).
+let flushInFlight = false;
 
 export const useCognitiveStore = create<CognitiveStore>()(
   persist(
@@ -266,28 +269,32 @@ export const useCognitiveStore = create<CognitiveStore>()(
         set({ state });
       },
 
-      flushEvents: async () => {
+      flushEvents: async (keepalive = false) => {
         const state = get();
         const { events, token, currentSessionId } = state;
-        if (events.length === 0 || !token) return;
+        if (events.length === 0 || !token || flushInFlight) return;
         // Solo se envían los eventos nuevos desde el último envío (se conservan en el store
         // para la consolidación local); el servidor los asocia a la sesión en curso.
         const lastSent = (state as any)._lastFlushedTs || 0;
         const pending = events.filter(e => e.timestamp > lastSent && e.type !== 'CHALLENGE_COMPLETED');
         if (pending.length === 0) return;
+        flushInFlight = true;
         try {
           const { api } = await import('../services/api');
-          await api.trackEvents({
+          const res = await api.trackEvents({
             session_id: currentSessionId,
             events: pending.slice(-200).map(e => ({
               event_type: e.type,
               timestamp: new Date(e.timestamp).toISOString(),
               metadata: e.metadata as Record<string, unknown>,
             })),
-          });
-          set({ _lastFlushedTs: pending[pending.length - 1].timestamp } as any);
+          }, keepalive);
+          // Sin sesión en curso el servidor no guarda nada: se conservan para el siguiente envío.
+          if (res.status !== 'no_session') set({ _lastFlushedTs: pending[pending.length - 1].timestamp } as any);
         } catch (err) {
           console.warn('No se pudieron enviar los eventos de seguimiento', err);
+        } finally {
+          flushInFlight = false;
         }
       },
 

@@ -656,6 +656,23 @@ export function CognitiveChallenge() {
   const pBlock = isChallengeDone ? 0 : blockingProbability(signals, tutorDomain);
   const scaffold = isChallengeDone ? null : scaffoldLevel(pBlock, consecutiveHigh);
 
+  // Instantánea del progreso cada 30 s: el envío en vivo la lleva al servidor y deja
+  // rastro de tiempo, clics y bloqueo aunque el estudiante no llegue a enviar el reto.
+  const progressRef = useRef({ pBlock, hintCount, editCount, tabChanges, mouseDistance, isChallengeDone });
+  progressRef.current = { pBlock, hintCount, editCount, tabChanges, mouseDistance, isChallengeDone };
+  useEffect(() => {
+    const id = setInterval(() => {
+      const p = progressRef.current;
+      addEvent('CHALLENGE_PROGRESS', {
+        challengeId: challenge.id, t_seconds: secondsRef.current, clicks: clickCountRef.current,
+        runs: runsRef.current, err_count: errCountRef.current, hints: p.hintCount, edits: p.editCount,
+        tab_changes: p.tabChanges, mouse_distance: Math.round(p.mouseDistance),
+        p_block: Number(p.pBlock.toFixed(3)), done: p.isChallengeDone,
+      });
+    }, 30000);
+    return () => clearInterval(id);
+  }, [addEvent, challenge.id]);
+
   // Muestras de pausa (para el umbral relativo al propio ritmo) y racha de probabilidad alta (N3).
   useEffect(() => {
     if (pauseSecs > 0 && pauseSecs % 15 === 0) setPauseSamples(prev => [...prev.slice(-19), pauseSecs]);

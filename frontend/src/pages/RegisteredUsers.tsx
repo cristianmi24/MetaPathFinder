@@ -151,14 +151,14 @@ export function RegisteredUsers() {
   const s = (v: string) => ({
     color: textSecondary,
     fontSize: 11,
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: 'inherit',
     ...(v ? JSON.parse(v) : {}),
   });
 
   const btnStyle = (active: boolean, color: string) => ({
     padding: '6px 14px',
     fontSize: 11,
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: 'inherit',
     borderRadius: 6,
     cursor: 'pointer',
     border: `0.5px solid ${active ? color : cardBorder}`,
@@ -173,7 +173,7 @@ export function RegisteredUsers() {
     padding: '8px 14px',
     borderBottom: `0.5px solid ${rowBorder}`,
     fontSize: 10,
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: 'inherit',
     color: textSecondary,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.08em',
@@ -198,7 +198,7 @@ export function RegisteredUsers() {
         <div style={{ fontSize: 14, color: '#ff7b72', marginBottom: 12 }}>
           No se pudo cargar la lista de usuarios. Revisa la conexión con el servidor o la base de datos.
         </div>
-        <div style={{ fontSize: 11, color: textSecondary, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 16 }}>{loadError}</div>
+        <div style={{ fontSize: 11, color: textSecondary, fontFamily: 'inherit', marginBottom: 16 }}>{loadError}</div>
         <button onClick={fetchUsers}
           style={{ padding: '8px 18px', borderRadius: 8, background: '#238636', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
           Reintentar
@@ -213,7 +213,7 @@ export function RegisteredUsers() {
       <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 600, color: textPrimary, margin: '0 0 4px 0' }}>Usuarios Registrados</h1>
-          <p style={{ fontSize: 13, color: textSecondary, fontFamily: "'IBM Plex Mono', monospace", margin: 0 }}>
+          <p style={{ fontSize: 13, color: textSecondary, fontFamily: 'inherit', margin: 0 }}>
             {stats.total} usuarios · {stats.students} estudiantes · {stats.admins} administradores
           </p>
         </div>
@@ -249,22 +249,22 @@ export function RegisteredUsers() {
           </div>
           <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <label style={{ display: 'block', fontSize: 11, color: textSecondary, marginBottom: 4, fontFamily: "'IBM Plex Mono', monospace" }}>Nombre</label>
+              <label style={{ display: 'block', fontSize: 11, color: textSecondary, marginBottom: 4, fontFamily: 'inherit' }}>Nombre</label>
               <input value={createForm.name} onChange={e => setCreateForm({ ...createForm, name: e.target.value })}
                 style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `0.5px solid ${cardBorder}`, background: inputBg, color: textPrimary, fontSize: 13, outline: 'none' }} placeholder="Nombre" />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 11, color: textSecondary, marginBottom: 4, fontFamily: "'IBM Plex Mono', monospace" }}>Apellido</label>
+              <label style={{ display: 'block', fontSize: 11, color: textSecondary, marginBottom: 4, fontFamily: 'inherit' }}>Apellido</label>
               <input value={createForm.last_name} onChange={e => setCreateForm({ ...createForm, last_name: e.target.value })}
                 style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `0.5px solid ${cardBorder}`, background: inputBg, color: textPrimary, fontSize: 13, outline: 'none' }} placeholder="Apellido" />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 11, color: textSecondary, marginBottom: 4, fontFamily: "'IBM Plex Mono', monospace" }}>Email</label>
+              <label style={{ display: 'block', fontSize: 11, color: textSecondary, marginBottom: 4, fontFamily: 'inherit' }}>Email</label>
               <input value={createForm.email} onChange={e => setCreateForm({ ...createForm, email: e.target.value })}
                 style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `0.5px solid ${cardBorder}`, background: inputBg, color: textPrimary, fontSize: 13, outline: 'none' }} placeholder="correo@ejemplo.com" />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 11, color: textSecondary, marginBottom: 4, fontFamily: "'IBM Plex Mono', monospace" }}>Contraseña</label>
+              <label style={{ display: 'block', fontSize: 11, color: textSecondary, marginBottom: 4, fontFamily: 'inherit' }}>Contraseña</label>
               <div style={{ position: 'relative' }}>
                 <input type={showPassword ? 'text' : 'password'} value={createForm.password} onChange={e => setCreateForm({ ...createForm, password: e.target.value })}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `0.5px solid ${cardBorder}`, background: inputBg, color: textPrimary, fontSize: 13, outline: 'none', paddingRight: 36 }} placeholder="••••••" />
@@ -275,7 +275,7 @@ export function RegisteredUsers() {
               </div>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 11, color: textSecondary, marginBottom: 4, fontFamily: "'IBM Plex Mono', monospace" }}>Rol</label>
+              <label style={{ display: 'block', fontSize: 11, color: textSecondary, marginBottom: 4, fontFamily: 'inherit' }}>Rol</label>
               <select value={createForm.role} onChange={e => setCreateForm({ ...createForm, role: e.target.value })}
                 style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `0.5px solid ${cardBorder}`, background: inputBg, color: textPrimary, fontSize: 13, outline: 'none' }}>
                 <option value="student">Estudiante</option>
@@ -318,11 +318,11 @@ export function RegisteredUsers() {
                   }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                     <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 9, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500, background: ROLE_COLORS.student.bg, color: ROLE_COLORS.student.text }}>{initials}</span>
+                      fontSize: 9, fontFamily: 'inherit', fontWeight: 500, background: ROLE_COLORS.student.bg, color: ROLE_COLORS.student.text }}>{initials}</span>
                     <span style={{ color: textPrimary }}>{u.name} {u.last_name}</span>
                   </span>
-                  <span style={{ color: textSecondary, fontFamily: "'IBM Plex Mono', monospace", fontSize: 11 }}>{u.email}</span>
-                  <span style={{ color: textSecondary, fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ color: textSecondary, fontFamily: 'inherit', fontSize: 11 }}>{u.email}</span>
+                  <span style={{ color: textSecondary, fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5 }}>
                     <Calendar size={12} /> {created}
                   </span>
                 </div>
@@ -336,7 +336,7 @@ export function RegisteredUsers() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <h2 style={{ fontSize: 14, fontWeight: 600, color: textPrimary, margin: 0 }}>Detalle del Estudiante</h2>
                 <button onClick={() => setSelectedStudent(null)}
-                  style={{ background: 'transparent', border: 'none', color: textSecondary, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace" }}>
+                  style={{ background: 'transparent', border: 'none', color: textSecondary, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontFamily: 'inherit' }}>
                   <ChevronLeft size={14} /> cerrar
                 </button>
               </div>
@@ -344,12 +344,12 @@ export function RegisteredUsers() {
               {/* Avatar + name */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, paddingBottom: 16, borderBottom: `0.5px solid ${rowBorder}` }}>
                 <div style={{ width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, background: ROLE_COLORS.student.bg, color: ROLE_COLORS.student.text }}>
+                  fontSize: 14, fontFamily: 'inherit', fontWeight: 600, background: ROLE_COLORS.student.bg, color: ROLE_COLORS.student.text }}>
                   {selectedStudent.name[0]}{selectedStudent.last_name[0]}
                 </div>
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 600, color: textPrimary }}>{selectedStudent.name} {selectedStudent.last_name}</div>
-                  <div style={{ fontSize: 11, color: textSecondary, fontFamily: "'IBM Plex Mono', monospace" }}>{selectedStudent.email}</div>
+                  <div style={{ fontSize: 11, color: textSecondary, fontFamily: 'inherit' }}>{selectedStudent.email}</div>
                 </div>
               </div>
 
@@ -364,7 +364,7 @@ export function RegisteredUsers() {
                   <div key={c.label} style={{ background: inputBg, borderRadius: 8, padding: 10, border: `0.5px solid ${rowBorder}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                       <c.icon size={13} color={c.color} />
-                      <span style={{ fontSize: 9, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{c.label}</span>
+                      <span style={{ fontSize: 9, fontFamily: 'inherit', color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{c.label}</span>
                     </div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: textPrimary }}>{c.val}</div>
                   </div>
@@ -376,21 +376,21 @@ export function RegisteredUsers() {
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <Edit3 size={14} color="#f2cc60" />
-                    <span style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Editar datos</span>
+                    <span style={{ fontSize: 11, fontFamily: 'inherit', color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Editar datos</span>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: 10, color: textSecondary, marginBottom: 3, fontFamily: "'IBM Plex Mono', monospace" }}>Nombre</label>
+                      <label style={{ display: 'block', fontSize: 10, color: textSecondary, marginBottom: 3, fontFamily: 'inherit' }}>Nombre</label>
                       <input value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })}
                         style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: `0.5px solid ${cardBorder}`, background: inputBg, color: textPrimary, fontSize: 12, outline: 'none' }} />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: 10, color: textSecondary, marginBottom: 3, fontFamily: "'IBM Plex Mono', monospace" }}>Apellido</label>
+                      <label style={{ display: 'block', fontSize: 10, color: textSecondary, marginBottom: 3, fontFamily: 'inherit' }}>Apellido</label>
                       <input value={editForm.last_name} onChange={e => setEditForm({ ...editForm, last_name: e.target.value })}
                         style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: `0.5px solid ${cardBorder}`, background: inputBg, color: textPrimary, fontSize: 12, outline: 'none' }} />
                     </div>
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <label style={{ display: 'block', fontSize: 10, color: textSecondary, marginBottom: 3, fontFamily: "'IBM Plex Mono', monospace" }}>Email</label>
+                      <label style={{ display: 'block', fontSize: 10, color: textSecondary, marginBottom: 3, fontFamily: 'inherit' }}>Email</label>
                       <input value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })}
                         style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: `0.5px solid ${cardBorder}`, background: inputBg, color: textPrimary, fontSize: 12, outline: 'none' }} />
                     </div>
@@ -453,16 +453,16 @@ export function RegisteredUsers() {
                   <>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 9, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500, background: colors.bg, color: colors.text }}>{initials}</span>
+                        fontSize: 9, fontFamily: 'inherit', fontWeight: 500, background: colors.bg, color: colors.text }}>{initials}</span>
                       <span style={{ color: textPrimary }}>{u.name} {u.last_name}</span>
                     </span>
-                    <span style={{ color: textSecondary, fontFamily: "'IBM Plex Mono', monospace", fontSize: 11 }}>{u.email}</span>
+                    <span style={{ color: textSecondary, fontFamily: 'inherit', fontSize: 11 }}>{u.email}</span>
                     <span>
-                      <span style={{ background: colors.bg, color: colors.text, borderRadius: 5, padding: '2px 7px', fontSize: 10, fontFamily: "'IBM Plex Mono', monospace" }}>
+                      <span style={{ background: colors.bg, color: colors.text, borderRadius: 5, padding: '2px 7px', fontSize: 10, fontFamily: 'inherit' }}>
                         {ROLE_LABELS[u.role] || u.role}
                       </span>
                     </span>
-                    <span style={{ color: textSecondary, fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ color: textSecondary, fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5 }}>
                       <Calendar size={12} /> {created}
                     </span>
                     {canCreate && (

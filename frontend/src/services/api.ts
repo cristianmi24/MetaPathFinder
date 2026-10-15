@@ -173,8 +173,9 @@ export const api = {
   }) => request<{ status: string; session_id: string; calibration: Record<string, unknown>; tutor: TutorPhaseCResult | null }>('/api/phase-c/complete', { method: 'POST', body: JSON.stringify(data) }),
 
   // Tracking en tiempo real (lotes)
-  trackEvents: (data: { session_id?: string | null; events: { event_type: string; timestamp: string; metadata?: Record<string, unknown> }[] }) =>
-    request<{ status: string; stored: number }>('/api/tracking/events', { method: 'POST', body: JSON.stringify(data) }),
+  // keepalive: el envío sobrevive al cierre de la pestaña (pagehide).
+  trackEvents: (data: { session_id?: string | null; events: { event_type: string; timestamp: string; metadata?: Record<string, unknown> }[] }, keepalive = false) =>
+    request<{ status: string; stored: number }>('/api/tracking/events', { method: 'POST', body: JSON.stringify(data), keepalive }),
 
   // Sistema tutor (Griffin + Bayes)
   getTutorDomain: () => request<TutorDomain>('/api/tutor/domain'),

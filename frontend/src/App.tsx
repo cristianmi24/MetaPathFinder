@@ -17,7 +17,7 @@ import { RegisteredUsers } from './pages/RegisteredUsers';
 import { Activities } from './pages/Activities';
 import { JolBank } from './pages/JolBank';
 import { motion, AnimatePresence } from 'motion/react';
-import { useCognitiveTracking } from './hooks/useCognitiveTracking';
+import { useCognitiveTracking, useLiveEventSync } from './hooks/useCognitiveTracking';
 import { usePageLeaveSave } from './hooks/usePhaseSync';
 import { CognitiveBrain } from './components/CognitiveBrain';
 import { Home } from './pages/Home';
@@ -205,6 +205,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   }, [token]);
 
   useCognitiveTracking(true);
+  useLiveEventSync(Boolean(token));
   usePageLeaveSave();
 
   if (PUBLIC_PATHS.includes(location.pathname)) return <>{children}</>;

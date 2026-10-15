@@ -97,3 +97,26 @@ export function useCognitiveTracking(isEnabled: boolean) {
     };
   }, [isEnabled, addEvent]);
 }
+
+/**
+ * Envío en tiempo real de la cola de eventos al servidor (/api/tracking/events):
+ * cada 10 s y al ocultar o cerrar la pestaña, para que el tutor y el panel del
+ * administrador no dependan de que el estudiante termine el reto.
+ */
+export function useLiveEventSync(isEnabled: boolean) {
+  useEffect(() => {
+    if (!isEnabled) return;
+    const flush = (keepalive = false) => useCognitiveStore.getState().flushEvents(keepalive);
+    const interval = setInterval(() => flush(), 10000);
+    const onVisibility = () => { if (document.hidden) flush(true); };
+    const onPageHide = () => flush(true);
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pagehide', onPageHide);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pagehide', onPageHide);
+      flush();
+    };
+  }, [isEnabled]);
+}
