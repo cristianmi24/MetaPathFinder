@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FileText, CheckCircle2, AlertCircle, Lightbulb } from 'lucide-react';
 
 interface ValidationResult {
@@ -103,7 +103,11 @@ export function ProspectiveTechEssay({ challengeId, onValidation }: ProspectiveT
 
   const isSuccess = result.nota >= 5;
 
+  // El estado inicial (texto vacío) no se reporta: contaría como un error antes de escribir.
+  const reportedRef = useRef(false);
   useEffect(() => {
+    if (!reportedRef.current && !isSuccess) return;
+    reportedRef.current = true;
     onValidation(isSuccess);
   }, [isSuccess, onValidation]);
 

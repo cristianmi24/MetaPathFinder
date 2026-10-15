@@ -249,12 +249,10 @@ export function SqlBlockBoard({ challengeId, onValidation }: SqlBlockBoardProps)
     if (phase === 0) {
       setResult({ type:'ok', msg:'✓ Tablas creadas exitosamente: Proveedores, Productos, Ventas.' });
       setPhaseDone(prev => { const next = [...prev]; next[0] = true; return next; });
-      onValidation(false); // Intento parcial
       setTimeout(() => { setPhase(1); setBlocks([]); setResult(null); }, 1500);
     } else if (phase === 1) {
       setResult({ type:'ok', msg:'✓ 10 registros insertados en cada tabla.' });
       setPhaseDone(prev => { const next = [...prev]; next[1] = true; return next; });
-      onValidation(false); // Intento parcial
       setTimeout(() => { setPhase(2); setBlocks([]); setResult(null); }, 1500);
     } else {
       const sql = genSQL(blocks);

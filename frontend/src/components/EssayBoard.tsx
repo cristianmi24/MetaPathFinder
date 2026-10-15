@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FileText, CheckCircle2, AlertCircle, Sparkles, AlertTriangle } from 'lucide-react';
 
 interface EssayBoardProps {
@@ -263,8 +263,12 @@ export function EssayBoard({ challengeId, onValidation }: EssayBoardProps) {
     };
   }, [text, challengeRubric]);
 
-  // Notificar al componente superior sobre la validación del reto
+  // Notificar al componente superior sobre la validación del reto. El estado inicial
+  // (texto vacío) no se reporta: contaría como un error antes de escribir nada.
+  const reportedRef = useRef(false);
   useEffect(() => {
+    if (!reportedRef.current && !evaluationResult.approved) return;
+    reportedRef.current = true;
     onValidation(evaluationResult.approved);
   }, [evaluationResult.approved, onValidation]);
 

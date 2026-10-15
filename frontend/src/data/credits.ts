@@ -14,5 +14,6 @@ export const CREDITS = {
     { name: 'FastAPI · PostgreSQL', role: 'Servidor y base de datos' },
     { name: 'Sora · IBM Plex Mono', role: 'Tipografías (Google Fonts)' },
     { name: 'Lucide · Tabler Icons', role: 'Iconografía' },
+    { name: 'Wikimedia Commons', role: 'Imágenes de «Ordena la historia» (CC BY, CC BY-SA, CC0 y dominio público)' },
   ] as CreditPerson[],
 };

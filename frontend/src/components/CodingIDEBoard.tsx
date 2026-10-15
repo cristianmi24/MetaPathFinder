@@ -937,8 +937,8 @@ export function CodingIDEBoard({ challengeId, onValidation }: Props) {
 
     setConsoleLines(result.output);
 
-    // Reportar intento individual a la Fase B
-    if (onValidation) {
+    // Solo los intentos fallidos cuentan como error para la Fase B; el éxito final se reporta al finalizar.
+    if (onValidation && !correct) {
       onValidation(false);
     }
 
