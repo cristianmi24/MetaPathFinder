@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { normalizeJolAverage } from '../lib/jolNormalization';
 
 export type CognitiveState = 'Flow' | 'Frustration' | 'Boredom' | 'Confusion' | 'Focus' | 'Distraction' | 'Metacognitive_Mismatch';
-export type UserRole = 'student' | 'admin' | 'teacher' | null;
+export type UserRole = 'student' | 'admin' | null;
 
 export interface User {
   name: string;

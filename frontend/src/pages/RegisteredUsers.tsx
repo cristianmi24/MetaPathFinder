@@ -17,13 +17,11 @@ interface UserEntry {
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',
-  teacher: 'Profesor',
   student: 'Estudiante',
 };
 
 const ROLE_COLORS: Record<string, { bg: string; text: string }> = {
   admin: { bg: 'rgba(255,123,114,.15)', text: '#ff7b72' },
-  teacher: { bg: 'rgba(130,80,223,.15)', text: '#8250df' },
   student: { bg: 'rgba(56,139,253,.15)', text: '#388bfd' },
 };
 
@@ -57,7 +55,7 @@ export function RegisteredUsers() {
 
   const canCreate = currentRole === 'admin';
   const students = users.filter(u => u.role === 'student');
-  const admins = users.filter(u => u.role === 'admin' || u.role === 'teacher');
+  const admins = users.filter(u => u.role === 'admin');
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -88,13 +86,17 @@ export function RegisteredUsers() {
       setError('Todos los campos son obligatorios');
       return;
     }
+    if (createForm.password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
     if (!createTermsAccepted) {
       setError('Debes confirmar la aceptación de los Términos y Condiciones y el Tratamiento de Datos Personales por parte del usuario.');
       return;
     }
     setCreating(true);
     try {
-      await api.register({ ...createForm, terms_accepted: createTermsAccepted, guardian_declaration: createTermsAccepted, terms_version: LEGAL.version });
+      await api.createUser(createForm);
       setShowCreateForm(false);
       setCreateForm({ name: '', last_name: '', email: '', password: '', role: 'student' });
       setShowPassword(false);
@@ -212,7 +214,7 @@ export function RegisteredUsers() {
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 600, color: textPrimary, margin: '0 0 4px 0' }}>Usuarios Registrados</h1>
           <p style={{ fontSize: 13, color: textSecondary, fontFamily: "'IBM Plex Mono', monospace", margin: 0 }}>
-            {stats.total} usuarios · {stats.students} estudiantes · {stats.admins} administradores/profesores
+            {stats.total} usuarios · {stats.students} estudiantes · {stats.admins} administradores
           </p>
         </div>
         {canCreate && (
@@ -277,7 +279,6 @@ export function RegisteredUsers() {
               <select value={createForm.role} onChange={e => setCreateForm({ ...createForm, role: e.target.value })}
                 style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `0.5px solid ${cardBorder}`, background: inputBg, color: textPrimary, fontSize: 13, outline: 'none' }}>
                 <option value="student">Estudiante</option>
-                <option value="teacher">Profesor</option>
                 <option value="admin">Administrador</option>
               </select>
             </div>

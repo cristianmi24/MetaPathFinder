@@ -7,13 +7,16 @@ from uuid import UUID
 from app.database import get_db
 from app.models import Session, User
 from app.schemas import SessionComplete
-from app.routers.auth import get_current_user
+from app.routers.auth import get_current_user, ensure_self_or_staff
 
 router = APIRouter(prefix="/api/sessions", tags=["sessions"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_session(payload: dict, db: AsyncSession = Depends(get_db)):
+async def create_session(payload: dict, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if "user_id" not in payload or "session_id" not in payload:
+        raise HTTPException(status_code=422, detail="user_id y session_id son obligatorios")
+    ensure_self_or_staff(current_user, payload["user_id"])
     result = await db.execute(select(User).where(User.id == payload["user_id"]))
     user = result.scalar_one_or_none()
     if not user:
@@ -34,13 +37,16 @@ async def create_session(payload: dict, db: AsyncSession = Depends(get_db)):
 
 
 @router.patch("/{session_id}/complete")
-async def complete_session(session_id: str, payload: SessionComplete, db: AsyncSession = Depends(get_db)):
+async def complete_session(
+    session_id: str, payload: SessionComplete, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+):
     result = await db.execute(
         select(Session).where(Session.id == session_id).with_for_update()
     )
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
+    ensure_self_or_staff(current_user, session.user_id)
 
     session.status = "completed"
     session.total_time_seconds = payload.total_time_seconds
@@ -54,7 +60,9 @@ async def complete_session(session_id: str, payload: SessionComplete, db: AsyncS
 
 
 @router.post("/{session_id}/events")
-async def batch_events(session_id: str, payload: dict, db: AsyncSession = Depends(get_db)):
+async def batch_events(
+    session_id: str, payload: dict, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+):
     from app.models import CognitiveEvent
     from datetime import datetime
 
@@ -62,9 +70,13 @@ async def batch_events(session_id: str, payload: dict, db: AsyncSession = Depend
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
+    ensure_self_or_staff(current_user, session.user_id)
 
+    raw_events = payload.get("events", [])
+    if not isinstance(raw_events, list) or len(raw_events) > 1000:
+        raise HTTPException(status_code=422, detail="Lote de eventos no válido (máximo 1000)")
     events = []
-    for ev in payload.get("events", []):
+    for ev in raw_events:
         events.append(CognitiveEvent(
             session_id=session_id,
             event_type=ev["event_type"],

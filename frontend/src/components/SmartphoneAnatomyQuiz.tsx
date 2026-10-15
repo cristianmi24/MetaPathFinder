@@ -77,7 +77,7 @@ body::after {
 }
 
 .topbar-label {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Sora', sans-serif;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 3px;
@@ -86,7 +86,7 @@ body::after {
 }
 
 .step-indicator {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Sora', sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: var(--ink);
@@ -175,7 +175,7 @@ body::after {
 }
 
 .intro-title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Sora', sans-serif;
   font-size: 2.4rem;
   font-weight: 800;
   color: var(--ink);
@@ -245,7 +245,7 @@ body::after {
 }
 
 .part-num {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Sora', sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 2px;
@@ -254,7 +254,7 @@ body::after {
 }
 
 .part-name {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Sora', sans-serif;
   font-size: 1.45rem;
   font-weight: 800;
   color: var(--ink);
@@ -306,7 +306,7 @@ body::after {
 }
 
 .q-text {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Sora', sans-serif;
   font-size: 1.2rem;
   font-weight: 700;
   color: var(--ink);
@@ -357,7 +357,7 @@ body::after {
   border-radius: 8px;
   background: var(--border);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Sora', sans-serif;
   font-size: 12px; font-weight: 700;
   color: var(--muted);
   flex-shrink: 0;
@@ -411,7 +411,7 @@ body::after {
 }
 
 .score-val {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Sora', sans-serif;
   font-size: 1.6rem;
   font-weight: 800;
   color: var(--ink);
@@ -420,7 +420,7 @@ body::after {
 }
 
 .result-title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Sora', sans-serif;
   font-size: 1.5rem;
   font-weight: 800;
   color: var(--ink);
@@ -465,7 +465,7 @@ body::after {
   padding: 16px;
   border: none;
   border-radius: 12px;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Sora', sans-serif;
   font-size: 0.9rem;
   font-weight: 700;
   letter-spacing: 0.5px;

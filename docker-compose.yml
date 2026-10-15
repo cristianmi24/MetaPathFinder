@@ -29,7 +29,11 @@ services:
       PYTHON_SOCKET_PATH: /tmp/mp-python.sock
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-3}
       ENVIRONMENT: ${ENVIRONMENT:-production}
-      SECRET_KEY: ${SECRET_KEY:-cambia-esta-clave-en-produccion}
+      # Obligatoria: clave aleatoria de 32+ caracteres (la app no arranca sin ella en producción)
+      SECRET_KEY: ${SECRET_KEY:?Define SECRET_KEY en .env}
+      # Administrador inicial (solo se crea/actualiza si ambas están definidas)
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://metapath:metapath@db:5432/metapathfinder}
       DATABASE_URL_SYNC: ${DATABASE_URL_SYNC:-postgresql://metapath:metapath@db:5432/metapathfinder}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}

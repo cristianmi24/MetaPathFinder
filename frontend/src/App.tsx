@@ -104,7 +104,7 @@ function StudentLayout({ children }: { children: React.ReactNode }) {
 
 function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen h-screen w-screen overflow-hidden bg-[#0F172A]">
+    <div className="min-h-screen h-screen w-screen overflow-hidden bg-background">
       <main className="absolute inset-0 p-0 m-0 flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -126,7 +126,7 @@ function RootRedirect() {
   return <Home />;
 }
 
-function ProtectedRoute({ children, requiredRole, redirectTo = '/profile' }: { children: React.ReactNode; requiredRole?: 'admin' | 'student' | 'teacher'; redirectTo?: string; }) {
+function ProtectedRoute({ children, requiredRole, redirectTo = '/profile' }: { children: React.ReactNode; requiredRole?: 'admin' | 'student'; redirectTo?: string; }) {
   const token = useCognitiveStore((s) => s.token);
   const user = useCognitiveStore((s) => s.user);
   const role = useCognitiveStore((s) => s.role);
@@ -135,13 +135,13 @@ function ProtectedRoute({ children, requiredRole, redirectTo = '/profile' }: { c
     return <Navigate to={redirectTo} replace />;
   }
 
-  if (requiredRole === 'admin' && role !== 'admin' && role !== 'teacher') {
+  if (requiredRole === 'admin' && role !== 'admin') {
     const fallback = role === 'student' ? '/student' : redirectTo;
     return <Navigate to={fallback} replace />;
   }
 
   if (requiredRole && requiredRole !== 'admin' && role !== requiredRole) {
-    const fallback = role === 'admin' || role === 'teacher' ? '/admin' : role === 'student' ? '/student' : redirectTo;
+    const fallback = role === 'admin' ? '/admin' : role === 'student' ? '/student' : redirectTo;
     return <Navigate to={fallback} replace />;
   }
 
@@ -208,7 +208,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     return <Navigate to="/profile" replace />;
   }
 
-  if (role === 'admin' || role === 'teacher') {
+  if (role === 'admin') {
     if (location.pathname === '/profile' || location.pathname === '/admin-login') return <Navigate to="/admin" replace />;
     return <AdminLayout>{children}</AdminLayout>;
   }

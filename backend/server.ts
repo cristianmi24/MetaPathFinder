@@ -11,14 +11,35 @@ async function startServer() {
   const app = express();
   const PORT = parseInt(process.env.PORT ?? "3000", 10);
 
-  app.use(express.json());
+  app.disable("x-powered-by");
+  // Detrás de un proxy/CDN (Railway, Nginx…) la IP real llega en X-Forwarded-For.
+  app.set("trust proxy", 1);
 
+  // Cabeceras de seguridad para todas las respuestas
+  app.use((_req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    if (process.env.ENVIRONMENT === "production") {
+      res.setHeader("Strict-Transport-Security", "max-age=15552000");
+    }
+    next();
+  });
+
+  app.use(express.json({ limit: "1mb" }));
+
+  // El frontend se sirve desde este mismo servidor: solo se permiten otros orígenes
+  // listados en CORS_ORIGINS (p. ej. el servidor de desarrollo de Vite).
+  const allowedOrigins = (process.env.CORS_ORIGINS ?? "http://localhost:5173,http://127.0.0.1:5173")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
   app.use(
     cors({
-      origin: true,
+      origin: (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)),
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
-      credentials: true,
     })
   );
 
@@ -37,6 +58,8 @@ async function startServer() {
       "content-type": "application/json",
       accept: (req.headers.accept as string) || "application/json",
       authorization: (req.headers.authorization as string) || "",
+      // IP real del cliente, usada por FastAPI para limitar intentos de login
+      "x-forwarded-for": req.ip || "",
     };
 
     if (body !== undefined) {
@@ -64,6 +87,8 @@ async function startServer() {
       proxyRes.on("data", (c: Buffer) => chunks.push(c));
       proxyRes.on("end", () => {
         const raw = Buffer.concat(chunks).toString("utf-8");
+        // Las respuestas del API contienen datos personales: que no se guarden en caché.
+        res.setHeader("Cache-Control", "no-store");
         try {
           res.status(status).json(JSON.parse(raw));
         } catch {
@@ -74,7 +99,7 @@ async function startServer() {
 
     proxyReq.on("error", (err) => {
       console.error("[Express Proxy Error]", err.message);
-      res.status(502).json({ error: "Backend unavailable", detail: err.message });
+      res.status(502).json({ detail: "El servidor no está disponible en este momento. Intenta de nuevo en unos minutos." });
     });
 
     if (body !== undefined) proxyReq.write(body);

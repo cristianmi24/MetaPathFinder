@@ -1,607 +1,549 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Users, Brain, AlertTriangle, CheckCircle2,
-  Bell, Sparkles, FileText, Clock, User,
+  Users, Activity, CheckCircle2, CircleDashed, Clock, Target, RefreshCw, Search,
+  TrendingUp, TrendingDown, Minus, PauseCircle,
 } from 'lucide-react';
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell,
+  ScatterChart, Scatter, ZAxis, ReferenceLine, BarChart, Bar, Legend,
+} from 'recharts';
 import { api } from '../services/api';
 import { useTheme } from '../ThemeContext';
 import { cn } from '../lib/utils';
+import { dynamicChallengeBank } from '../data/dynamicChallengeBank';
+import { nuevasEstrategias } from '../data/metacognitiveStrategies';
 
-const CLUSTER_COLORS: Record<string, string> = { over: '#ff7b72', sub: '#388bfd', cal: '#5dcaa5' };
-const CLUSTER_BG: Record<string, string> = { over: 'rgba(255,123,114,.15)', sub: 'rgba(56,139,253,.15)', cal: 'rgba(93,202,165,.15)' };
-const CLUSTER_LABEL: Record<string, string> = { over: 'Sobreconfianza', sub: 'Subestimación', cal: 'Calibrado' };
+/* ── Tipos de /api/analytics/monitor ─────────────────────────────────────── */
+type Status = 'activo' | 'terminado' | 'sin_empezar' | 'inactivo';
+type Trend = 'subio' | 'bajo' | 'igual' | null;
 
-interface StudentEntry {
-  id: string; name: string; initials: string; email: string;
-  jol: number | null; performance: number | null; gap: number | null;
-  calibration_index: number | null; cluster: string | null;
+interface StudentRow {
+  id: string; name: string; email: string; status: Status; stage: string | null;
+  current_challenge: string | null; started_at: string | null; elapsed_seconds: number | null;
+  sessions: number; completed: number; avg_time_seconds: number | null;
+  jol: number | null; performance: number | null; gap: number | null; cluster: string | null;
+  trend: Trend; strategy: string | null;
+}
+interface Monitor {
+  generated_at: string;
+  summary: {
+    students: number; activo: number; terminado: number; sin_empezar: number; inactivo: number;
+    sessions: number; activities_completed: number; avg_time_seconds: number | null;
+    pass_rate: number | null; avg_jol: number | null; avg_performance: number | null;
+  };
+  clusters: { over: number; sub: number; cal: number };
+  trends: { subio: number; bajo: number; igual: number };
+  students: StudentRow[];
+  challenges: {
+    challenge_id: string; attempts: number; avg_time_seconds: number | null; avg_score: number | null;
+    pass_rate: number | null; avg_jol: number | null; avg_performance: number | null;
+  }[];
+  participation: { day: string; started: number; finished: number }[];
+  strategies: { strategy: string; assigned: number; avg_abs_gap: number | null }[];
 }
 
-interface AlertEntry {
-  id: string; name: string; initials: string; email: string;
-  jol: number | null; performance: number | null; gap: number | null;
-  calibration_index: number | null; cluster: string | null;
-  reason: string; type: string;
+const REFRESH_MS = 15000;
+
+const COLORS = {
+  primary: '#6750a4',
+  cal: '#16a34a',
+  over: '#e5484d',
+  sub: '#2f81f7',
+  amber: '#d97706',
+  muted: '#94a3b8',
+};
+
+const STATUS_META: Record<Status, { label: string; cls: string; icon: typeof Activity }> = {
+  activo: { label: 'Trabajando', cls: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', icon: Activity },
+  terminado: { label: 'Terminó', cls: 'bg-primary/15 text-primary', icon: CheckCircle2 },
+  inactivo: { label: 'Sin terminar', cls: 'bg-amber-500/15 text-amber-700 dark:text-amber-300', icon: PauseCircle },
+  sin_empezar: { label: 'Sin empezar', cls: 'bg-slate-500/15 text-slate-600 dark:text-slate-300', icon: CircleDashed },
+};
+
+const CLUSTER_META: Record<string, { label: string; color: string }> = {
+  cal: { label: 'Calibrado', color: COLORS.cal },
+  over: { label: 'Sobreconfianza', color: COLORS.over },
+  sub: { label: 'Subestimación', color: COLORS.sub },
+};
+
+const challengeTitle = (id: string | null) =>
+  (id && dynamicChallengeBank.find((c) => c.id === id)?.titulo) || id || '—';
+const strategyName = (id: string | null) =>
+  (id && nuevasEstrategias.find((s) => s.id === id)?.nombre) || id || '—';
+
+function fmtDuration(sec: number | null | undefined) {
+  if (sec == null) return '—';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  if (m >= 60) return `${Math.floor(m / 60)} h ${m % 60} min`;
+  return m > 0 ? `${m} min ${String(s).padStart(2, '0')} s` : `${s} s`;
 }
 
-interface ClassAnalytics {
-  student_count: number;
-  phase_a_completed: number;
-  avg_jol: number;
-  avg_gap: number;
-  calibrated_count: number;
-  cluster_distribution: Record<string, number>;
-  cluster_students: Record<string, StudentEntry[]>;
-  urgent_alerts: AlertEntry[];
+/* ── Piezas de interfaz ──────────────────────────────────────────────────── */
+function Card({ title, subtitle, children, className }: { title?: string; subtitle?: string; children: React.ReactNode; className?: string }) {
+  return (
+    <section className={cn('rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 shadow-sm', className)}>
+      {title && (
+        <header className="mb-4">
+          <h2 className="text-base font-semibold text-on-surface">{title}</h2>
+          {subtitle && <p className="mt-0.5 text-xs text-on-surface-variant">{subtitle}</p>}
+        </header>
+      )}
+      {children}
+    </section>
+  );
 }
 
+function Kpi({ icon: Icon, label, value, hint, tone }: { icon: typeof Users; label: string; value: string | number; hint?: string; tone: string }) {
+  return (
+    <div className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-4 shadow-sm">
+      <div className="flex items-center gap-2 text-xs font-medium text-on-surface-variant">
+        <span className={cn('flex h-7 w-7 items-center justify-center rounded-full', tone)}>
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        {label}
+      </div>
+      <div className="mt-3 text-2xl font-semibold tracking-tight text-on-surface">{value}</div>
+      {hint && <div className="mt-1 text-xs text-on-surface-variant">{hint}</div>}
+    </div>
+  );
+}
+
+function Empty({ children }: { children: React.ReactNode }) {
+  return <div className="flex h-full min-h-[180px] items-center justify-center text-center text-sm text-on-surface-variant">{children}</div>;
+}
+
+function TrendIcon({ trend }: { trend: Trend }) {
+  if (trend === 'subio') return <span title="El sistema le subió la dificultad" className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400"><TrendingUp className="h-4 w-4" />Subió</span>;
+  if (trend === 'bajo') return <span title="El sistema le bajó la dificultad" className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400"><TrendingDown className="h-4 w-4" />Bajó</span>;
+  if (trend === 'igual') return <span title="Se mantuvo en el mismo nivel" className="inline-flex items-center gap-1 text-on-surface-variant"><Minus className="h-4 w-4" />Igual</span>;
+  return <span className="text-on-surface-variant">—</span>;
+}
+
+/* ── Página ──────────────────────────────────────────────────────────────── */
 export function Dashboard() {
   const { theme } = useTheme();
-  const isDark = theme === 'dark';
-
-  const [data, setData] = useState<ClassAnalytics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [filterMode, setFilterMode] = useState<'all' | 'over' | 'sub' | 'cal' | 'alert'>('all');
-  const [selectedCluster, setSelectedCluster] = useState<'over' | 'sub' | 'cal'>('over');
-  const [selectedStudent, setSelectedStudent] = useState<StudentEntry | null>(null);
-  const [timer, setTimer] = useState(0);
-
-  const fetchData = async () => {
-    setLoading(true);
-    setLoadError(null);
-    try {
-      const res = await api.getClassAnalytics() as unknown as ClassAnalytics;
-      setData(res);
-    } catch (err: any) {
-      setLoadError(err?.message || 'No se pudo conectar con el servidor');
-    }
-    setLoading(false);
+  const dark = theme === 'dark';
+  const axis = dark ? '#94a3b8' : '#64748b';
+  const grid = dark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.15)';
+  const tooltipStyle = {
+    background: dark ? '#0f172a' : '#ffffff',
+    border: `1px solid ${dark ? '#334155' : '#e2e8f0'}`,
+    borderRadius: 12,
+    fontSize: 12,
+    color: dark ? '#e2e8f0' : '#0f172a',
   };
 
-  useEffect(() => {
-    fetchData();
+  const [data, setData] = useState<Monitor | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [now, setNow] = useState(Date.now());
+  const [filter, setFilter] = useState<'todos' | Status>('todos');
+  const [query, setQuery] = useState('');
+
+  const load = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      setData((await api.getMonitor()) as unknown as Monitor);
+      setError(null);
+    } catch (e: any) {
+      setError(e?.message || 'No se pudo conectar con el servidor');
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => setTimer(t => t + 1), 1000);
-    return () => clearInterval(interval);
+    load();
+    const id = setInterval(load, REFRESH_MS);
+    return () => clearInterval(id);
+  }, [load]);
+
+  // Reloj para el "hace X s" y los cronómetros de quienes están trabajando
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
   }, []);
 
-  const fmtTimer = `${String(Math.floor(timer / 60)).padStart(2, '0')}:${String(timer % 60).padStart(2, '0')}`;
+  const sinceUpdate = data ? Math.max(0, Math.round((now - new Date(data.generated_at).getTime()) / 1000)) : 0;
 
-  const allStudents = useMemo(() => {
+  const students = useMemo(() => {
     if (!data) return [];
-    return [...(data.cluster_students.over || []), ...(data.cluster_students.sub || []), ...(data.cluster_students.cal || []), ...(data.cluster_students.unknown || [])];
-  }, [data]);
+    const q = query.trim().toLowerCase();
+    const order: Record<Status, number> = { activo: 0, inactivo: 1, terminado: 2, sin_empezar: 3 };
+    return data.students
+      .filter((s) => (filter === 'todos' || s.status === filter) && (!q || s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)))
+      .sort((a, b) => order[a.status] - order[b.status] || a.name.localeCompare(b.name));
+  }, [data, filter, query]);
 
-  const filteredStudents = useMemo(() => {
-    if (filterMode === 'all') return allStudents;
-    if (filterMode === 'alert') return data?.urgent_alerts || [];
-    return data?.cluster_students[filterMode] || [];
-  }, [filterMode, allStudents, data]);
-
-  const recentStudents = useMemo(() => {
-    if (filterMode === 'all') return allStudents.slice(0, 5);
-    if (filterMode === 'alert') return (data?.urgent_alerts || []).slice(0, 5);
-    return (data?.cluster_students[filterMode] || []).slice(0, 5);
-  }, [filterMode, allStudents, data]);
-
-  const clusterPct = useCallback((cl: string) => {
-    if (!data || data.student_count === 0) return 0;
-    return ((data.cluster_distribution[cl] || 0) / data.student_count) * 100;
-  }, [data]);
-
-  if (loading) {
+  if (!data && !error) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#0d1117] text-[#8b949e] font-mono text-sm">
-        Cargando datos de clase...
+      <div className="flex min-h-[60vh] items-center justify-center gap-3 text-sm text-on-surface-variant">
+        <RefreshCw className="h-4 w-4 animate-spin" /> Cargando el panel del grupo…
       </div>
     );
   }
 
-  if (loadError) {
+  if (!data) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-[#0d1117] font-mono text-sm gap-3" style={{ padding: 24, textAlign: 'center' }}>
-        <div style={{ color: '#ff7b72', fontSize: 14 }}>No se pudo cargar el panel de clase. Revisa la conexión con el servidor o la base de datos.</div>
-        <div style={{ color: '#8b949e', fontSize: 11 }}>{loadError}</div>
-        <button onClick={fetchData}
-          style={{ padding: '8px 18px', borderRadius: 8, background: '#238636', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-          Reintentar
-        </button>
+      <div className="mx-auto mt-16 max-w-md rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-6 text-center">
+        <p className="text-sm font-medium text-on-surface">No se pudo cargar el panel del grupo.</p>
+        <p className="mt-1 text-xs text-on-surface-variant">{error}</p>
+        <button onClick={load} className="mt-4 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-on-primary">Reintentar</button>
       </div>
     );
   }
 
-  const bg = isDark ? '#0d1117' : '#f0f4f8';
-  const cardBg = isDark ? '#161b22' : '#ffffff';
-  const cardBorder = isDark ? '#30363d' : '#d1d9e0';
-  const textPrimary = isDark ? '#c9d1d9' : '#1f2328';
-  const textSecondary = isDark ? '#6e7681' : '#656d76';
-  const textMuted = isDark ? '#8b949e' : '#6e7681';
-  const inputBg = isDark ? '#0d1117' : '#f6f8fa';
-  const rowBorder = isDark ? '#21262d' : '#d1d9e0';
-  const brandGreen = isDark ? '#238636' : '#1a7f37';
-  const accentBlue = isDark ? '#388bfd' : '#0969da';
+  const s = data.summary;
+  const pct = (n: number) => (s.students ? Math.round((100 * n) / s.students) : 0);
+  const clusterData = (['cal', 'over', 'sub'] as const)
+    .map((k) => ({ key: k, name: CLUSTER_META[k].label, value: data.clusters[k], color: CLUSTER_META[k].color }))
+    .filter((d) => d.value > 0);
+  const scatter = data.students
+    .filter((r) => r.jol != null && r.performance != null)
+    .map((r) => ({ x: r.jol!, y: r.performance!, name: r.name, cluster: r.cluster ?? 'cal' }));
+  const trendData = [
+    { name: 'Subió', value: data.trends.subio, color: COLORS.cal },
+    { name: 'Igual', value: data.trends.igual, color: COLORS.muted },
+    { name: 'Bajó', value: data.trends.bajo, color: COLORS.over },
+  ];
+  const participation = data.participation.map((d) => ({
+    ...d,
+    label: new Date(d.day + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }),
+  }));
+  const challengeChart = data.challenges.map((c) => ({
+    id: c.challenge_id,
+    name: c.challenge_id,
+    titulo: challengeTitle(c.challenge_id),
+    jol: c.avg_jol,
+    perf: c.avg_performance,
+    minutos: c.avg_time_seconds != null ? Math.round(c.avg_time_seconds / 6) / 10 : null,
+  }));
+
+  const filters: { id: 'todos' | Status; label: string; count: number }[] = [
+    { id: 'todos', label: 'Todos', count: s.students },
+    { id: 'activo', label: 'Trabajando', count: s.activo },
+    { id: 'inactivo', label: 'Sin terminar', count: s.inactivo },
+    { id: 'terminado', label: 'Terminaron', count: s.terminado },
+    { id: 'sin_empezar', label: 'Sin empezar', count: s.sin_empezar },
+  ];
 
   return (
-    <div style={{ fontFamily: "'Sora', sans-serif", background: bg, color: textPrimary, minHeight: '100vh', borderRadius: 12, overflow: 'hidden' }}>
-      <div style={{ background: cardBg, borderBottom: `0.5px solid ${cardBorder}`, padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, background: brandGreen, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 500, color: '#fff', letterSpacing: -1 }}>MP</div>
-          <span style={{ fontSize: 12, fontWeight: 500, color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Meta-Pathfinder</span>
+    <div className="mx-auto max-w-7xl space-y-6">
+      {/* Encabezado */}
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-on-surface sm:text-3xl">Panel del grupo</h1>
+          <p className="mt-1 text-sm text-on-surface-variant">Participación, tiempos y calibración de tus estudiantes.</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: `${accentBlue}15`, border: `0.5px solid ${accentBlue}50`, borderRadius: 7, padding: '5px 12px', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: accentBlue }}>
-            <User size={13} /> Vista docente
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, background: inputBg, border: `0.5px solid ${cardBorder}`, borderRadius: 7, padding: '5px 12px' }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: brandGreen, animation: 'blink 1.2s ease-in-out infinite' }} />
-            {data?.phase_a_completed ?? 0} / {data?.student_count ?? 0} estudiantes
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, background: inputBg, border: `0.5px solid ${cardBorder}`, borderRadius: 7, padding: '5px 12px' }}>
-            <Clock size={12} /> {fmtTimer}
-          </div>
+        <div className="flex items-center gap-3 text-xs text-on-surface-variant">
+          <span className="inline-flex items-center gap-2 rounded-full border border-outline-variant/50 bg-surface-container-lowest px-3 py-1.5">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            En vivo · actualizado hace {sinceUpdate} s
+          </span>
+          <button
+            type="button"
+            onClick={load}
+            className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant/50 bg-surface-container-lowest px-3 py-1.5 font-medium text-on-surface hover:bg-surface-container"
+          >
+            <RefreshCw className={cn('h-3.5 w-3.5', refreshing && 'animate-spin')} /> Actualizar
+          </button>
         </div>
+      </header>
+      {error && <p className="rounded-xl bg-amber-500/10 px-4 py-2 text-xs text-amber-700 dark:text-amber-300">Sin conexión: se muestran los últimos datos recibidos. {error}</p>}
+
+      {/* Indicadores */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <Kpi icon={Users} label="Estudiantes" value={s.students} hint={`${s.sessions} sesiones registradas`} tone="bg-primary/15 text-primary" />
+        <Kpi icon={Activity} label="Trabajando ahora" value={s.activo} hint={`${pct(s.activo)} % del grupo`} tone="bg-emerald-500/15 text-emerald-600" />
+        <Kpi icon={CheckCircle2} label="Terminaron" value={s.terminado} hint={`${pct(s.terminado)} % del grupo`} tone="bg-primary/15 text-primary" />
+        <Kpi icon={CircleDashed} label="Sin empezar" value={s.sin_empezar} hint={s.inactivo ? `${s.inactivo} empezaron y no terminaron` : 'Todos empezaron'} tone="bg-slate-500/15 text-slate-500" />
+        <Kpi icon={Clock} label="Tiempo por actividad" value={fmtDuration(s.avg_time_seconds)} hint="Promedio del grupo" tone="bg-amber-500/15 text-amber-600" />
+        <Kpi icon={Target} label="Aprobación" value={s.pass_rate != null ? `${s.pass_rate} %` : '—'} hint={`${s.activities_completed} actividades cerradas`} tone="bg-sky-500/15 text-sky-600" />
       </div>
 
-      <div style={{ padding: 20 }}>
+      {/* Participación + calibración */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card title="Participación" subtitle="Actividades iniciadas y terminadas en los últimos 14 días" className="lg:col-span-2">
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={participation} margin={{ left: -20, right: 8, top: 8 }}>
+                <defs>
+                  <linearGradient id="gStarted" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={COLORS.sub} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={COLORS.sub} stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="gFinished" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={COLORS.primary} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={COLORS.primary} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke={grid} vertical={false} />
+                <XAxis dataKey="label" tick={{ fill: axis, fontSize: 11 }} tickLine={false} axisLine={false} />
+                <YAxis allowDecimals={false} tick={{ fill: axis, fontSize: 11 }} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Area type="monotone" dataKey="started" name="Iniciadas" stroke={COLORS.sub} fill="url(#gStarted)" strokeWidth={2} />
+                <Area type="monotone" dataKey="finished" name="Terminadas" stroke={COLORS.primary} fill="url(#gFinished)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10, marginBottom: 18 }}>
-          {[
-            { label: 'Completaron Fase A', val: `${data?.phase_a_completed ?? 0}`, sub: `${data?.student_count ? Math.round((data.phase_a_completed / data.student_count) * 100) : 0}% de la clase`, valColor: '#5dcaa5', subColor: '#5dcaa5' },
-            { label: 'JOL promedio de clase', val: `${data?.avg_jol ?? 0}`, sub: 'Confianza ' + (data && data.avg_jol >= 7 ? 'alta' : data && data.avg_jol >= 5 ? 'moderada-alta' : 'baja'), valColor: '#f2cc60', subColor: '#f2cc60' },
-            { label: 'Desfase promedio', val: `${data?.avg_gap ?? 0}`, sub: data && data.avg_gap > 0 ? 'Clase sobrestima su nivel' : data && data.avg_gap < 0 ? 'Clase subestima su nivel' : 'Clase calibrada', valColor: data && data.avg_gap && Math.abs(data.avg_gap) > 2 ? '#ff7b72' : '#5dcaa5', subColor: data && data.avg_gap && Math.abs(data.avg_gap) > 2 ? '#ff7b72' : textSecondary },
-            { label: 'Perfiles calibrados', val: `${data?.calibrated_count ?? 0}`, sub: `${data?.student_count ? Math.round((data.calibrated_count / data.student_count) * 100) : 0}% · meta: 60% al final`, valColor: '#5dcaa5', subColor: textSecondary },
-          ].map(kpi => (
-            <div key={kpi.label} style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 14 }}>
-              <div style={{ fontSize: 10, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
-                {kpi.label}
+        <Card title="Calibración del grupo" subtitle="¿Su confianza coincide con su resultado?">
+          {clusterData.length === 0 ? (
+            <Empty>Aún no hay actividades con reflexión final.</Empty>
+          ) : (
+            <>
+              <div className="h-44">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={clusterData} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3} stroke="none">
+                      {clusterData.map((d) => <Cell key={d.key} fill={d.color} />)}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-              <div style={{ fontSize: 24, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500, color: kpi.valColor, lineHeight: 1 }}>
-                {kpi.val} <span style={{ fontSize: 14, color: textSecondary }}>{kpi.label === 'Completaron Fase A' ? `/ ${data?.student_count ?? 0}` : ''}</span>
-              </div>
-              <div style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", marginTop: 5, color: kpi.subColor }}>{kpi.sub}</div>
+              <ul className="mt-2 space-y-1.5 text-sm">
+                {(['cal', 'over', 'sub'] as const).map((k) => (
+                  <li key={k} className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 text-on-surface-variant">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: CLUSTER_META[k].color }} />
+                      {CLUSTER_META[k].label}
+                    </span>
+                    <span className="font-semibold text-on-surface">{data.clusters[k]}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </Card>
+      </div>
+
+      {/* Cómo se sintió vs cómo le fue + progresión */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card title="Cómo se sintió vs. cómo le fue" subtitle="Cada punto es un estudiante. Sobre la diagonal: confianza = resultado." className="lg:col-span-2">
+          {scatter.length === 0 ? (
+            <Empty>Aparecerá cuando los estudiantes terminen su reflexión.</Empty>
+          ) : (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart margin={{ left: -10, right: 16, top: 8, bottom: 8 }}>
+                  <CartesianGrid stroke={grid} />
+                  <XAxis type="number" dataKey="x" name="Confianza" domain={[0, 10]} tick={{ fill: axis, fontSize: 11 }} label={{ value: 'Confianza (antes)', position: 'insideBottom', offset: -4, fill: axis, fontSize: 11 }} />
+                  <YAxis type="number" dataKey="y" name="Resultado" domain={[0, 10]} tick={{ fill: axis, fontSize: 11 }} label={{ value: 'Resultado', angle: -90, position: 'insideLeft', offset: 20, fill: axis, fontSize: 11 }} />
+                  <ZAxis range={[110, 110]} />
+                  <ReferenceLine segment={[{ x: 0, y: 0 }, { x: 10, y: 10 }]} stroke={axis} strokeDasharray="4 4" />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    content={({ payload }) => {
+                      const p = payload?.[0]?.payload as (typeof scatter)[number] | undefined;
+                      return p ? (
+                        <div style={tooltipStyle} className="px-3 py-2">
+                          <div className="font-semibold">{p.name}</div>
+                          <div>Confianza: {p.x} · Resultado: {p.y}</div>
+                          <div>{CLUSTER_META[p.cluster]?.label}</div>
+                        </div>
+                      ) : null;
+                    }}
+                  />
+                  {(['cal', 'over', 'sub'] as const).map((k) => (
+                    <Scatter key={k} data={scatter.filter((p) => p.cluster === k)} fill={CLUSTER_META[k].color} />
+                  ))}
+                </ScatterChart>
+              </ResponsiveContainer>
             </div>
-          ))}
+          )}
+        </Card>
+
+        <Card title="Ajuste de dificultad" subtitle="Lo que hizo el sistema según el último resultado">
+          {data.trends.subio + data.trends.bajo + data.trends.igual === 0 ? (
+            <Empty>Se mostrará cuando un estudiante haga su segunda actividad.</Empty>
+          ) : (
+            <div className="h-60">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={trendData} margin={{ left: -20, right: 8, top: 8 }}>
+                  <CartesianGrid stroke={grid} vertical={false} />
+                  <XAxis dataKey="name" tick={{ fill: axis, fontSize: 12 }} tickLine={false} axisLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fill: axis, fontSize: 11 }} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: grid }} />
+                  <Bar dataKey="value" name="Estudiantes" radius={[8, 8, 0, 0]}>
+                    {trendData.map((d) => <Cell key={d.name} fill={d.color} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* Estudiantes en vivo */}
+      <Card title="Estudiantes" subtitle="Estado en vivo, tiempo en la actividad actual y último resultado">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap gap-1.5">
+            {filters.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFilter(f.id)}
+                className={cn(
+                  'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                  filter === f.id ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant hover:text-on-surface'
+                )}
+              >
+                {f.label} <span className="opacity-70">{f.count}</span>
+              </button>
+            ))}
+          </div>
+          <label className="ml-auto flex min-w-[200px] items-center gap-2 rounded-full border border-outline-variant/50 px-3 py-1.5">
+            <Search className="h-4 w-4 text-on-surface-variant" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar estudiante…" className="w-full bg-transparent text-sm text-on-surface outline-none placeholder:text-on-surface-variant/60" />
+          </label>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 14, marginBottom: 14 }}>
-          <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em' }}>
-                Clústeres cognitivos · clase completa
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {['Sobreconfianza', 'Subestimación', 'Calibrado'].map((label, i) => {
-                  const colors = ['#ff7b72', '#388bfd', '#5dcaa5'];
+        {students.length === 0 ? (
+          <Empty>No hay estudiantes en este filtro.</Empty>
+        ) : (
+          <div className="-mx-5 overflow-x-auto">
+            <table className="w-full min-w-[980px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-outline-variant/50 text-xs text-on-surface-variant">
+                  <th className="px-5 py-2 font-medium">Estudiante</th>
+                  <th className="px-3 py-2 font-medium">Estado</th>
+                  <th className="px-3 py-2 font-medium">Actividad actual</th>
+                  <th className="px-3 py-2 font-medium">Tiempo</th>
+                  <th className="px-3 py-2 font-medium text-center">Hechas</th>
+                  <th className="px-3 py-2 font-medium whitespace-nowrap">Se sintió → Resultado</th>
+                  <th className="px-3 py-2 font-medium">Calibración</th>
+                  <th className="px-5 py-2 font-medium">Dificultad</th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((r) => {
+                  const meta = STATUS_META[r.status];
+                  const live = r.status === 'activo' && r.started_at
+                    ? Math.max(0, Math.round((now - new Date(r.started_at).getTime()) / 1000))
+                    : null;
                   return (
-                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textMuted }}>
-                      <span style={{ width: 8, height: 8, borderRadius: 2, background: colors[i], flexShrink: 0 }} />
-                      {label}
-                    </div>
+                    <tr key={r.id} className="border-b border-outline-variant/30 last:border-0 hover:bg-surface-container/50">
+                      <td className="px-5 py-3">
+                        <div className="font-medium text-on-surface">{r.name}</div>
+                        <div className="text-xs text-on-surface-variant">{r.email}</div>
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium', meta.cls)}>
+                          <meta.icon className="h-3.5 w-3.5" /> {meta.label}
+                        </span>
+                        {r.status === 'activo' && r.stage === 'reflexion' && <div className="mt-1 text-[11px] text-on-surface-variant">En la reflexión final</div>}
+                      </td>
+                      <td className="px-3 py-3 max-w-[220px]">
+                        <div className="truncate text-on-surface" title={challengeTitle(r.current_challenge)}>{challengeTitle(r.current_challenge)}</div>
+                        {r.strategy && <div className="truncate text-xs text-on-surface-variant">{strategyName(r.strategy)}</div>}
+                      </td>
+                      <td className="px-3 py-3 tabular-nums whitespace-nowrap">
+                        {live != null ? (
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">{fmtDuration(live)}</span>
+                        ) : (
+                          <span className="text-on-surface-variant">{r.avg_time_seconds != null ? `Prom. ${fmtDuration(r.avg_time_seconds)}` : '—'}</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-3 text-center tabular-nums text-on-surface">{r.completed}</td>
+                      <td className="px-3 py-3 tabular-nums whitespace-nowrap">
+                        {r.jol != null && r.performance != null ? (
+                          <span className="text-on-surface">
+                            {r.jol} → <strong>{r.performance}</strong>
+                            <span className={cn('ml-1.5 text-xs', (r.gap ?? 0) > 2 ? 'text-rose-600 dark:text-rose-400' : (r.gap ?? 0) < -2 ? 'text-sky-600 dark:text-sky-400' : 'text-on-surface-variant')}>
+                              ({(r.gap ?? 0) > 0 ? '+' : ''}{r.gap})
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-on-surface-variant">—</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-3">
+                        {r.cluster ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: CLUSTER_META[r.cluster]?.color }}>
+                            <span className="h-2 w-2 rounded-full" style={{ background: CLUSTER_META[r.cluster]?.color }} />
+                            {CLUSTER_META[r.cluster]?.label}
+                          </span>
+                        ) : <span className="text-on-surface-variant">—</span>}
+                      </td>
+                      <td className="px-5 py-3 text-xs font-medium"><TrendIcon trend={r.trend} /></td>
+                    </tr>
                   );
                 })}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {['over', 'sub', 'cal'].map(cl => {
-                const group = data?.cluster_students[cl] || [];
-                const pct = clusterPct(cl);
-                return (
-                  <div
-                    key={cl}
-                    onClick={() => setSelectedCluster(cl as 'over' | 'sub' | 'cal')}
-                    style={{
-                      background: inputBg,
-                      border: `0.5px solid ${selectedCluster === cl ? CLUSTER_COLORS[cl] : rowBorder}`,
-                      borderRadius: 8, padding: 12, cursor: 'pointer',
-                      transition: 'border-color .15s',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                      <div style={{ fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 7, color: CLUSTER_COLORS[cl] }}>
-                        {CLUSTER_LABEL[cl]}
-                      </div>
-                      <span style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary }}>
-                        {group.length} estudiantes · {Math.round(pct)}%
-                      </span>
-                    </div>
-                    <div style={{ height: 4, background: rowBorder, borderRadius: 2, overflow: 'hidden', marginBottom: 8 }}>
-                      <div style={{ height: '100%', borderRadius: 2, width: `${pct}%`, background: CLUSTER_COLORS[cl], transition: 'width .5s cubic-bezier(.4,0,.2,1)' }} />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                      {group.slice(0, 10).map(s => (
-                        <div
-                          key={s.id}
-                          onClick={(e) => { e.stopPropagation(); setSelectedStudent(s); }}
-                          style={{
-                            width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 9, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500,
-                            background: CLUSTER_BG[cl], color: CLUSTER_COLORS[cl],
-                            border: `1.5px solid ${inputBg}`, cursor: 'pointer', transition: 'transform .1s',
-                          }}
-                          title={s.name}
-                        >
-                          {s.initials}
-                        </div>
-                      ))}
-                      {group.length > 10 && (
-                        <span style={{ fontSize: 9, color: textSecondary, fontFamily: "'IBM Plex Mono', monospace", marginLeft: 4 }}>+{group.length - 10}</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 14 }}>
-                Distribución de clase
-              </div>
-              <div style={{ position: 'relative', width: '100%', height: 140 }}>
-                <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%' }}>
-                  {(() => {
-                    const total = data?.student_count || 1;
-                    const over = ((data?.cluster_distribution.over || 0) / total) * 100;
-                    const sub = ((data?.cluster_distribution.sub || 0) / total) * 100;
-                    const cal = ((data?.cluster_distribution.cal || 0) / total) * 100;
-                    const r = 35;
-                    const cx = 50, cy = 50;
-                    const toRad = (deg: number) => (deg - 90) * (Math.PI / 180);
-                    const arcPath = (startDeg: number, endDeg: number) => {
-                      const s = toRad(startDeg), e = toRad(endDeg);
-                      const x1 = cx + r * Math.cos(s), y1 = cy + r * Math.sin(s);
-                      const x2 = cx + r * Math.cos(e), y2 = cy + r * Math.sin(e);
-                      const large = endDeg - startDeg > 180 ? 1 : 0;
-                      return `M ${cx + r * 0.55 * Math.cos(s)} ${cy + r * 0.55 * Math.sin(s)} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${cx + r * 0.55 * Math.cos(e)} ${cy + r * 0.55 * Math.sin(e)} Z`;
-                    };
-                    const segments: { pct: number; color: string }[] = [];
-                    if (over > 0) segments.push({ pct: over, color: '#ff7b72' });
-                    if (sub > 0) segments.push({ pct: sub, color: '#388bfd' });
-                    if (cal > 0) segments.push({ pct: cal, color: '#5dcaa5' });
-                    let curDeg = 0;
-                    return segments.map(seg => {
-                      const deg = (seg.pct / 100) * 360;
-                      const path = arcPath(curDeg, curDeg + deg);
-                      curDeg += deg;
-                      return <path key={seg.color} d={path} fill={seg.color} />;
-                    });
-                  })()}
-                </svg>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 10 }}>
-                {[
-                  { label: 'Sobreconfianza', pct: clusterPct('over'), color: '#ff7b72' },
-                  { label: 'Subestimación', pct: clusterPct('sub'), color: '#388bfd' },
-                  { label: 'Calibrado', pct: clusterPct('cal'), color: '#5dcaa5' },
-                ].map(item => (
-                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textMuted }}>
-                    <span style={{ width: 8, height: 8, borderRadius: 2, background: item.color, flexShrink: 0 }} />
-                    {item.label} {Math.round(item.pct)}%
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ background: 'rgba(255,123,114,.06)', border: '0.5px solid rgba(255,123,114,.25)', borderRadius: 10, padding: 14 }}>
-              <div style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: '#ff7b72', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Bell size={13} /> Alertas urgentes
-              </div>
-              {(data?.urgent_alerts?.length ?? 0) === 0 && (
-                <div style={{ fontSize: 11, color: textMuted }}>Sin alertas activas</div>
-              )}
-              {(data?.urgent_alerts || []).slice(0, 4).map(a => (
-                <div
-                  key={a.id}
-                  onClick={() => setSelectedStudent(a)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: textPrimary, padding: '5px 0', borderBottom: `0.5px solid rgba(255,123,114,.1)`, cursor: 'pointer' }}
-                >
-                  <div style={{
-                    width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 8, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500,
-                    background: a.type === 'over' ? 'rgba(255,123,114,.15)' : 'rgba(56,139,253,.15)',
-                    color: a.type === 'over' ? '#ff7b72' : '#388bfd',
-                  }}>{a.initials}</div>
-                  <span style={{ flex: 1 }}>
-                    {a.name.split(' ')[0]} {a.initials}. · {a.type === 'over' ? `JOL=${a.jol}, nota=${a.performance}` : `JOL=${a.jol}, nota=${a.performance}`} · {a.reason}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {selectedStudent && (
-          <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16, marginBottom: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em' }}>
-                <User size={13} /> Detalle de estudiante
-              </div>
-              <button onClick={() => setSelectedStudent(null)} style={{ background: 'transparent', border: 'none', color: textSecondary, cursor: 'pointer', fontSize: 12, fontFamily: "'IBM Plex Mono', monospace" }}>cerrar</button>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <div style={{
-                width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500,
-                background: CLUSTER_BG[selectedStudent.cluster || 'cal'], color: CLUSTER_COLORS[selectedStudent.cluster || 'cal'],
-              }}>{selectedStudent.initials}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: textPrimary }}>{selectedStudent.name}</div>
-                <div style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary }}>
-                  {selectedStudent.cluster ? CLUSTER_LABEL[selectedStudent.cluster] : 'Sin datos'}
-                </div>
-              </div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
-              {[
-                { label: 'JOL', val: selectedStudent.jol ?? '—', color: '#f2cc60' },
-                { label: 'Nota real', val: selectedStudent.performance ?? '—', color: selectedStudent.performance && selectedStudent.performance >= 7 ? '#5dcaa5' : '#ff7b72' },
-                { label: 'Desfase', val: selectedStudent.gap != null ? `${selectedStudent.gap >= 0 ? '+' : ''}${selectedStudent.gap}` : '—', color: selectedStudent.gap != null && Math.abs(selectedStudent.gap) <= 1 ? '#5dcaa5' : '#ff7b72' },
-                { label: 'Calibración', val: selectedStudent.calibration_index ?? '—', color: selectedStudent.calibration_index && selectedStudent.calibration_index >= 7 ? '#5dcaa5' : '#f2cc60' },
-              ].map(stat => (
-                <div key={stat.label} style={{ background: inputBg, borderRadius: 7, padding: 10, border: `0.5px solid ${rowBorder}` }}>
-                  <div style={{ fontSize: 9, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 3 }}>{stat.label}</div>
-                  <div style={{ fontSize: 18, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500, color: stat.color }}>{stat.val}</div>
-                </div>
-              ))}
-            </div>
+              </tbody>
+            </table>
           </div>
         )}
+      </Card>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-          <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16, minHeight: 300 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10 }}>
-              Mapa JOL vs. desempeño real · todos los estudiantes
+      {/* Por actividad + estrategias */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card title="Por actividad" subtitle="Confianza promedio frente al resultado promedio (escala 0–10)" className="lg:col-span-2">
+          {challengeChart.length === 0 ? (
+            <Empty>Aún no hay actividades realizadas.</Empty>
+          ) : (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={challengeChart} margin={{ left: -20, right: 8, top: 8 }}>
+                  <CartesianGrid stroke={grid} vertical={false} />
+                  <XAxis dataKey="name" tick={{ fill: axis, fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <YAxis domain={[0, 10]} tick={{ fill: axis, fontSize: 11 }} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    cursor={{ fill: grid }}
+                    labelFormatter={(_, p) => (p?.[0]?.payload as any)?.titulo ?? ''}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="jol" name="Confianza" fill={COLORS.amber} radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="perf" name="Resultado" fill={COLORS.primary} radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
-              {[
-                { label: 'Sobreconfianza', color: '#ff7b72', shape: 'circle' },
-                { label: 'Subestimación', color: '#388bfd', shape: 'rect' },
-                { label: 'Calibrado', color: '#5dcaa5', shape: 'triangle' },
-              ].map(l => (
-                <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textMuted }}>
-                  <span style={{ width: 8, height: 8, borderRadius: l.shape === 'circle' ? '50%' : l.shape === 'rect' ? 2 : 0, background: l.color, borderLeft: l.shape === 'triangle' ? '4px solid transparent' : undefined, borderRight: l.shape === 'triangle' ? '4px solid transparent' : undefined, borderBottom: l.shape === 'triangle' ? '8px solid #5dcaa5' : undefined, flexShrink: 0 }} />
-                  {l.label}
-                </div>
+          )}
+        </Card>
+
+        <Card title="Tiempo y aprobación" subtitle="Por actividad">
+          {data.challenges.length === 0 ? (
+            <Empty>Sin datos todavía.</Empty>
+          ) : (
+            <ul className="max-h-72 space-y-2 overflow-y-auto pr-1">
+              {data.challenges.map((c) => (
+                <li key={c.challenge_id} className="rounded-xl bg-surface-container/60 px-3 py-2">
+                  <div className="truncate text-sm font-medium text-on-surface" title={challengeTitle(c.challenge_id)}>{challengeTitle(c.challenge_id)}</div>
+                  <div className="mt-1 flex items-center justify-between text-xs text-on-surface-variant">
+                    <span>{c.attempts} intento{c.attempts === 1 ? '' : 's'} · {fmtDuration(c.avg_time_seconds)}</span>
+                    <span className="font-semibold text-on-surface">{c.pass_rate != null ? `${c.pass_rate} %` : '—'}</span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-outline-variant/30">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${c.pass_rate ?? 0}%` }} />
+                  </div>
+                </li>
               ))}
-            </div>
-            <svg viewBox="0 0 300 300" style={{ width: '100%', height: 260 }}>
-              {(() => {
-                const toX = (v: number) => 15 + (v / 10) * 270;
-                const toY = (v: number) => 285 - (v / 10) * 270;
-                const pts = allStudents.filter(s => s.jol != null && s.performance != null);
-                return (
-                  <>
-                    <line x1={toX(0)} y1={toY(0)} x2={toX(10)} y2={toY(10)} stroke={isDark ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.08)"} strokeWidth={1} strokeDasharray="4,4" />
-                    {[0, 2, 4, 6, 8, 10].map(v => (
-                      <g key={v}>
-                        <text x={toX(v)} y={298} fontSize={8} fill={textSecondary} textAnchor="middle" fontFamily="'IBM Plex Mono',monospace">{v}</text>
-                        <text x={8} y={toY(v) + 3} fontSize={8} fill={textSecondary} textAnchor="end" fontFamily="'IBM Plex Mono',monospace">{v}</text>
-                        <line x1={toX(v)} y1={toY(0)} x2={toX(v)} y2={toY(10)} stroke={rowBorder} strokeWidth={0.5} />
-                        <line x1={toX(0)} y1={toY(v)} x2={toX(10)} y2={toY(v)} stroke={rowBorder} strokeWidth={0.5} />
-                      </g>
-                    ))}
-                    <text x={150} y={298} fontSize={9} fill={textSecondary} textAnchor="middle" fontFamily="'IBM Plex Mono',monospace">JOL declarado</text>
-                    <text x={8} y={145} fontSize={9} fill={textSecondary} textAnchor="middle" transform="rotate(-90,8,145)" fontFamily="'IBM Plex Mono',monospace">Desempeño real</text>
-                    {pts.map(s => {
-                      const cx = toX(s.jol!), cy = toY(s.performance!);
-                      const color = CLUSTER_COLORS[s.cluster || 'cal'];
-                      const r = 5;
-                      return <circle key={s.id} cx={cx} cy={cy} r={r} fill={color} opacity={0.7} />;
-                    })}
-                  </>
-                );
-              })()}
-            </svg>
-          </div>
+            </ul>
+          )}
+        </Card>
+      </div>
 
-          <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16, minHeight: 300 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10 }}>
-              Evolución del desfase · últimas sesiones
-            </div>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textMuted }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: '#ff7b72', flexShrink: 0 }} />Sobreconf.
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textMuted }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: '#5dcaa5', flexShrink: 0 }} />Calibrados
-              </div>
-            </div>
-            <svg viewBox="0 0 300 240" style={{ width: '100%', height: 240 }}>
-              {(() => {
-                const pts = allStudents.filter(s => s.jol != null && s.performance != null);
-                const overPts = pts.filter(s => s.cluster === 'over').map(s => s.gap!).filter(g => g != null);
-                const calPts = pts.filter(s => s.cluster === 'cal').map(s => s.gap!).filter(g => g != null);
-                const overAvg = overPts.length ? overPts.reduce((a, b) => a + b, 0) / overPts.length : 0;
-                const calAvg = calPts.length ? calPts.reduce((a, b) => a + b, 0) / calPts.length : 0;
-                const toX = (i: number, n: number) => 20 + (i / (n - 1 || 1)) * 260;
-                const toY = (v: number) => 120 - (Math.max(-8, Math.min(8, v)) / 8) * 100;
-
-                const labels = ['Sesión 1', 'Sesión 2', 'Sesión 3', 'Hoy'];
-                const overData = [
-                  overAvg * 0.6, overAvg * 0.3, overAvg * 0.1, overAvg * 0.05
-                ].map(v => Math.abs(v));
-                const calData = [
-                  calAvg * 0.2, calAvg * 0.1, calAvg * 0.05, calAvg * 0.02
-                ].map(v => Math.abs(v));
-
-                return (
-                  <>
-                    {[-8, -6, -4, -2, 0, 2, 4, 6, 8].map(v => (
-                      <g key={v}>
-                        <text x={16} y={toY(v) + 3} fontSize={8} fill={textSecondary} textAnchor="end" fontFamily="'IBM Plex Mono',monospace">{Math.abs(v)}</text>
-                        <line x1={20} y1={toY(v)} x2={300} y2={toY(v)} stroke={rowBorder} strokeWidth={v === 0 ? 0.5 : 0.3} />
-                      </g>
-                    ))}
-                    <line x1={20} y1={toY(0)} x2={300} y2={toY(0)} stroke={isDark ? "rgba(255,255,255,.15)" : "rgba(0,0,0,.12)"} strokeWidth={1} strokeDasharray="4,4" />
-                    {labels.map((l, i) => (
-                      <text key={l} x={toX(i, labels.length)} y={235} fontSize={8} fill={textSecondary} textAnchor="middle" fontFamily="'IBM Plex Mono',monospace">{l}</text>
-                    ))}
-
-                    {overData.map((v, i) => {
-                      const cx = toX(i, overData.length);
-                      const cy = toY(-v);
-                      return (
-                        <g key={`over-${i}`}>
-                          {i > 0 && <line x1={toX(i - 1, overData.length)} y1={toY(-overData[i - 1])} x2={cx} y2={cy} stroke="#ff7b72" strokeWidth={1.5} />}
-                          <circle cx={cx} cy={cy} r={4} fill="#ff7b72" />
-                        </g>
-                      );
-                    })}
-
-                    {calData.map((v, i) => {
-                      const cx = toX(i, calData.length);
-                      const cy = toY(v);
-                      return (
-                        <g key={`cal-${i}`}>
-                          {i > 0 && <line x1={toX(i - 1, calData.length)} y1={toY(calData[i - 1])} x2={cx} y2={cy} stroke="#5dcaa5" strokeWidth={1.5} />}
-                          <circle cx={cx} cy={cy} r={4} fill="#5dcaa5" />
-                        </g>
-                      );
-                    })}
-                  </>
-                );
-              })()}
-            </svg>
-          </div>
-        </div>
-
-        <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, padding: 16, marginBottom: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 12 }}>
-            <Sparkles size={13} /> Intervenciones grupales recomendadas · basadas en clústeres detectados
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
-            {[
-              {
-                cluster: 'Sobreconfianza',
-                count: data?.cluster_distribution.over || 0,
-                color: '#ff7b72',
-                action: 'Pausa de reflexión colectiva (10 min)',
-                desc: 'Actividad grupal donde cada estudiante compara su JOL con su resultado en voz alta. El docente facilita sin juzgar. Activa la regulación social del aprendizaje.',
-              },
-              {
-                cluster: 'Subestimación',
-                count: data?.cluster_distribution.sub || 0,
-                color: '#388bfd',
-                action: 'Sesión de reconocimiento de logros (8 min)',
-                desc: 'El docente muestra a este subgrupo sus propias métricas de desempeño real vs. JOL. El dato propio es la evidencia más persuasiva de Bandura.',
-              },
-              {
-                cluster: 'Calibrado',
-                count: data?.cluster_distribution.cal || 0,
-                color: '#5dcaa5',
-                action: 'Rol de par cognitivo experto',
-                desc: 'Asigna a este grupo como mentores dentro de la ZDP de sus compañeros. Consolidan conocimiento enseñando y el grupo receptor recibe andamiaje genuino.',
-              },
-            ].map(interv => (
-              <div key={interv.cluster} style={{ background: inputBg, border: `0.5px solid ${rowBorder}`, borderRadius: 8, padding: 12 }}>
-                <div style={{ fontSize: 10, fontFamily: "'IBM Plex Mono', monospace", color: interv.color, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>
-                  Clúster: {interv.cluster} · {interv.count} estudiantes
+      {data.strategies.length > 0 && (
+        <Card title="Estrategias asignadas" subtitle="Cuántas veces se asignó cada una y la distancia promedio entre confianza y resultado (menor es mejor)">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            {data.strategies.map((st) => (
+              <div key={st.strategy} className="rounded-xl bg-surface-container/60 px-3 py-2.5">
+                <div className="truncate text-sm font-medium text-on-surface" title={strategyName(st.strategy)}>{strategyName(st.strategy)}</div>
+                <div className="mt-1 text-xs text-on-surface-variant">
+                  {st.assigned} asignación{st.assigned === 1 ? '' : 'es'} · desfase {st.avg_abs_gap ?? '—'}
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 500, color: textPrimary, marginBottom: 4, lineHeight: 1.4 }}>{interv.action}</div>
-                <div style={{ fontSize: 11, color: textSecondary, lineHeight: 1.55, marginBottom: 8 }}>{interv.desc}</div>
-                <button
-                  onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(interv.action + ' metacognición')}`, '_blank')}
-                  style={{
-                    width: '100%', background: 'transparent', border: `0.5px solid ${cardBorder}`, borderRadius: 6, padding: 6,
-                    fontSize: 11, fontFamily: "'Sora', sans-serif", color: textMuted, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-                  }}
-                >
-                  <FileText size={12} /> Ver recursos
-                </button>
               </div>
             ))}
           </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          {([
-            ['all', 'Todos'],
-            ['over', 'Sobreconfianza'],
-            ['sub', 'Subestimación'],
-            ['cal', 'Calibrados'],
-          ] as const).map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setFilterMode(key)}
-              style={{
-                padding: '5px 12px', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", borderRadius: 6, cursor: 'pointer',
-                border: `0.5px solid ${filterMode === key ? (key === 'over' ? '#ff7b72' : key === 'sub' ? '#388bfd' : key === 'cal' ? '#5dcaa5' : cardBorder) : cardBorder}`,
-                background: filterMode === key ? (key === 'over' ? 'rgba(255,123,114,.1)' : key === 'sub' ? 'rgba(56,139,253,.1)' : key === 'cal' ? 'rgba(93,202,165,.1)' : 'transparent') : 'transparent',
-                color: filterMode === key ? (key === 'over' ? '#ff7b72' : key === 'sub' ? '#388bfd' : key === 'cal' ? '#5dcaa5' : textPrimary) : textSecondary,
-              }}
-            >
-              {label}
-            </button>
-          ))}
-          <button
-            onClick={() => setFilterMode('alert')}
-            style={{
-              padding: '5px 12px', fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", borderRadius: 6, cursor: 'pointer',
-              border: `0.5px solid ${filterMode === 'alert' ? 'rgba(255,123,114,.3)' : cardBorder}`,
-              background: filterMode === 'alert' ? 'rgba(255,123,114,.1)' : 'transparent', color: '#ff7b72',
-              marginLeft: 'auto',
-            }}
-          >
-            Alertas urgentes
-          </button>
-        </div>
-
-        <div style={{ background: cardBg, border: `0.5px solid ${cardBorder}`, borderRadius: 10, overflow: 'hidden', marginBottom: 6 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 120px', padding: '8px 14px', borderBottom: `0.5px solid ${rowBorder}`, fontSize: 10, fontFamily: "'IBM Plex Mono', monospace", color: textSecondary, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            <span>Estudiante</span><span>JOL</span><span>Nota</span><span>Desfase</span><span>Calib.</span><span>Perfil</span><span />
-          </div>
-          {recentStudents.map(s => {
-            const cl = s.cluster || 'cal';
-            const gapColor = s.gap != null && Math.abs(s.gap) <= 1 ? '#5dcaa5' : Math.abs(s.gap || 0) <= 3 ? '#f2cc60' : '#ff7b72';
-            return (
-              <div
-                key={s.id}
-                onClick={() => setSelectedStudent(s)}
-                style={{
-                  display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 120px',
-                  padding: '9px 14px', borderBottom: `0.5px solid ${rowBorder}`,
-                  fontSize: 12, alignItems: 'center', cursor: 'pointer',
-                }}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                  <span style={{
-                    width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 9, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500,
-                    background: CLUSTER_BG[cl], color: CLUSTER_COLORS[cl],
-                  }}>{s.initials}</span>
-                  <span style={{ color: textPrimary }}>{s.name}</span>
-                </span>
-                <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: '#f2cc60' }}>{s.jol ?? '—'}</span>
-                <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: s.performance != null && s.performance >= 7 ? '#5dcaa5' : s.performance != null && s.performance >= 5 ? '#f2cc60' : '#ff7b72' }}>{s.performance ?? '—'}</span>
-                <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: gapColor }}>
-                  {s.gap != null ? `${s.gap >= 0 ? '+' : ''}${s.gap}` : '—'}
-                </span>
-                <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: s.calibration_index != null && s.calibration_index >= 7 ? '#5dcaa5' : '#f2cc60' }}>{s.calibration_index ?? '—'}</span>
-                <span>
-                  <span style={{
-                    background: CLUSTER_BG[cl], color: CLUSTER_COLORS[cl],
-                    borderRadius: 5, padding: '2px 7px', fontSize: 10, fontFamily: "'IBM Plex Mono', monospace",
-                  }}>
-                    {CLUSTER_LABEL[cl]}
-                  </span>
-                </span>
-                <span />
-              </div>
-            );
-          })}
-          {recentStudents.length === 0 && (
-            <div style={{ padding: '20px', textAlign: 'center', color: textSecondary, fontSize: 12 }}>
-              No hay estudiantes en este filtro
-            </div>
-          )}
-        </div>
-      </div>
+        </Card>
+      )}
     </div>
   );
 }

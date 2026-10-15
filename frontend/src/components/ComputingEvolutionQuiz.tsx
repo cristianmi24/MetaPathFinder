@@ -185,7 +185,7 @@ body::before {
 }
 
 .intro-title {
-  font-family:'Bebas Neue', sans-serif;
+  font-family:'Sora', sans-serif;
   font-size:clamp(2.8rem,8vw,4.5rem);
   line-height:.95;
   color:var(--bright);
@@ -195,7 +195,7 @@ body::before {
 .intro-title .hl { color:var(--accent); }
 
 .intro-year {
-  font-family:'Bebas Neue', sans-serif;
+  font-family:'Sora', sans-serif;
   font-size:clamp(1.2rem,4vw,1.8rem);
   color:var(--muted);
   letter-spacing:4px;
@@ -241,7 +241,7 @@ body::before {
   text-align:center;
 }
 .hito-year-num {
-  font-family:'Bebas Neue', sans-serif;
+  font-family:'Sora', sans-serif;
   font-size:1.8rem;
   color:var(--accent);
   line-height:1;
@@ -263,7 +263,7 @@ body::before {
   margin-bottom:4px;
 }
 .hito-title {
-  font-family:'Bebas Neue', sans-serif;
+  font-family:'Sora', sans-serif;
   font-size:1.9rem;
   color:var(--bright);
   letter-spacing:.5px;
@@ -344,7 +344,7 @@ body::before {
 
 /* ── REFLEXION ── */
 .reflexion-title {
-  font-family:'Bebas Neue', sans-serif;
+  font-family:'Sora', sans-serif;
   font-size:2rem;
   color:var(--bright);
   margin-bottom:8px;
@@ -388,7 +388,7 @@ body::before {
 }
 
 .q-title {
-  font-family:'Bebas Neue', sans-serif;
+  font-family:'Sora', sans-serif;
   font-size:1.6rem;
   color:var(--bright);
   line-height:1.2;
@@ -485,7 +485,7 @@ body::before {
   background:var(--card);
 }
 .result-score {
-  font-family:'Bebas Neue', sans-serif;
+  font-family:'Sora', sans-serif;
   font-size:2rem;
   color:var(--bright);
   position:relative;
@@ -493,7 +493,7 @@ body::before {
   letter-spacing:1px;
 }
 .result-title {
-  font-family:'Bebas Neue', sans-serif;
+  font-family:'Sora', sans-serif;
   font-size:2rem;
   color:var(--bright);
   letter-spacing:.5px;

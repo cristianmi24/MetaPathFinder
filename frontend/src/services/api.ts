@@ -86,14 +86,21 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const api = {
   // Auth
-  login: (email: string, password: string) =>
+  /** `portal` restringe el acceso por rol: el de estudiantes no abre el panel y viceversa. */
+  login: (email: string, password: string, portal: 'student' | 'admin') =>
     request<{ access_token: string; token_type: string; user: { id: string; name: string; last_name: string; email: string; role: string; created_at: string } }>(
-      '/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }
+      '/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password, portal }) }
     ),
 
   register: (data: { name: string; last_name: string; email: string; password: string; role?: string; terms_accepted: boolean; guardian_declaration: boolean; terms_version: string }) =>
     request<{ id: string; name: string; last_name: string; email: string; role: string; created_at: string }>(
       '/api/auth/register', { method: 'POST', body: JSON.stringify(data) }
+    ),
+
+  /** Alta de usuarios desde el panel (solo administradores). */
+  createUser: (data: { name: string; last_name: string; email: string; password: string; role: string }) =>
+    request<{ id: string; name: string; last_name: string; email: string; role: string; created_at: string }>(
+      '/api/users/', { method: 'POST', body: JSON.stringify(data) }
     ),
 
   getMe: () =>
@@ -176,6 +183,9 @@ export const api = {
     request<{ status: string; count: number }>(`/api/sessions/${sessionId}/events`, { method: 'POST', body: JSON.stringify({ events }) }),
 
   // Analytics
+  /** Seguimiento del grupo en vivo (solo docentes y administradores). */
+  getMonitor: () => request<Record<string, unknown>>('/api/analytics/monitor'),
+
   getClassAnalytics: () =>
     request<{
       student_count: number;

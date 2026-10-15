@@ -5,17 +5,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models import Session, ChallengeResult, CognitiveEvent
 from app.schemas import PhaseBComplete
-from app.routers.auth import get_current_user
+from app.models import User
+from app.routers.auth import get_current_user, ensure_self_or_staff
 
 router = APIRouter(prefix="/api/phase-b", tags=["phase-b"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("/complete", status_code=status.HTTP_201_CREATED)
-async def complete_phase_b(payload: PhaseBComplete, db: AsyncSession = Depends(get_db)):
+async def complete_phase_b(
+    payload: PhaseBComplete, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+):
     result = await db.execute(select(Session).where(Session.id == payload.session_id))
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found. Create session first via Phase A.")
+    ensure_self_or_staff(current_user, session.user_id)
 
     cr_data = payload.challenge_result
     challenge_result = ChallengeResult(

@@ -6,33 +6,7 @@ import { api } from '../services/api';
 import { cn } from '../lib/utils';
 import { Mail, Lock, Sun, Moon, LogIn, ArrowLeft } from 'lucide-react';
 import WalkingScene from '../components/WalkingScene/WalkingScene';
-
-function InputField({ icon: Icon, type, placeholder, value, onChange }: {
-  icon: typeof Mail;
-  type: string;
-  placeholder: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-      <div className="mb-2 text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-        {placeholder}
-      </div>
-      <div className="flex items-center gap-3 rounded-3xl border border-slate-300 bg-white/90 px-4 py-3 text-slate-900 shadow-sm transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
-        <Icon className="w-4 h-4 text-slate-400" />
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-transparent outline-none text-sm leading-6 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-          placeholder={placeholder}
-          required
-        />
-      </div>
-    </label>
-  );
-}
+import { AuthInput } from '../components/AuthInput';
 
 export function AdminLogin() {
   const { theme, toggleTheme } = useTheme();
@@ -50,7 +24,7 @@ export function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user && token && (role === 'admin' || role === 'teacher')) {
+    if (user && token && role === 'admin') {
       navigate('/admin', { replace: true });
     }
   }, [user, role, token, navigate]);
@@ -60,9 +34,9 @@ export function AdminLogin() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await api.login(email, password);
+      const res = await api.login(email, password, 'admin');
       setUser({ name: res.user.name, lastName: res.user.last_name, email: res.user.email });
-      setRole(res.user.role as 'admin' | 'teacher' | null);
+      setRole(res.user.role as 'admin' | null);
       setToken(res.access_token, res.user.id);
       navigate('/admin', { replace: true });
     } catch (err: any) {
@@ -116,40 +90,45 @@ export function AdminLogin() {
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-[80px]" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-secondary/5 rounded-full blur-[80px]" />
 
-        <div className="relative z-10">
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-5 h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center overflow-hidden p-3">
-              <img src="/logo.png" alt="MetaPathFinder" className="w-full h-full object-contain" />
+        <div className="text-center relative z-10">
+          <div className="mx-auto h-24 w-24 mb-6">
+            <img src="/logo.png" alt="Meta-Pathfinder Logo" className="w-full h-full object-contain" />
+          </div>
+          <h2 className={cn(
+            'text-3xl font-black tracking-tight uppercase',
+            theme === 'light' ? 'text-slate-900' : 'text-white'
+          )}>
+            Iniciar Sesión
+          </h2>
+          <p className={cn(
+            'mt-2 text-sm font-medium',
+            theme === 'light' ? 'text-slate-500' : 'text-slate-300'
+          )}>
+            Acceso para administradores
+          </p>
+        </div>
+
+        <form className="mt-8 space-y-6 relative z-10" onSubmit={handleSubmit}>
+          {error && (
+            <div className="rounded-2xl border border-red-300 bg-red-50 dark:bg-red-950/50 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300 font-semibold text-center">
+              {error}
             </div>
-            <h1 className="text-3xl font-black tracking-tight">Admin Login</h1>
-            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-              Ingresa con tu cuenta de administrador o profesor para acceder al panel.
-            </p>
+          )}
+          <div className="space-y-4">
+            <AuthInput icon={Mail} type="email" placeholder="Correo Electrónico" value={email} onChange={setEmail} required />
+            <AuthInput icon={Lock} type="password" placeholder="Contraseña" value={password} onChange={setPassword} required />
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <InputField icon={Mail} type="email" placeholder="Correo electrónico" value={email} onChange={setEmail} />
-            <InputField icon={Lock} type="password" placeholder="Contraseña" value={password} onChange={setPassword} />
-
-            {error && (
-              <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {error}
-              </div>
-            )}
-
+          <div className="space-y-3">
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-2xl bg-primary px-5 py-4 text-sm font-bold text-white shadow-xl shadow-primary/20 transition hover:bg-primary-dark disabled:opacity-60"
+              className="w-full flex justify-center py-4 px-4 border border-transparent rounded-2xl shadow-xl shadow-primary/20 text-sm font-black text-on-primary bg-primary hover:scale-[1.02] transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:scale-100"
             >
-              {isLoading ? 'Verificando...' : 'Ingresar como Administrador'}
+              {isLoading ? 'Accediendo...' : 'Ingresar al Panel'}
             </button>
-          </form>
-
-          <div className="mt-6 flex flex-col items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
-            <span>Usa las credenciales admin@gmail.com / admin</span>
           </div>
-        </div>
+        </form>
       </div>
     </div>
     </div>

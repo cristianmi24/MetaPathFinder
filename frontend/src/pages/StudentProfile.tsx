@@ -2,6 +2,7 @@ import {
   Brain, ArrowRight, Mail, Lock, User as UserIcon, LogIn, Sun, Moon,
   Heart, Sparkles, ShieldCheck, Compass, Play, Coffee, HelpCircle, CheckCircle2,
 } from 'lucide-react';
+import { AuthInput } from '../components/AuthInput';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { cn } from '../lib/utils';
@@ -66,7 +67,7 @@ export function StudentProfile() {
     setIsLoading(true);
     setAuthError(null);
     try {
-      const res = await api.login(email, password);
+      const res = await api.login(email, password, 'student');
       setUser({ name: res.user.name, lastName: res.user.last_name, email: res.user.email });
       setRole(res.user.role as 'student' | 'admin');
       setToken(res.access_token, res.user.id);
@@ -83,6 +84,10 @@ export function StudentProfile() {
     setAuthError(null);
     if (!termsAccepted) {
       setAuthError('Debes aceptar los Términos y Condiciones y la Política de Privacidad, y confirmar que eres mayor de edad o cuentas con autorización de tu representante legal, para crear una cuenta.');
+      return;
+    }
+    if (password.length < 8) {
+      setAuthError('La contraseña debe tener al menos 8 caracteres.');
       return;
     }
     setIsLoading(true);
@@ -201,7 +206,7 @@ export function StudentProfile() {
                     </div>
                   )}
                   <div className="space-y-4">
-                    <InputField 
+                    <AuthInput 
                       icon={Mail} 
                       type="email" 
                       placeholder="Correo Electrónico" 
@@ -209,7 +214,7 @@ export function StudentProfile() {
                       onChange={setEmail} 
                       required 
                     />
-                    <InputField 
+                    <AuthInput 
                       icon={Lock} 
                       type="password" 
                       placeholder="Contraseña" 
@@ -255,7 +260,7 @@ export function StudentProfile() {
                     </div>
                   )}
                   <div className="space-y-4">
-                    <InputField 
+                    <AuthInput 
                       icon={UserIcon} 
                       type="text" 
                       placeholder="Nombre" 
@@ -263,7 +268,7 @@ export function StudentProfile() {
                       onChange={setName} 
                       required 
                     />
-                    <InputField 
+                    <AuthInput 
                       icon={UserIcon} 
                       type="text" 
                       placeholder="Apellido" 
@@ -271,7 +276,7 @@ export function StudentProfile() {
                       onChange={setLastName} 
                       required 
                     />
-                    <InputField 
+                    <AuthInput 
                       icon={Mail} 
                       type="email" 
                       placeholder="Correo Electrónico" 
@@ -279,7 +284,7 @@ export function StudentProfile() {
                       onChange={setEmail} 
                       required 
                     />
-                    <InputField 
+                    <AuthInput 
                       icon={Lock} 
                       type="password" 
                       placeholder="Contraseña" 
@@ -313,7 +318,7 @@ export function StudentProfile() {
               {authMode === 'recovery' && (
                 <form className="mt-8 space-y-6" onSubmit={handleRecovery}>
                   <div className="space-y-4">
-                    <InputField 
+                    <AuthInput 
                       icon={Mail} 
                       type="email" 
                       placeholder="Correo Electrónico" 
@@ -370,22 +375,5 @@ export function StudentProfile() {
   );
 }
 
-function InputField({ icon: Icon, type, placeholder, value, onChange, ...props }: any) {
-  return (
-    <div className="relative group">
-      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-        <Icon className="h-5 w-5" />
-      </div>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="block w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all hover:bg-white"
-        placeholder={placeholder}
-        {...props}
-      />
-    </div>
-  );
-}
 
 

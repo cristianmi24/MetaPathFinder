@@ -1,16 +1,18 @@
 @import "tailwindcss";
+/* `dark:` sigue al tema elegido en la app (clase .dark en <html>), no al del sistema operativo */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================================
    MetaPathFinder — sistema de diseño unificado
-   Tipografía académica: Source Serif 4 (lectura) + IBM Plex Sans (interfaz)
-   + IBM Plex Mono (datos). Paleta sobria, minimalista, un solo acento.
+   Tipografía única: Sora (la misma del panel de administración) en todo el
+   sistema + IBM Plex Mono para datos. Paleta sobria, un solo acento.
    ========================================================================== */
 
 @theme {
-  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  /* `font-serif` se conserva como alias para títulos: usa la misma familia que el resto */
+  --font-serif: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Sora", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
-  /* Tailwind usa --font-sans para la clase `font-sans`; el body va en serif por capa base */
 
   /* --- Superficies (papel) --- */
   --color-surface: #fbfaf8;
@@ -188,13 +190,13 @@
 @layer base {
   body {
     @apply bg-background text-on-background antialiased;
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
     font-size: var(--fs-base);
     line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
     font-weight: 600;
     letter-spacing: -0.01em;
   }

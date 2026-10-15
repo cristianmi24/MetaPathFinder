@@ -5,7 +5,8 @@ from uuid import UUID
 
 from app.database import get_db
 from app.models import Experiment, ExperimentGroup, StudentAssignment
-from app.routers.auth import get_current_user
+from app.models import User
+from app.routers.auth import get_current_user, ensure_self_or_staff
 
 router = APIRouter(prefix="/api/experiments", tags=["experiments"], dependencies=[Depends(get_current_user)])
 
@@ -42,7 +43,12 @@ async def get_experiment(experiment_id: UUID, db: AsyncSession = Depends(get_db)
 
 
 @router.post("/{experiment_id}/assign")
-async def assign_to_experiment(experiment_id: UUID, payload: dict, db: AsyncSession = Depends(get_db)):
+async def assign_to_experiment(
+    experiment_id: UUID, payload: dict, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+):
+    if "user_id" not in payload:
+        raise HTTPException(status_code=422, detail="user_id es obligatorio")
+    ensure_self_or_staff(current_user, payload["user_id"])
     group_name = payload.get("group_name", "control")
 
     result = await db.execute(

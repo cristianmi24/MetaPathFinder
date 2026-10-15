@@ -5,13 +5,16 @@ from uuid import UUID
 
 from app.database import get_db
 from app.models import User, Session, ChallengeResult, CalibrationResult
-from app.routers.auth import get_current_user
+from app.routers.auth import get_current_user, require_staff, ensure_self_or_staff
 
 router = APIRouter(prefix="/api/analytics", tags=["analytics"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/student/{user_id}")
-async def get_student_analytics(user_id: UUID, db: AsyncSession = Depends(get_db)):
+async def get_student_analytics(
+    user_id: UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+):
+    ensure_self_or_staff(current_user, user_id)
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -66,7 +69,7 @@ async def get_student_analytics(user_id: UUID, db: AsyncSession = Depends(get_db
     }
 
 
-@router.get("/class")
+@router.get("/class", dependencies=[Depends(require_staff)])
 async def get_class_analytics(db: AsyncSession = Depends(get_db)):
     students = await db.execute(
         select(User).where(User.role == "student").order_by(User.name)
@@ -219,7 +222,7 @@ def _empty_class_response():
     }
 
 
-@router.get("/experiment/{experiment_id}")
+@router.get("/experiment/{experiment_id}", dependencies=[Depends(require_staff)])
 async def get_experiment_analytics(experiment_id: UUID, db: AsyncSession = Depends(get_db)):
     from app.models import Experiment, ExperimentGroup, StudentAssignment
 

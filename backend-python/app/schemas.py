@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 from uuid import UUID
 from pydantic import BaseModel, Field
 
@@ -8,7 +8,8 @@ class UserCreate(BaseModel):
     name: str = Field(..., max_length=100)
     last_name: str = Field(..., max_length=100)
     email: str = Field(..., max_length=255)
-    password: str = Field(..., min_length=4, max_length=128)
+    # bcrypt solo usa los primeros 72 bytes: se limita para no truncar en silencio.
+    password: str = Field(..., min_length=8, max_length=72)
     role: str = "student"
     terms_accepted: bool = False
     guardian_declaration: bool = False
@@ -26,8 +27,18 @@ class UserResponse(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: str
-    password: str
+    email: str = Field(..., max_length=255)
+    password: str = Field(..., max_length=128)
+    # Portal desde el que se inicia sesión: "student" o "admin". Si se omite, no se restringe por rol.
+    portal: Optional[Literal["student", "admin"]] = None
+
+
+class AdminUserCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field("", max_length=100)
+    email: str = Field(..., min_length=3, max_length=255)
+    password: str = Field(..., min_length=8, max_length=72)
+    role: Literal["student", "admin"] = "student"
 
 
 class TokenResponse(BaseModel):

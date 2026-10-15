@@ -27,7 +27,7 @@ export function DigitalIdentityBoard({ challengeId, onValidation }: DigitalIdent
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.36.0/tabler-icons.min.css">
 <style>
 :root {
-  --font-sans: 'Space Grotesk', sans-serif;
+  --font-sans: 'Sora', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --color-background-primary: #ffffff;
   --color-background-secondary: #f9f9fb;

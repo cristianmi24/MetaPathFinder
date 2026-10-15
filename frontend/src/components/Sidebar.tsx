@@ -12,10 +12,10 @@ export function Sidebar() {
   const navigate = useNavigate();
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboards', path: '/admin', roles: ['admin', 'teacher'] },
-    { icon: Users, label: 'Usuarios Registrados', path: '/registered-users', roles: ['admin', 'teacher'] },
-    { icon: Compass, label: 'Actividades', path: '/activities', roles: ['admin', 'teacher'] },
-    { icon: ListChecks, label: 'Banco de JOL', path: '/jol-bank', roles: ['admin', 'teacher'] },
+    { icon: LayoutDashboard, label: 'Dashboards', path: '/admin', roles: ['admin'] },
+    { icon: Users, label: 'Usuarios Registrados', path: '/registered-users', roles: ['admin'] },
+    { icon: Compass, label: 'Actividades', path: '/activities', roles: ['admin'] },
+    { icon: ListChecks, label: 'Banco de JOL', path: '/jol-bank', roles: ['admin'] },
     { icon: User, label: 'Mi Perfil', path: '/profile', roles: ['student'] },
     { icon: GraduationCap, label: 'Tutorial', path: '/tutorial', roles: ['student'] },
     { icon: BarChart3, label: 'Analíticas', path: '/analytics', roles: ['student'] },
@@ -48,7 +48,7 @@ export function Sidebar() {
           >
             <h1 className="font-bold text-primary tracking-tight leading-none">Meta-Pathfinder</h1>
             <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mt-1">
-              {token ? (role === 'student' ? 'Estudiante' : role === 'teacher' ? 'Profesor' : 'Administrador') : 'Invitado'}
+              {token ? (role === 'student' ? 'Estudiante' : 'Administrador') : 'Invitado'}
             </p>
           </motion.div>
         )}

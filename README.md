@@ -14,6 +14,7 @@ MetaPathFinder es una plataforma educativa avanzada que utiliza inteligencia art
 - [Uso](#uso)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Tecnologías](#tecnologías)
+- [Reporte de la lista de chequeo ITS](#-reporte-de-la-lista-de-chequeo-its)
 - [Licencia](#licencia)
 
 ---
@@ -313,11 +314,32 @@ MetaPathFinder/
 
 ## 🔐 Seguridad
 
-- Autenticación JWT con refreshment automático
-- CORS configurado por dominio
-- Variables de entorno para credenciales sensibles
-- Base de datos con migraciones versionadas
-- Validación de esquemas en entrada/salida
+- **Roles:** estudiante y administrador. El registro público solo crea estudiantes; los administradores los crea otro administrador desde el panel.
+- **Autorización en el servidor:** cada ruta comprueba el rol; un estudiante solo puede leer y escribir sus propios datos.
+- **Accesos separados:** el login de estudiantes no abre el panel y el de administración no acepta estudiantes.
+- **Tokens:** JWT firmados (HS256) con caducidad de 24 h.
+- **Contraseñas:** bcrypt, mínimo 8 caracteres.
+- **Login:** bloqueo temporal tras varios intentos fallidos.
+- **Producción:**
+  - la app no arranca sin un `SECRET_KEY` fuerte (32+ caracteres);
+  - el administrador inicial se define con `ADMIN_EMAIL` y `ADMIN_PASSWORD` (12+ caracteres);
+  - la documentación del API está desactivada.
+- **Navegador y red:** cabeceras de seguridad, CORS restringido a `CORS_ORIGINS` y respuestas del API sin caché.
+
+---
+
+## ✅ Reporte de la lista de chequeo ITS
+
+Autoevaluación del sistema frente a la *Lista de Chequeo para la Verificación del Frontend de Sistemas Tutores Inteligentes* (Universidad de Córdoba), basada en Caro Piñeres (2015).
+
+| Bloque | Puntos |
+|---|---|
+| 1 · Cuatro módulos canónicos | 3 / 8 |
+| 2 · Inteligencia del tutor en la interfaz | 2 / 10 |
+| 3 · Metacognición computacional | 4 / 6 |
+| **Total estimado** | **9 / 24 (37,5 %)** |
+
+El plan propone tres fases para llegar a 15/24, 20/24 y 24/24. El detalle por criterio (evidencia, lo que falta y cómo resolverlo) está en [docs/REPORTE-LISTA-CHEQUEO-ITS.md](docs/REPORTE-LISTA-CHEQUEO-ITS.md).
 
 ---
 

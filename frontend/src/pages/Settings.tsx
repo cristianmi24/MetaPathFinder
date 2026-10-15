@@ -7,7 +7,6 @@ import { useTheme } from '../ThemeContext';
 const roleLabel: Record<string, string> = {
   student: 'Estudiante',
   admin: 'Administrador',
-  teacher: 'Docente',
 };
 
 export function SettingsPage() {

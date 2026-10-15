@@ -183,7 +183,7 @@ export function PrivacyPolicy() {
       <Sec n={3} title="Datos que recolectamos">
         <p><Strong>a) Cuenta e identificación:</Strong></p>
         <ul className={ul}>
-          <li>Nombre y apellido, correo electrónico y rol (estudiante, docente o administrador).</li>
+          <li>Nombre y apellido, correo electrónico y rol (estudiante o administrador).</li>
           <li>Contraseña: se guarda únicamente como <em>hash</em> irreversible (bcrypt), nunca en texto plano.</li>
           <li>Fecha de creación de la cuenta y registro de su aceptación (fecha, hora y versión de los textos).</li>
         </ul>
@@ -230,7 +230,7 @@ export function PrivacyPolicy() {
         <ul className={ul}>
           <li>Crear y gestionar su cuenta y autenticar su acceso.</li>
           <li>Prestar el servicio: asignar retos, registrar su progreso, calcular la calibración y entregar retroalimentación y estrategias.</li>
-          <li>Permitir al docente o administrador responsable de su grupo acompañar pedagógicamente su proceso.</li>
+          <li>Permitir al administrador responsable de su grupo acompañar pedagógicamente su proceso.</li>
           <li>Realizar investigación educativa con datos seudonimizados o anonimizados y publicar resultados sin identificar a las personas.</li>
           <li>Garantizar la seguridad, prevenir abusos, dar soporte y mejorar el funcionamiento de la Plataforma.</li>
           <li>Cumplir obligaciones legales y atender requerimientos de autoridades competentes.</li>

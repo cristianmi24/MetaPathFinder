@@ -3,17 +3,22 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Session
+from app.models import Session, User
 from app.schemas import PhaseAComplete
-from app.routers.auth import get_current_user
+from app.routers.auth import get_current_user, ensure_self_or_staff
 
 router = APIRouter(prefix="/api/phase-a", tags=["phase-a"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("/complete", status_code=status.HTTP_201_CREATED)
-async def complete_phase_a(payload: PhaseAComplete, db: AsyncSession = Depends(get_db)):
+async def complete_phase_a(
+    payload: PhaseAComplete, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+):
+    ensure_self_or_staff(current_user, payload.user_id)
     existing = await db.execute(select(Session).where(Session.id == payload.session_id))
-    if existing.scalar_one_or_none():
+    found = existing.scalar_one_or_none()
+    if found:
+        ensure_self_or_staff(current_user, found.user_id)
         return {"status": "already_exists", "session_id": payload.session_id}
 
     session = Session(
