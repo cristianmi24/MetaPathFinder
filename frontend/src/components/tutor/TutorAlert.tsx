@@ -146,7 +146,7 @@ export function TutorAlert(p: TutorAlertProps) {
             role="dialog" aria-modal="true" aria-label={title}
             initial={{ opacity: 0, y: 16, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-            className="relative w-full max-w-md overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest font-sans text-on-surface shadow-2xl"
+            className="relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-outline-variant bg-surface-container-lowest font-sans text-on-surface shadow-2xl"
           >
             <div className={`h-1.5 w-full ${bar}`} />
             <div className="p-5">
@@ -158,7 +158,7 @@ export function TutorAlert(p: TutorAlertProps) {
                   <div className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">Tu tutor</div>
                   <div className="text-base font-semibold leading-snug">{title}</div>
                 </div>
-                <button type="button" onClick={() => close('x')} aria-label="Cerrar" className="rounded-full p-1 text-on-surface-variant hover:bg-surface-container">
+                <button type="button" onClick={() => close('x')} aria-label="Cerrar" className="min-h-12 min-w-12 rounded-full p-1 text-on-surface-variant hover:bg-surface-container">
                   <X size={18} />
                 </button>
               </div>
@@ -181,7 +181,7 @@ export function TutorAlert(p: TutorAlertProps) {
                   <div className="mb-4 mt-2 grid grid-cols-4 gap-1.5" role="group" aria-label="Cómo te sientes ahora">
                     {AFFECTS.map((a) => (
                       <button key={a.id} type="button" onClick={() => pickAffect(a.id)} aria-pressed={affect === a.id}
-                        className={`flex flex-col items-center gap-0.5 rounded-lg border py-1.5 text-xs transition-colors ${
+                      className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-lg border py-1.5 text-xs transition-colors ${
                           affect === a.id ? 'border-primary bg-primary-container' : 'border-outline-variant hover:bg-surface-container'}`}>
                         <span className="text-xl leading-none" aria-hidden="true">{a.emoji}</span>{a.label}
                       </button>
@@ -193,7 +193,7 @@ export function TutorAlert(p: TutorAlertProps) {
                   <div className="mt-3 grid grid-cols-5 gap-1.5 sm:grid-cols-10" role="group" aria-label="Confianza actual del 1 al 10">
                     {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
                       <button key={n} type="button" onClick={() => { p.onCheckpoint(n); close('respuesta'); }}
-                        className="rounded-lg border border-outline-variant py-2 text-sm font-semibold tabular-nums transition-colors hover:border-primary hover:bg-primary-container/40">{n}</button>
+                        className="min-h-12 rounded-lg border border-outline-variant py-2 text-sm font-semibold tabular-nums transition-colors hover:border-primary hover:bg-primary-container/40">{n}</button>
                     ))}
                   </div>
                 </>
@@ -209,10 +209,10 @@ export function TutorAlert(p: TutorAlertProps) {
                 <div className="mt-5 flex justify-end gap-2">
                   {popup.kind === 'scaffold' && !p.hintOpened(1) && (
                     <button type="button" onClick={() => { viaRef.current = 'accion'; p.onOpenHint(1); }}
-                      className="rounded-xl border border-outline-variant px-4 py-2 text-sm hover:bg-surface-container">Ver pista 1</button>
+                      className="min-h-12 rounded-xl border border-outline-variant px-4 py-2 text-sm hover:bg-surface-container">Ver pista 1</button>
                   )}
                   <button type="button" autoFocus onClick={() => close('entendido')}
-                    className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-on-primary">Entendido</button>
+                    className="min-h-12 rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-on-primary">Entendido</button>
                 </div>
               )}
             </div>

@@ -60,7 +60,12 @@ export function TutorAdvisor(p: TutorAdvisorProps) {
       ? `Parece que estás atascado/a. Recuerda tu estrategia «${p.strategy.nombre}»: ${p.strategy.pasos[0].toLowerCase()}.`
       : 'Parece que estás atascado/a. Relee la meta y elige solo el primer paso.';
     if (p.scaffold === 'N1') return p.profile ? `Mira con calma esto: ${p.profile.erroresComunes}. ¿Es lo que te está pasando?` : 'Mira con calma el último intento: ¿qué criterio no se cumplió?';
-    if (p.scaffold === 'N0') return `¿Qué te pide exactamente el criterio «${(p.criteria[0] || '').replace(/^\d+\.\s*/, '')}»? Dilo con tus palabras antes de seguir.`;
+    if (p.scaffold === 'N0') {
+      const firstStep = p.profile?.consejoProfesor || p.profile?.metaConcreta;
+      return firstStep
+        ? `Antes de probar otra cosa, empieza por esto: ${firstStep} ¿Cuál es el primer paso que puedes intentar?`
+        : `Antes de probar otra cosa, revisa este criterio: «${(p.criteria[0] || '').replace(/^\d+\.\s*/, '')}». ¿Cuál es el primer paso que puedes intentar?`;
+    }
     if (p.consecutiveErrors === 1) return '¡Buen intento! Estuviste cerca. Un error es información: ¿qué te dice sobre tu plan?';
     return 'Estoy aquí mientras trabajas. Avanza a tu ritmo: pediré tu confianza de vez en cuando y te ofreceré ayuda solo si la necesitas.';
   }, [p.isDone, p.scaffold, p.strategy, p.profile, p.criteria, p.consecutiveErrors]);
@@ -125,7 +130,7 @@ export function TutorAdvisor(p: TutorAdvisorProps) {
 
       <div className="tut-gauge">
         <div className="tut-gauge-row">
-          <span>¿Qué tan atascado/a pareces?</span>
+          <span>Estimación orientativa de dificultad</span>
           <span className="tut-gauge-val">{pct}%</span>
         </div>
         <div className="tut-gauge-bar">
@@ -138,7 +143,7 @@ export function TutorAdvisor(p: TutorAdvisorProps) {
         </div>
         <WhyThis title="Por qué el tutor interviene así">
           <p style={{ margin: 0 }}>
-            Combino cuatro señales con un modelo bayesiano (ninguna decide sola). Ahora mismo:
+            Combino cuatro señales con un modelo bayesiano; esta es una estimación inicial, no un diagnóstico. Cuando aparece una pausa extensa o muchos cambios sin verificar, te ofrezco una pregunta breve antes de que acumules errores. Ahora mismo:
           </p>
           <ul>
             {activeSignals.length === 0 && <li>No hay señales de bloqueo activas: no te interrumpo.</li>}

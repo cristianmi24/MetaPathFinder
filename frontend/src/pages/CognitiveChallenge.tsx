@@ -47,6 +47,7 @@ import { certaintyContrast } from '../components/tutor/CertaintyPrompt';
 import { getTutorHint3 } from '../data/tutorHints';
 import { useTutorStore } from '../stores/useTutorStore';
 import { blockingProbability, scaffoldLevel, longPauseThreshold, recordFinishedPause, SCAFFOLD_INFO, type BlockingSignals } from '../lib/tutorEngine';
+import { shouldOfferEarlySupport } from '../lib/proactiveTutor';
 import { api } from '../services/api';
 import { ATTEMPT, answerDelta, compactAnswer, isTrialAndError, type BoardAnswer, type ValidationOpts } from '../lib/boardValidation';
 import { AttemptConfidence } from '../components/tutor/AttemptConfidence';
@@ -86,7 +87,7 @@ export function CognitiveChallenge() {
   const activeStrategyId = location.state?.assignedStrategyId || assignedStrategyId;
   const activeStrategy = getEstrategia(activeStrategyId);
 
-  const boardWrapperClass = "flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-lg overflow-y-auto overflow-x-hidden p-1 md:p-3 min-h-0 relative border border-outline-variant/40 [&>*]:min-h-0 [&>*]:w-full [&>*]:flex-1";
+  const boardWrapperClass = "flex-1 w-full flex flex-col justify-start bg-surface-container dark:bg-surface-container-high rounded-b-lg overflow-y-auto overflow-x-auto p-1 md:p-3 min-h-0 relative border border-outline-variant/40 [&>*]:min-h-0 [&>*]:w-full [&>*]:flex-1";
 
   const getBoardType = (id: string): 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone' | 'ide' => {
     const mappings: Record<string, 'drag_drop' | 'text' | 'upload' | 'code' | 'canvas' | 'spreadsheet' | 'phone' | 'ide'> = {
@@ -816,7 +817,8 @@ export function CognitiveChallenge() {
     cambio_pestana: lastTabChangeAt !== null && Date.now() - lastTabChangeAt < 60000,
   };
   const pBlock = isChallengeDone ? 0 : blockingProbability(signals, tutorDomain);
-  const scaffold = isChallengeDone ? null : scaffoldLevel(pBlock, consecutiveHigh);
+  const scaffold = isChallengeDone ? null : (scaffoldLevel(pBlock, consecutiveHigh)
+    ?? (shouldOfferEarlySupport(signals, isChallengeDone) ? 'N0' : null));
 
   // Instantánea del progreso cada 30 s: el envío en vivo la lleva al servidor y deja
   // rastro de tiempo, clics y bloqueo aunque el estudiante no llegue a enviar el reto.
@@ -1016,6 +1018,15 @@ export function CognitiveChallenge() {
             </>
           )}
           <div className={toolsOpen ? 'hidden' : 'contents'}>
+          {totalRuns === 0 && !isChallengeDone && (
+            <section className="tut-preflight" aria-label="Ayuda para empezar">
+              <div className="tut-preflight-copy">
+                <strong>Antes de comenzar · primer paso</strong>
+                <p>{getChallengeInstructions(challenge.id)[0] || challengeProfile?.consejoProfesor || 'Lee la meta y elige una acción pequeña para iniciar.'}</p>
+              </div>
+              <button type="button" onClick={() => openHint(1)}>Ver pista 1</button>
+            </section>
+          )}
           {confidenceAsk && !confidenceDismissed && !isChallengeDone && (
             <AttemptConfidence value={confidenceValue} onPick={pickConfidence} onDismiss={() => setConfidenceDismissed(true)} />
           )}
@@ -1448,25 +1459,27 @@ export function CognitiveChallenge() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="tut-hint-overlay"
             style={{
               position: 'fixed', inset: 0, zIndex: 10000,
               background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}
             onClick={() => setActiveHint(null)}
           >
             <motion.div
               role="alertdialog"
               aria-modal="true"
+              aria-label="Pista para la actividad"
               initial={{ scale: 0.95, opacity: 0, y: 8 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 8 }}
               onClick={(e) => e.stopPropagation()}
+              className="tut-hint-dialog"
               style={{
                 background: 'var(--surface)',
                 border: '2px solid var(--tour-hl)',
                 borderRadius: 'var(--radius-lg)',
-                padding: '24px',
                 maxWidth: '420px', width: '100%',
                 boxShadow: '0 20px 50px -12px rgba(0,0,0,0.4), 0 0 0 4px color-mix(in srgb, var(--tour-hl) 15%, transparent)',
                 fontFamily: 'var(--font-sans)',
@@ -1529,10 +1542,10 @@ export function CognitiveChallenge() {
                 </div>
               )}
 
-              <button
+                <button
                 onClick={() => setActiveHint(null)}
                 style={{
-                  marginTop: '18px', width: '100%', padding: '11px',
+                  marginTop: '18px', width: '100%', minHeight: '48px', padding: '11px',
                   borderRadius: 'var(--radius-md)', border: 'none',
                   background: 'var(--accent)', color: 'var(--color-on-primary)',
                   fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-sans)', cursor: 'pointer',

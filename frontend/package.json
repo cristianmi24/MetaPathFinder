@@ -9,7 +9,7 @@
     "preview": "vite preview --host --port ${PORT:-4173}",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "test:unit": "node --test --experimental-strip-types tests/pauseModel.test.mjs"
+    "test:unit": "node --test --experimental-strip-types tests/*.test.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
