@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { type OnValidation, attempt, stateReport } from '../lib/boardValidation';
 
 interface FileItem {
   id: number;
@@ -12,16 +13,16 @@ interface FileItem {
 }
 
 const FILES: FileItem[] = [
-  { id: 1, name: 'Tarea de matemáticas', ext: 'docx', icon: '📄', iconBg: '#E6F1FB', date: '3 ene 2020', ts: 20200103, type: 'Documento' },
-  { id: 2, name: 'Foto del cumpleaños', ext: 'jpg', icon: '🖼️', iconBg: '#EEEDFE', date: '15 mar 2021', ts: 20210315, type: 'Imagen' },
-  { id: 3, name: 'Canción favorita', ext: 'mp3', icon: '🎵', iconBg: '#FAECE7', date: '2 jul 2019', ts: 20190702, type: 'Audio' },
-  { id: 4, name: 'Video de vacaciones', ext: 'mp4', icon: '🎬', iconBg: '#F5C4B3', date: '28 ago 2022', ts: 20220828, type: 'Video' },
-  { id: 5, name: 'Proyecto de ciencias', ext: 'pptx', icon: '📊', iconBg: '#FAEEDA', date: '10 feb 2023', ts: 20230210, type: 'Presentación' },
-  { id: 6, name: 'Lista de libros', ext: 'txt', icon: '📝', iconBg: '#E1F5EE', date: '5 may 2018', ts: 20180505, type: 'Texto' },
-  { id: 7, name: 'Dibujo del dinosaurio', ext: 'png', icon: '🦕', iconBg: '#EAF3DE', date: '20 nov 2021', ts: 20211120, type: 'Imagen' },
-  { id: 8, name: 'Receta de galletas', ext: 'pdf', icon: '🍪', iconBg: '#FCEBEB', date: '1 sep 2020', ts: 20200901, type: 'PDF' },
-  { id: 9, name: 'Mapa del tesoro', ext: 'jpg', icon: '🗺️', iconBg: '#FBEAF0', date: '14 jun 2017', ts: 20170614, type: 'Imagen' },
-  { id: 10, name: 'Plan de la feria', ext: 'docx', icon: '🎡', iconBg: '#E6F1FB', date: '7 abr 2024', ts: 20240407, type: 'Documento' },
+  { id: 1, name: 'Tarea de matemáticas', ext: 'docx', icon: '📄', iconBg: 'color-mix(in srgb, #378ADD 14%, var(--color-surface-container-lowest))', date: '3 ene 2020', ts: 20200103, type: 'Documento' },
+  { id: 2, name: 'Foto del cumpleaños', ext: 'jpg', icon: '🖼️', iconBg: 'color-mix(in srgb, var(--color-primary) 14%, var(--color-surface-container-lowest))', date: '15 mar 2021', ts: 20210315, type: 'Imagen' },
+  { id: 3, name: 'Canción favorita', ext: 'mp3', icon: '🎵', iconBg: 'color-mix(in srgb, #D85A30 14%, var(--color-surface-container-lowest))', date: '2 jul 2019', ts: 20190702, type: 'Audio' },
+  { id: 4, name: 'Video de vacaciones', ext: 'mp4', icon: '🎬', iconBg: 'color-mix(in srgb, #D85A30 30%, var(--color-surface-container-lowest))', date: '28 ago 2022', ts: 20220828, type: 'Video' },
+  { id: 5, name: 'Proyecto de ciencias', ext: 'pptx', icon: '📊', iconBg: 'color-mix(in srgb, #d18a1c 14%, var(--color-surface-container-lowest))', date: '10 feb 2023', ts: 20230210, type: 'Presentación' },
+  { id: 6, name: 'Lista de libros', ext: 'txt', icon: '📝', iconBg: 'color-mix(in srgb, var(--color-secondary) 14%, var(--color-surface-container-lowest))', date: '5 may 2018', ts: 20180505, type: 'Texto' },
+  { id: 7, name: 'Dibujo del dinosaurio', ext: 'png', icon: '🦕', iconBg: 'color-mix(in srgb, #639922 14%, var(--color-surface-container-lowest))', date: '20 nov 2021', ts: 20211120, type: 'Imagen' },
+  { id: 8, name: 'Receta de galletas', ext: 'pdf', icon: '🍪', iconBg: 'color-mix(in srgb, var(--color-error) 14%, var(--color-surface-container-lowest))', date: '1 sep 2020', ts: 20200901, type: 'PDF' },
+  { id: 9, name: 'Mapa del tesoro', ext: 'jpg', icon: '🗺️', iconBg: 'color-mix(in srgb, #D4537E 14%, var(--color-surface-container-lowest))', date: '14 jun 2017', ts: 20170614, type: 'Imagen' },
+  { id: 10, name: 'Plan de la feria', ext: 'docx', icon: '🎡', iconBg: 'color-mix(in srgb, #378ADD 14%, var(--color-surface-container-lowest))', date: '7 abr 2024', ts: 20240407, type: 'Documento' },
 ];
 
 const correctOrder = FILES.slice().sort((a, b) => a.ts - b.ts).map(file => file.id);
@@ -35,7 +36,7 @@ function shuffle<T>(items: T[]) {
   return copy;
 }
 
-export default function DriveFileSorter({ onValidation }: { onValidation?: (success: boolean) => void } = {}) {
+export default function DriveFileSorter({ onValidation }: { onValidation?: OnValidation } = {}) {
   const [order, setOrder] = useState<number[]>(() => shuffle(FILES.map(file => file.id)));
   const [dragSrc, setDragSrc] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
@@ -65,13 +66,13 @@ export default function DriveFileSorter({ onValidation }: { onValidation?: (succ
 
     if (correctCount === FILES.length) {
       setMessage('🎉 ¡Perfecto! Ordenaste todos los archivos por fecha correctamente. ¡Eres un experto de Drive!');
-      if (onValidation) onValidation(true);
+      if (onValidation) onValidation(true, attempt(order));
     } else if (correctCount >= 6) {
       setMessage(`⭐ ¡Muy bien! Tienes ${correctCount} de 10 archivos en el lugar correcto. Las rojas están mal — ¡inténtalo!`);
-      if (onValidation) onValidation(false);
+      if (onValidation) onValidation(false, attempt(order));
     } else {
       setMessage(`😅 Solo ${correctCount} correctos. Fíjate bien en las fechas y vuelve a intentarlo. ¡Tú puedes!`);
-      if (onValidation) onValidation(false);
+      if (onValidation) onValidation(false, attempt(order));
     }
   };
 
@@ -101,45 +102,46 @@ export default function DriveFileSorter({ onValidation }: { onValidation?: (succ
     if (correctCount === FILES.length) {
       setChecked(true);
       setMessage('🎉 ¡Perfecto! Ordenaste todos los archivos por fecha correctamente.');
-      if (onValidation) onValidation(true);
+      if (onValidation) onValidation(true, stateReport(newOrder));
     } else {
       setChecked(false);
       setMessage(`Colocados: ${correctCount} de ${FILES.length} en orden correcto.`);
-      if (onValidation) onValidation(false);
+      if (onValidation) onValidation(false, stateReport(newOrder));
     }
   };
 
   return (
     <div>
       <style>{`
-        .drive-sorter-scoped .drive{background:var(--color-background-tertiary);min-height:600px}
+        .drive-sorter-scoped{font-family:var(--font-sans);color:var(--color-text-primary)}
+        .drive-sorter-scoped .drive{background:var(--color-background-tertiary);min-height:600px;border-radius:0 0 1.25rem 1.25rem;overflow:hidden}
         .drive-sorter-scoped .topbar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:10px 16px;display:flex;align-items:center;gap:12px}
         .drive-sorter-scoped .logo{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:500;color:var(--color-text-primary)}
-        .drive-sorter-scoped .logo-icon{width:28px;height:28px;border-radius:6px;background:#E6F1FB;display:flex;align-items:center;justify-content:center}
-        .drive-sorter-scoped .search-fake{flex:1;height:36px;background:var(--color-background-secondary);border-radius:20px;border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;padding:0 12px;gap:8px;font-size:13px;color:var(--color-text-tertiary)}
-        .drive-sorter-scoped .avatar{width:32px;height:32px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#3C3489}
+        .drive-sorter-scoped .logo-icon{width:28px;height:28px;border-radius:6px;background:color-mix(in srgb, #378ADD 14%, var(--color-surface-container-lowest));display:flex;align-items:center;justify-content:center}
+        .drive-sorter-scoped .search-fake{flex:1;height:36px;background:var(--color-background-secondary);border-radius:20px;border:1px solid var(--color-border-tertiary);display:flex;align-items:center;padding:0 12px;gap:8px;font-size:13px;color:var(--color-text-tertiary)}
+        .drive-sorter-scoped .avatar{width:32px;height:32px;border-radius:50%;background:color-mix(in srgb, var(--color-primary) 14%, var(--color-surface-container-lowest));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:color-mix(in srgb, var(--color-primary) 50%, var(--color-on-surface))}
         .drive-sorter-scoped .sidebar{width:200px;float:left;padding:12px 8px;display:flex;flex-direction:column;gap:2px}
         .drive-sorter-scoped .sb-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:20px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;margin:0}
-        .drive-sorter-scoped .sb-item.active{background:#E6F1FB;color:#0C447C;font-weight:500}
+        .drive-sorter-scoped .sb-item.active{background:color-mix(in srgb, #378ADD 14%, var(--color-surface-container-lowest));color:color-mix(in srgb, #378ADD 50%, var(--color-on-surface));font-weight:500}
         .drive-sorter-scoped .sb-item i{font-size:17px}
         .drive-sorter-scoped .main{margin-left:200px;padding:16px 20px;min-height:560px}
-        .drive-sorter-scoped .challenge-bar{background:var(--color-background-warning);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .drive-sorter-scoped .challenge-bar{background:var(--color-background-warning);border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
         .drive-sorter-scoped .cb-text{font-size:13px;color:var(--color-text-warning);flex:1}
         .drive-sorter-scoped .cb-score{font-size:13px;font-weight:500;color:var(--color-text-warning)}
         .drive-sorter-scoped .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-        .drive-sorter-scoped .tb-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:12px;color:var(--color-text-primary);cursor:pointer;font-family:inherit;transition:background .15s}
+        .drive-sorter-scoped .tb-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:1px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:12px;color:var(--color-text-primary);cursor:pointer;font-family:inherit;transition:background .15s}
         .drive-sorter-scoped .tb-btn:hover{background:var(--color-background-secondary)}
         .drive-sorter-scoped .tb-btn i{font-size:15px}
-        .drive-sorter-scoped .tb-btn.primary{background:#E6F1FB;color:#0C447C;border-color:#B5D4F4}
-        .drive-sorter-scoped .tb-btn.primary:hover{background:#B5D4F4}
+        .drive-sorter-scoped .tb-btn.primary{background:color-mix(in srgb, #378ADD 14%, var(--color-surface-container-lowest));color:color-mix(in srgb, #378ADD 50%, var(--color-on-surface));border-color:color-mix(in srgb, #378ADD 30%, var(--color-surface-container-lowest))}
+        .drive-sorter-scoped .tb-btn.primary:hover{background:color-mix(in srgb, #378ADD 30%, var(--color-surface-container-lowest))}
         .drive-sorter-scoped .col-header{display:grid;grid-template-columns:2fr 1fr 1fr 80px;padding:4px 10px;font-size:11px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.04em;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:4px}
         .drive-sorter-scoped .file-list{display:flex;flex-direction:column;gap:2px}
         .drive-sorter-scoped .file-row{display:grid;grid-template-columns:2fr 1fr 1fr 80px;align-items:center;padding:7px 10px;border-radius:var(--border-radius-md);border:1.5px solid transparent;background:var(--color-background-primary);cursor:grab;transition:background .12s,border-color .12s;user-select:none;margin:0}
         .drive-sorter-scoped .file-row:hover{background:var(--color-background-secondary)}
         .drive-sorter-scoped .file-row.dragging{opacity:.4}
-        .drive-sorter-scoped .file-row.drag-over{border-color:#185FA5;background:#E6F1FB}
-        .drive-sorter-scoped .file-row.correct{border-color:#1D9E75;background:#E1F5EE}
-        .drive-sorter-scoped .file-row.wrong{border-color:#E24B4A;background:#FCEBEB;animation:shake .3s}
+        .drive-sorter-scoped .file-row.drag-over{border-color:color-mix(in srgb, #378ADD 72%, var(--color-on-surface));background:color-mix(in srgb, #378ADD 14%, var(--color-surface-container-lowest))}
+        .drive-sorter-scoped .file-row.correct{border-color:var(--color-secondary);background:color-mix(in srgb, var(--color-secondary) 14%, var(--color-surface-container-lowest))}
+        .drive-sorter-scoped .file-row.wrong{border-color:var(--color-error);background:color-mix(in srgb, var(--color-error) 14%, var(--color-surface-container-lowest));animation:shake .3s}
         .drive-sorter-scoped .file-name{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);min-width:0}
         .drive-sorter-scoped .file-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .drive-sorter-scoped .file-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
@@ -178,7 +180,7 @@ export default function DriveFileSorter({ onValidation }: { onValidation?: (succ
             <div style={{ borderTop: '0.5px solid var(--color-border-tertiary)', margin: '8px 0' }} />
             <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', padding: '4px 10px' }}>Almacenamiento</div>
             <div style={{ margin: '4px 10px', height: 6, background: 'var(--color-background-secondary)', borderRadius: 3 }}>
-              <div style={{ width: '42%', height: '100%', background: '#378ADD', borderRadius: 3 }} />
+              <div style={{ width: '42%', height: '100%', background: 'color-mix(in srgb, #378ADD 88%, var(--color-on-surface))', borderRadius: 3 }} />
             </div>
             <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', padding: '2px 10px' }}>6,3 GB de 15 GB</div>
           </div>

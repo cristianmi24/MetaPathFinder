@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FileText, CheckCircle2, AlertCircle, Sparkles, AlertTriangle } from 'lucide-react';
+import { type OnValidation } from '../lib/boardValidation';
 
 interface EssayBoardProps {
   challengeId: string;
-  onValidation: (success: boolean) => void;
+  onValidation: OnValidation;
 }
 
 interface CriterionCheck {
@@ -284,7 +285,7 @@ export function EssayBoard({ challengeId, onValidation }: EssayBoardProps) {
           </div>
           <div className={`text-xs font-black px-3 py-1 rounded-full transition-all ${
             evaluationResult.wordCount >= challengeRubric.minWords 
-              ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20' 
+              ? 'bg-secondary/10 text-secondary border border-secondary/20' 
               : 'bg-surface-container-highest text-on-surface-variant'
           }`}>
             {evaluationResult.wordCount} / {challengeRubric.minWords} palabras mín.
@@ -307,9 +308,9 @@ export function EssayBoard({ challengeId, onValidation }: EssayBoardProps) {
         {/* Sección superior: Calificación en vivo */}
         <div className="space-y-5">
           <div className="text-center p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 relative overflow-hidden shadow-sm">
-            <span className="text-[10px] font-mono text-on-surface-variant/70 uppercase tracking-widest block mb-1">Calificación en Vivo</span>
+            <span className="text-[10px] font-semibold text-on-surface-variant/70 uppercase tracking-widest block mb-1">Calificación en Vivo</span>
             <div className="flex justify-center items-baseline gap-1">
-              <span className={`text-4xl font-black ${evaluationResult.approved ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
+              <span className={`text-4xl font-black ${evaluationResult.approved ? 'text-secondary' : 'text-warning'}`}>
                 {evaluationResult.score.toFixed(1)}
               </span>
               <span className="text-xs text-on-surface-variant font-bold">/ 5.0</span>
@@ -317,11 +318,11 @@ export function EssayBoard({ challengeId, onValidation }: EssayBoardProps) {
             
             <div className="mt-2.5">
               {evaluationResult.approved ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 px-2.5 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase bg-secondary/10 text-secondary border border-secondary/20 px-2.5 py-0.5 rounded-full">
                   <Sparkles className="w-3 h-3" /> Reto Aprobado
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase bg-warning/10 text-warning border border-warning/20 px-2.5 py-0.5 rounded-full">
                   <AlertTriangle className="w-3 h-3" /> Falta Estructura
                 </span>
               )}
@@ -337,18 +338,18 @@ export function EssayBoard({ challengeId, onValidation }: EssayBoardProps) {
                   key={idx} 
                   className={`p-3 rounded-xl border transition-all ${
                     check.matched 
-                      ? 'bg-green-500/5 border-green-500/25 text-on-surface' 
+                      ? 'bg-secondary/5 border-secondary/25 text-on-surface' 
                       : 'bg-surface-container-lowest/50 border-outline-variant/30 text-on-surface-variant'
                   }`}
                 >
                   <div className="flex items-start gap-2">
                     {check.matched ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />
                     ) : (
                       <AlertCircle className="w-4 h-4 text-on-surface-variant/40 flex-shrink-0 mt-0.5" />
                     )}
                     <div className="min-w-0">
-                      <p className={`text-xs font-bold ${check.matched ? 'text-green-600 dark:text-green-300' : 'text-on-surface'}`}>
+                      <p className={`text-xs font-bold ${check.matched ? 'text-secondary' : 'text-on-surface'}`}>
                         {check.label}
                       </p>
                       <p className="text-[10px] text-on-surface-variant leading-snug mt-1 font-medium">
@@ -366,8 +367,8 @@ export function EssayBoard({ challengeId, onValidation }: EssayBoardProps) {
         <div className="mt-5 pt-4 border-t border-outline-variant/20">
           <div className={`p-3.5 rounded-xl text-xs font-semibold leading-relaxed border transition-colors ${
             evaluationResult.approved 
-              ? 'bg-green-500/5 text-green-600 dark:text-green-400 border-green-500/20' 
-              : 'bg-amber-500/5 text-amber-600 dark:text-amber-400 border-amber-500/20'
+              ? 'bg-secondary/5 text-secondary border-secondary/20' 
+              : 'bg-warning/5 text-warning border-warning/20'
           }`}>
             {evaluationResult.missingTip}
           </div>

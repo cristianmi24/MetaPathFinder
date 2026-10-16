@@ -1,9 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { PenTool, Eraser, RotateCcw, Download } from 'lucide-react';
+import { type OnValidation } from '../lib/boardValidation';
 
 interface CanvasBoardProps {
   challengeId: string;
-  onValidation: (success: boolean) => void;
+  onValidation: OnValidation;
 }
 
 export function CanvasBoard({ challengeId, onValidation }: CanvasBoardProps) {
@@ -101,14 +102,14 @@ export function CanvasBoard({ challengeId, onValidation }: CanvasBoardProps) {
           <div className="flex gap-2">
             <button 
               onClick={() => setMode('draw')}
-              className={`p-2 rounded-lg transition-colors ${mode === 'draw' ? 'bg-primary text-white' : 'bg-surface-container text-on-surface-variant'}`}
+              className={`p-2 rounded-lg transition-colors ${mode === 'draw' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}
               title="Dibujar"
             >
               <PenTool className="w-4 h-4" />
             </button>
             <button 
               onClick={() => setMode('erase')}
-              className={`p-2 rounded-lg transition-colors ${mode === 'erase' ? 'bg-primary text-white' : 'bg-surface-container text-on-surface-variant'}`}
+              className={`p-2 rounded-lg transition-colors ${mode === 'erase' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}
               title="Borrar"
             >
               <Eraser className="w-4 h-4" />
@@ -129,7 +130,7 @@ export function CanvasBoard({ challengeId, onValidation }: CanvasBoardProps) {
 
           <button 
             onClick={clearCanvas}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-error bg-error-container hover:bg-error-container rounded-lg transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" /> Limpiar
           </button>

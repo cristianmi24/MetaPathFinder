@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import './CodingIDEBoard.css';
+import { type OnValidation, partialAttempt } from '../lib/boardValidation';
 
 interface BlankDef {
   id: string;
@@ -845,7 +846,7 @@ const CHALLENGES: Record<string, ChallengeConfig> = {
 
 interface Props {
   challengeId: string;
-  onValidation?: (success: boolean) => void;
+  onValidation?: OnValidation;
 }
 
 export function CodingIDEBoard({ challengeId, onValidation }: Props) {
@@ -937,10 +938,9 @@ export function CodingIDEBoard({ challengeId, onValidation }: Props) {
 
     setConsoleLines(result.output);
 
-    // Solo los intentos fallidos cuentan como error para la Fase B; el éxito final se reporta al finalizar.
-    if (onValidation && !correct) {
-      onValidation(false);
-    }
+    // Cada ejercicio verificado es un intento parcial; el éxito del tablero se reporta al finalizar.
+    // Lo escrito es texto del estudiante: solo viaja si cada espacio quedó bien o mal.
+    onValidation?.(correct, partialAttempt(Object.fromEntries(Object.entries(newStates).map(([k, v]) => [k, v === 'correct'])), currentEx));
 
     if (correct && !isLastEx) {
       setResultType('ok');

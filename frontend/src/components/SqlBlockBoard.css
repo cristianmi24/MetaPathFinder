@@ -1,24 +1,24 @@
 .sqlb-root {
-  --sqlb-bg: #f6f8fa; 
-  --sqlb-surface: #ffffff; 
-  --sqlb-surface2: #f1f3f5;
-  --sqlb-border: #d0d7de; 
-  --sqlb-border2: #c1c9d0;
-  --sqlb-primary: #674bb5; 
-  --sqlb-primary-bg: rgba(103,75,181,0.08);
-  --sqlb-accent: #238636; 
-  --sqlb-accent-dim: rgba(35,134,54,0.08);
-  --sqlb-danger: #cf222e; 
-  --sqlb-danger-dim: rgba(207,34,46,0.1);
-  --sqlb-warning: #9a6700; 
-  --sqlb-info: #0969da; 
-  --sqlb-info-dim: rgba(9,105,218,0.08);
-  --sqlb-text: #1f2328; 
-  --sqlb-text2: #57606a; 
-  --sqlb-text3: #8c959f;
-  --sqlb-mono: 'JetBrains Mono', 'Consolas', monospace;
-  --sqlb-sans: 'DM Sans', system-ui, sans-serif;
-  --sqlb-radius: 6px; --sqlb-radius-lg: 10px;
+  --sqlb-bg: var(--color-surface-container-low); 
+  --sqlb-surface: var(--color-surface-container-lowest); 
+  --sqlb-surface2: var(--color-surface-container);
+  --sqlb-border: var(--color-outline-variant); 
+  --sqlb-border2: color-mix(in srgb, var(--color-outline) 55%, var(--color-outline-variant));
+  --sqlb-primary: var(--color-primary); 
+  --sqlb-primary-bg: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  --sqlb-accent: var(--color-secondary); 
+  --sqlb-accent-dim: color-mix(in srgb, var(--color-secondary) 12%, transparent);
+  --sqlb-danger: var(--color-error); 
+  --sqlb-danger-dim: color-mix(in srgb, var(--color-error) 12%, transparent);
+  --sqlb-warning: var(--color-warning); 
+  --sqlb-info: color-mix(in srgb, #3b6fd8 72%, var(--color-on-surface)); 
+  --sqlb-info-dim: color-mix(in srgb, var(--sqlb-info) 12%, transparent);
+  --sqlb-text: var(--color-on-surface); 
+  --sqlb-text2: var(--color-on-surface-variant); 
+  --sqlb-text3: color-mix(in srgb, var(--color-on-surface-variant) 80%, var(--color-surface));
+  --sqlb-mono: var(--font-mono);
+  --sqlb-sans: var(--font-sans);
+  --sqlb-radius: 8px; --sqlb-radius-lg: 14px;
   font-family: var(--sqlb-sans);
   background: var(--sqlb-bg);
   color: var(--sqlb-text);
@@ -27,26 +27,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.dark .sqlb-root {
-  --sqlb-bg: #0e0f11; 
-  --sqlb-surface: #16181c; 
-  --sqlb-surface2: #1e2026;
-  --sqlb-border: #2e3038; 
-  --sqlb-border2: #3a3d48;
-  --sqlb-primary: #7F77DD; 
-  --sqlb-primary-bg: rgba(127,119,221,0.12);
-  --sqlb-accent: #4ade80; 
-  --sqlb-accent-dim: rgba(74,222,128,0.12);
-  --sqlb-danger: #f87171; 
-  --sqlb-danger-dim: rgba(248,113,113,0.15);
-  --sqlb-warning: #fbbf24; 
-  --sqlb-info: #60a5fa; 
-  --sqlb-info-dim: rgba(96,165,250,0.12);
-  --sqlb-text: #e8eaed; 
-  --sqlb-text2: #9aa0ac; 
-  --sqlb-text3: #5a5f6e;
 }
 
 .sqlb-topbar {
@@ -69,15 +49,15 @@
   color: var(--sqlb-text2); cursor: pointer; display: flex; align-items: center; gap: 4px;
   user-select: none;
 }
-.sqlb-pb.active { background: var(--sqlb-primary-bg); color: #b8b0f0; border-color: var(--sqlb-primary); }
-.sqlb-pb.done { background: var(--sqlb-accent-dim); color: var(--sqlb-accent); border-color: rgba(74,222,128,.35); }
+.sqlb-pb.active { background: var(--sqlb-primary-bg); color: var(--sqlb-primary); border-color: var(--sqlb-primary); }
+.sqlb-pb.done { background: var(--sqlb-accent-dim); color: var(--sqlb-accent); border-color: color-mix(in srgb, var(--sqlb-accent) 35%, transparent); }
 
 .sqlb-instrucciones {
   padding: 8px 16px; background: var(--sqlb-info-dim); color: var(--sqlb-info);
   font-size: 13px; display: flex; align-items: center; gap: 6px; flex-shrink: 0;
 }
 .sqlb-instrucciones code {
-  background: rgba(0,0,0,.3); padding: 1px 6px; border-radius: 4px; font-size: 12px;
+  background: var(--color-surface-container-high); padding: 1px 6px; border-radius: 4px; font-size: 12px;
 }
 
 .sqlb-panels {
@@ -95,7 +75,7 @@
 .sqlb-pal-hdr {
   font-size: 11px; font-weight: 600; padding: 8px 12px; color: var(--sqlb-text2);
   border-bottom: 1px solid var(--sqlb-border); display: flex; align-items: center; gap: 6px;
-  background: rgba(255,255,255,.02); position: sticky; top: 0; z-index: 1;
+  background: color-mix(in srgb, var(--sqlb-text) 2%, transparent); position: sticky; top: 0; z-index: 1;
 }
 .sqlb-pal-cat { border-bottom: 1px solid var(--sqlb-border); }
 .sqlb-pal-cat:last-child { border-bottom: none; }
@@ -113,11 +93,11 @@
 .sqlb-pal-bloque:hover { transform: translateY(-1px); }
 .sqlb-pal-bloque:active { transform: scale(.95); }
 
-.sqlb-c-clause { background: rgba(127,119,221,0.13); border-color: var(--sqlb-primary); color: #b8b0f0; }
-.sqlb-c-campo { background: rgba(96,165,250,0.13); border-color: var(--sqlb-info); color: #93c5fd; }
-.sqlb-c-func { background: rgba(251,191,36,0.1); border-color: #fbbf24; color: #fde68a; }
-.sqlb-c-op { background: rgba(248,113,113,0.12); border-color: var(--sqlb-danger); color: #fecaca; }
-.sqlb-c-tabla { background: rgba(74,222,128,0.1); border-color: var(--sqlb-accent); color: #bbf7d0; }
+.sqlb-c-clause { background: color-mix(in srgb, var(--sqlb-primary) 13%, transparent); border-color: var(--sqlb-primary); color: var(--sqlb-primary); }
+.sqlb-c-campo { background: color-mix(in srgb, var(--sqlb-info) 13%, transparent); border-color: var(--sqlb-info); color: var(--sqlb-info); }
+.sqlb-c-func { background: color-mix(in srgb, var(--sqlb-warning) 10%, transparent); border-color: var(--sqlb-warning); color: color-mix(in srgb, var(--sqlb-warning) 85%, var(--sqlb-text)); }
+.sqlb-c-op { background: color-mix(in srgb, var(--sqlb-danger) 12%, transparent); border-color: var(--sqlb-danger); color: var(--sqlb-danger); }
+.sqlb-c-tabla { background: color-mix(in srgb, var(--sqlb-accent) 10%, transparent); border-color: var(--sqlb-accent); color: var(--sqlb-accent); }
 
 /* Main area */
 .sqlb-main { display: flex; flex-direction: column; gap: 8px; min-height: 0; flex: 1; }
@@ -140,7 +120,7 @@
 }
 .sqlb-ws-bloque .tag {
   font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: .3px;
-  white-space: nowrap; color: #b8b0f0;
+  white-space: nowrap; color: var(--sqlb-primary);
 }
 .sqlb-ws-bloque .sep { color: var(--sqlb-text3); font-weight: 300; margin: 0 4px; }
 .sqlb-ws-bloque select, .sqlb-ws-bloque input {
@@ -170,7 +150,7 @@
   border: 1px dashed var(--sqlb-border); background: transparent;
   color: var(--sqlb-text3); cursor: pointer;
 }
-.sqlb-ws-bloque .add-field:hover { color: #b8b0f0; border-color: var(--sqlb-primary); }
+.sqlb-ws-bloque .add-field:hover { color: var(--sqlb-primary); border-color: var(--sqlb-primary); }
 
 .sqlb-sql-preview {
   background: var(--sqlb-surface2); border: 1px solid var(--sqlb-border);
@@ -179,10 +159,11 @@
   line-height: 1.6; min-height: 32px; white-space: pre-wrap; word-break: break-word;
 }
 .sqlb-sql-preview .placeholder { color: var(--sqlb-text3); }
-.sqlb-sql-preview .kw { color: #b8b0f0; font-weight: 600; }
-.sqlb-sql-preview .fn { color: #fde68a; }
-.sqlb-sql-preview .str { color: #bbf7d0; }
-.sqlb-sql-preview .num { color: #93c5fd; }
+.sqlb-sql-preview .kw { color: var(--sqlb-primary); font-weight: 600; }
+.sqlb-sql-preview .fn { color: color-mix(in srgb, var(--sqlb-warning) 85%, var(--sqlb-text)); }
+.sqlb-sql-preview .str { color: var(--sqlb-accent); }
+.sqlb-sql-preview .num { color: var(--sqlb-info); }
+.sqlb-sql-preview .tbl { color: color-mix(in srgb, #0891b2 72%, var(--sqlb-text)); font-weight: 500; }
 
 .sqlb-ebar {
   display: flex; align-items: center; justify-content: space-between; padding: 2px 0;
@@ -191,10 +172,10 @@
 .sqlb-rbtn {
   display: flex; align-items: center; gap: 5px; padding: 7px 18px;
   border-radius: var(--sqlb-radius); border: 1px solid var(--sqlb-primary);
-  background: var(--sqlb-primary-bg); color: #b8b0f0; font-size: 13px;
+  background: var(--sqlb-primary-bg); color: var(--sqlb-primary); font-size: 13px;
   cursor: pointer; font-weight: 600;
 }
-.sqlb-rbtn:hover { background: rgba(127,119,221,0.22); }
+.sqlb-rbtn:hover { background: color-mix(in srgb, var(--sqlb-primary) 22%, transparent); }
 .sqlb-rbtn:disabled { opacity: .5; cursor: not-allowed; }
 
 /* Results */
@@ -212,7 +193,7 @@
 }
 .sqlb-rscroll td { padding: 6px 12px; border-bottom: 1px solid var(--sqlb-border); color: var(--sqlb-text); white-space: nowrap; }
 .sqlb-rscroll tr:last-child td { border-bottom: none; }
-.sqlb-rscroll tr:hover td { background: rgba(255,255,255,.03); }
+.sqlb-rscroll tr:hover td { background: color-mix(in srgb, var(--sqlb-text) 3%, transparent); }
 .sqlb-ok {
   padding: 10px 12px; font-size: 13px; color: var(--sqlb-accent);
   background: var(--sqlb-accent-dim); display: flex; align-items: center; gap: 6px;
@@ -229,29 +210,29 @@
   border: 1px solid var(--sqlb-border); background: var(--sqlb-surface);
   color: var(--sqlb-text2); cursor: pointer; user-select: none;
 }
-.sqlb-qc:hover { background: var(--sqlb-primary-bg); color: #b8b0f0; border-color: var(--sqlb-primary); }
-.sqlb-qc.act { background: var(--sqlb-primary-bg); color: #b8b0f0; border-color: var(--sqlb-primary); }
+.sqlb-qc:hover { background: var(--sqlb-primary-bg); color: var(--sqlb-primary); border-color: var(--sqlb-primary); }
+.sqlb-qc.act { background: var(--sqlb-primary-bg); color: var(--sqlb-primary); border-color: var(--sqlb-primary); }
 
 .sqlb-reto-desc {
-  background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.3);
+  background: color-mix(in srgb, var(--sqlb-warning) 8%, transparent); border: 1px solid color-mix(in srgb, var(--sqlb-warning) 30%, transparent);
   border-radius: var(--sqlb-radius); padding: 10px 14px; font-size: 12px;
-  color: #fde68a; display: flex; align-items: flex-start; gap: 8px;
+  color: color-mix(in srgb, var(--sqlb-warning) 85%, var(--sqlb-text)); display: flex; align-items: flex-start; gap: 8px;
   margin-bottom: 8px; line-height: 1.5;
 }
 .sqlb-help-btn {
   margin-left: auto; flex-shrink: 0; background: transparent;
-  border: 1px solid rgba(251,191,36,.3); color: #fde68a; border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--sqlb-warning) 30%, transparent); color: color-mix(in srgb, var(--sqlb-warning) 85%, var(--sqlb-text)); border-radius: 6px;
   padding: 4px 10px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px;
 }
-.sqlb-help-btn:hover { background: rgba(251,191,36,.1); }
+.sqlb-help-btn:hover { background: color-mix(in srgb, var(--sqlb-warning) 10%, transparent); }
 .sqlb-help-box {
-  background: var(--sqlb-info-dim); border: 1px solid rgba(96,165,250,.3);
+  background: var(--sqlb-info-dim); border: 1px solid color-mix(in srgb, var(--sqlb-info) 30%, transparent);
   border-radius: var(--sqlb-radius); padding: 10px 14px; font-size: 12px;
   color: var(--sqlb-info); margin-bottom: 8px; line-height: 1.5; font-family: var(--sqlb-mono);
 }
 
 .sqlb-completado {
-  background: var(--sqlb-accent-dim); border: 1px solid rgba(74,222,128,.4);
+  background: var(--sqlb-accent-dim); border: 1px solid color-mix(in srgb, var(--sqlb-accent) 40%, transparent);
   border-radius: var(--sqlb-radius-lg); padding: 20px 24px; text-align: center;
   font-size: 16px; font-weight: 700; color: var(--sqlb-accent);
   display: flex; align-items: center; justify-content: center; gap: 10px;

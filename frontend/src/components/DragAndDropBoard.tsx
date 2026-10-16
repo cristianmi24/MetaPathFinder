@@ -17,10 +17,11 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
+import { type OnValidation, stateReport } from '../lib/boardValidation';
 
 interface DragAndDropBoardProps {
   challengeId: string;
-  onValidation: (isSuccess: boolean) => void;
+  onValidation: OnValidation;
 }
 
 const getChallengeData = (id: string) => {
@@ -86,13 +87,13 @@ function SortableItem({ id, item, index, done }: { id: string; item: string; ind
         isDragging
           ? 'border-primary bg-primary/10 shadow-xl'
           : done
-            ? 'border-emerald-500/50 bg-emerald-500/10'
+            ? 'border-secondary/50 bg-secondary/10'
             : 'border-outline-variant/50 bg-surface hover:border-primary/60 hover:shadow-md'
       }`}
     >
       <span
         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-          done ? 'bg-emerald-500 text-white' : 'bg-primary/10 text-primary'
+          done ? 'bg-secondary text-on-secondary' : 'bg-primary/10 text-primary'
         }`}
       >
         {index + 1}
@@ -133,14 +134,14 @@ export function DragAndDropBoard({ challengeId, onValidation }: DragAndDropBoard
 
         const success = JSON.stringify(newItems) === JSON.stringify(correctOrder);
         setIsCorrect(success);
-        onValidation(success);
+        onValidation(success, stateReport(newItems));
 
         return newItems;
       });
     } else {
       const success = JSON.stringify(items) === JSON.stringify(correctOrder);
       setIsCorrect(success);
-      onValidation(success);
+      onValidation(success, stateReport(items));
     }
   };
 
@@ -148,14 +149,14 @@ export function DragAndDropBoard({ challengeId, onValidation }: DragAndDropBoard
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 p-3 md:p-4">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
         <div className="min-w-0 flex-1">
-          <h4 className="font-serif text-lg font-semibold text-on-surface">Ordena los pasos</h4>
+          <h4 className="text-lg font-semibold text-on-surface">Ordena los pasos</h4>
           <p className="text-[13px] text-on-surface-variant">
             Arrastra cada tarjeta hasta su lugar: del primer paso (arriba) al último (abajo).
           </p>
         </div>
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-colors ${
-            isCorrect ? 'bg-emerald-500 text-white' : 'bg-surface-container-high text-on-surface-variant'
+            isCorrect ? 'bg-secondary text-on-secondary' : 'bg-surface-container-high text-on-surface-variant'
           }`}
         >
           <i className={`ti ${isCorrect ? 'ti-check' : 'ti-arrows-sort'}`} />
@@ -167,7 +168,7 @@ export function DragAndDropBoard({ challengeId, onValidation }: DragAndDropBoard
         <SortableContext items={items} strategy={verticalListSortingStrategy}>
           <div
             className={`flex flex-col gap-1.5 rounded-xl border p-2 transition-colors duration-300 ${
-              isCorrect ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-outline-variant/40 bg-surface-container-low'
+              isCorrect ? 'border-secondary/40 bg-secondary/5' : 'border-outline-variant/40 bg-surface-container-low'
             }`}
           >
             {items.map((id, i) => (
@@ -178,7 +179,7 @@ export function DragAndDropBoard({ challengeId, onValidation }: DragAndDropBoard
       </DndContext>
 
       {isCorrect && (
-        <p className="text-center text-[13px] font-semibold text-emerald-600">Ya puedes verificar y enviar el reto.</p>
+        <p className="text-center text-[13px] font-semibold text-secondary">Ya puedes verificar y enviar el reto.</p>
       )}
     </div>
   );

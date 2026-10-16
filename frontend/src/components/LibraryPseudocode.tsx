@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './LibraryPseudocode.css';
+import { type OnValidation, stateReport } from '../lib/boardValidation';
 
 interface Block {
   id: string;
@@ -24,7 +25,7 @@ const WRONG_BLOCKS: Block[] = [
 
 const ALL_BLOCKS = [...CORRECT_ORDER, ...WRONG_BLOCKS];
 
-export default function LibraryPseudocode({ onValidation }: { onValidation?: (success: boolean) => void }) {
+export default function LibraryPseudocode({ onValidation }: { onValidation?: OnValidation }) {
   const [poolOrder, setPoolOrder] = useState<Block[]>([]);
   const [slotContents, setSlotContents] = useState<(Block | null)[]>(Array(5).fill(null));
   const [dragItem, setDragItem] = useState<{ block: Block, from: { type: 'pool' } | { type: 'slot', index: number } } | null>(null);
@@ -139,7 +140,7 @@ export default function LibraryPseudocode({ onValidation }: { onValidation?: (su
         type: 'fail',
         text: <>Colocados: {filled} de 5 bloques. ¡Completa los 5 pasos del pseudocódigo!</>
       });
-      if (onValidation) onValidation(false);
+      if (onValidation) onValidation(false, stateReport(slots.map(b => b?.id ?? null)));
     } else if (correct === 5) {
       setFeedback({
         show: true,
@@ -147,14 +148,14 @@ export default function LibraryPseudocode({ onValidation }: { onValidation?: (su
         text: <>¡Excelente! Has ordenado el pseudocódigo del préstamo de libros de forma correcta.</>
       });
       throwConfetti();
-      if (onValidation) onValidation(true);
+      if (onValidation) onValidation(true, stateReport(slots.map(b => b?.id ?? null)));
     } else {
       setFeedback({
         show: true,
         type: 'partial',
         text: <>Tienes {correct} de 5 correctos.</>
       });
-      if (onValidation) onValidation(false);
+      if (onValidation) onValidation(false, stateReport(slots.map(b => b?.id ?? null)));
     }
   };
 
@@ -177,7 +178,7 @@ export default function LibraryPseudocode({ onValidation }: { onValidation?: (su
   };
 
   return (
-    <div className="library-pseudocode-app w-full h-full p-4 overflow-auto relative bg-white dark:bg-[#1a1b1e] rounded-xl border border-gray-200 dark:border-gray-800">
+    <div className="library-pseudocode-app w-full h-full p-4 overflow-auto relative rounded-2xl border border-outline-variant bg-surface-container-lowest">
       <div className="top-bar">
         <h1>Pseudocódigo de Biblioteca</h1>
         <div className="score-badge">{getCorrectCount()} / 5 correctos</div>

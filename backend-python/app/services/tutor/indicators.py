@@ -226,3 +226,65 @@ def criterion_observations(ind: Dict[str, Observation], txt: Dict[str, Any], obs
     crit["A3"] = bool(ind.get("e3") and has_evidence) if (errs > 0 or hints > 0 or auto_hint) else None
     crit["A4"] = (abs(bias) <= domain.CALIBRATED_BIAS and bool(txt.get("f3"))) if bias is not None else None
     return crit
+
+
+# --------------------------------------------------------------------------- #
+# Intentos y uso de la ayuda (Fase B → Fase C)
+# --------------------------------------------------------------------------- #
+HELP_ABUSE_HINTS: int = 3        # pistas seguidas sin ningún intento entre ellas
+HELP_AVOIDANCE_FAILS: int = 4    # fallos seguidos sin pedir pista
+
+
+def attempt_summary(obs: Dict[str, Any]) -> Dict[str, Any]:
+    """Lee la secuencia de intentos y pistas del reto.
+
+    obs["attempt_log"]: [{t, correct, confidence (1-10 | None), delta, secs_since_feedback, trial_and_error, partial}]
+    obs["hint_log"]:    [{t, level, auto, visible_ms, next_delta, next_changed}]
+
+    - Pares (confianza, acierto) de los intentos con confianza: alimentan el Kalman del sesgo
+      intento a intento y el Brier por intento (misma escala 0-10 que compute_calibration).
+    - help_abuse: HELP_ABUSE_HINTS pistas pedidas sin intentos entre ellas (Aleven et al., 2006).
+    - help_avoidance: HELP_AVOIDANCE_FAILS fallos seguidos sin pedir pista.
+    Sin registros devuelve None en cada patrón (no observable), no False.
+    """
+    attempts = [a for a in (obs.get("attempt_log") or []) if isinstance(a, dict)]
+    hints = [h for h in (obs.get("hint_log") or []) if isinstance(h, dict)]
+    pairs = [(float(a["confidence"]), bool(a.get("correct"))) for a in attempts
+             if isinstance(a.get("confidence"), (int, float)) and 1 <= float(a["confidence"]) <= 10]
+    brier = round(sum((c / 10.0 - (1.0 if ok else 0.0)) ** 2 for c, ok in pairs) / len(pairs), 4) if pairs else None
+
+    # Línea de tiempo intercalada: las pistas automáticas no son petición del estudiante.
+    timeline = sorted(
+        [(float(a.get("t") or 0), 1, "A+" if a.get("correct") else "A-") for a in attempts]
+        + [(float(h.get("t") or 0), 0, "H") for h in hints if not h.get("auto")],
+        key=lambda x: (x[0], x[1]),
+    )
+    abuse = avoidance = False
+    hint_run = fail_run = 0
+    for _, _, kind in timeline:
+        if kind == "H":
+            hint_run += 1
+            fail_run = 0
+            abuse = abuse or hint_run >= HELP_ABUSE_HINTS
+        else:
+            hint_run = 0
+            fail_run = fail_run + 1 if kind == "A-" else 0
+            avoidance = avoidance or fail_run >= HELP_AVOIDANCE_FAILS
+
+    # ¿El intento siguiente a la pista cambió algo? delta si el tablero da su respuesta; si no, hubo ediciones.
+    def _changed(h: Dict[str, Any]) -> Optional[bool]:
+        if isinstance(h.get("next_delta"), (int, float)):
+            return float(h["next_delta"]) > 0
+        return h.get("next_changed") if isinstance(h.get("next_changed"), bool) else None
+    followed = [c for c in (_changed(h) for h in hints) if c is not None]
+    visible = [float(h["visible_ms"]) for h in hints if isinstance(h.get("visible_ms"), (int, float))]
+    return {
+        "attempts": len(attempts),
+        "confidence_pairs": [[c, ok] for c, ok in pairs],
+        "brier_attempts": brier,
+        "trial_and_error": sum(1 for a in attempts if a.get("trial_and_error")),
+        "help_abuse": abuse if (attempts or hints) else None,
+        "help_avoidance": avoidance if attempts else None,
+        "hint_followthrough": round(sum(followed) / len(followed), 3) if followed else None,
+        "hint_visible_ms_mean": round(sum(visible) / len(visible)) if visible else None,
+    }

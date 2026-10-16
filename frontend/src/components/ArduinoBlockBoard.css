@@ -1,130 +1,139 @@
 .ard-root {
-  /* Light defaults */
-  --ard-bg: #f8fafc;
-  --ard-panel: #ffffff;
-  --ard-text: #0f172a;
-  --ard-blue: #0ea5e9;
-  --ard-surface: #f1f5f9;
-  --ard-border: #e2e8f0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* Tokens del tema de la app (claro/oscuro vía .dark en <html>) */
+  --ard-bg: var(--color-surface-container-low);
+  --ard-panel: var(--color-surface-container-lowest);
+  --ard-text: var(--color-on-surface);
+  --ard-muted: var(--color-on-surface-variant);
+  --ard-blue: var(--color-primary);
+  --ard-surface: var(--color-surface-container);
+  --ard-border: var(--color-outline-variant);
+  /* Pantallas del simulador (monitor serial): oscuras en ambos temas */
+  --ard-screen: #16151b;
+  --ard-screen-text: #a7d9a4;
+  font-family: var(--font-sans);
   background: var(--ard-bg);
   color: var(--ard-text);
   width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;
   padding: 16px; overflow: auto;
 }
 
-/* Dark mode for ArduinoBlockBoard */
-.dark .ard-root {
-  --ard-bg: #1e1e2e;
-  --ard-panel: #252538;
-  --ard-text: #cdd6f4;
-  --ard-blue: #00979d;
-  --ard-surface: #181825;
-  --ard-border: #313244;
-}
-.ard-root h1 { color: var(--ard-blue); margin-bottom: 5px; font-size: 1.3rem; }
-.ard-root p.description { color: #64748b; text-align: center; max-width: 700px; margin-bottom: 16px; font-size: 0.85rem; }
-.dark .ard-root p.description { color: #a6adc8; }
+.ard-root h1 { color: var(--ard-text); margin-bottom: 4px; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+.ard-root p.description { color: var(--ard-muted); text-align: center; max-width: 700px; margin-bottom: 16px; font-size: 0.875rem; line-height: 1.6; }
+.ard-root p.description b { color: var(--ard-text); }
 
 .ard-message {
-  padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.9rem;
+  padding: 10px 18px; border-radius: 12px; font-weight: 600; font-size: 0.9rem;
   margin-bottom: 12px; text-align: center; width: 100%; max-width: 1200px;
+  animation: ard-in .25s ease;
 }
-.ard-message.ok { background: #1a3a2a; color: #a6e3a1; border: 1px solid #4caf50; }
-.ard-message.err { background: #3a1a1a; color: #f38ba8; border: 1px solid #ff4d4d; }
+.ard-message.ok { background: var(--color-secondary-container); color: var(--color-on-secondary-container); border: 1px solid color-mix(in srgb, var(--color-secondary) 40%, transparent); }
+.ard-message.err { background: var(--color-error-container); color: var(--color-on-error-container); border: 1px solid color-mix(in srgb, var(--color-error) 40%, transparent); }
+@keyframes ard-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
 .ard-workspace {
   display: flex; gap: 16px; width: 100%; max-width: 1200px; flex: 1; min-height: 0;
 }
 .ard-panel {
-  background: var(--ard-panel); border-radius: 12px; padding: 15px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden;
+  background: var(--ard-panel); border-radius: 16px; padding: 15px;
+  border: 1px solid var(--ard-border);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--ard-text) 6%, transparent);
+  display: flex; flex-direction: column; overflow: hidden;
 }
 .ard-panel-title {
-  font-size: 1.1rem; font-weight: bold; border-bottom: 2px solid var(--ard-border);
-  padding-bottom: 8px; margin-top: 0; color: var(--ard-blue); margin-bottom: 10px;
+  font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--ard-border);
+  padding-bottom: 8px; margin-top: 0; color: var(--ard-muted); margin-bottom: 10px;
 }
 .ard-banco {
   flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
-  padding: 10px; background: var(--ard-surface); border-radius: 8px;
+  padding: 10px; background: var(--ard-surface); border-radius: 12px;
 }
 .ard-panel-circuito { flex: 1; justify-content: space-between; }
 
 .ard-block {
-  padding: 10px 14px; border-radius: 6px; color: white;
-  font-family: monospace; font-size: 0.82rem; user-select: none;
-  box-shadow: 0 3px 5px rgba(0,0,0,0.2); background: #45475a;
+  padding: 10px 14px; border-radius: 10px; color: var(--color-on-primary-container);
+  font-family: var(--font-mono); font-size: 0.82rem; user-select: none;
+  background: var(--color-primary-container);
+  border: 1px solid color-mix(in srgb, var(--ard-blue) 25%, transparent);
+  border-left: 4px solid var(--ard-blue);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ard-text) 8%, transparent);
 }
-.ard-clickable { cursor: pointer; transition: transform 0.15s, opacity 0.15s; }
-.ard-clickable:hover { transform: translateY(-2px); opacity: 0.9; }
+.ard-clickable { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+.ard-clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px color-mix(in srgb, var(--ard-blue) 22%, transparent); }
+.ard-clickable:active { transform: scale(0.98); }
 .ard-disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
-.ard-plus-sign { font-weight: bold; margin-right: 4px; color: #a6e3a1; }
+.ard-plus-sign { font-weight: 700; margin-right: 4px; color: var(--ard-blue); }
 
-.ard-zone-hint { color: #585b70; font-size: 0.8rem; text-align: center; padding: 12px; font-style: italic; }
+.ard-zone-hint { color: var(--ard-muted); font-size: 0.85rem; text-align: center; padding: 12px; margin: auto 0; }
 
 .ard-workspace-zone {
   flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
-  padding: 10px; background: #11111b; border: 2px dashed #45475a; border-radius: 8px;
+  padding: 10px; background: var(--ard-surface); border: 2px dashed var(--color-outline); border-radius: 12px;
   min-height: 120px;
 }
 .ard-ws-row {
   display: flex; align-items: center; gap: 6px;
+  animation: ard-in .2s ease;
 }
 .ard-idx {
   width: 22px; height: 22px; border-radius: 50%; background: var(--ard-blue);
-  color: white; font-size: 0.75rem; font-weight: bold;
+  color: var(--color-on-primary); font-size: 0.75rem; font-weight: 700;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .ard-ws-block { flex: 1; }
 .ard-ws-controls { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
 .ard-arrow-btn, .ard-remove-btn {
-  background: #45475a; color: white; border: none; border-radius: 4px;
+  background: var(--color-surface-container-high); color: var(--ard-text); border: none; border-radius: 6px;
   width: 24px; height: 22px; font-size: 0.75rem; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.15s;
 }
-.ard-arrow-btn:hover { background: #585b70; }
+.ard-arrow-btn:hover { background: var(--color-surface-container-highest); }
 .ard-arrow-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.ard-remove-btn { background: #990000; }
-.ard-remove-btn:hover { background: #cc0000; }
+.ard-remove-btn { background: var(--color-error-container); color: var(--color-on-error-container); }
+.ard-remove-btn:hover { background: var(--color-error); color: var(--color-on-error); }
 
 .ard-ejecutar-btn {
-  margin-top: 12px; padding: 12px 20px; border: none; border-radius: 8px;
-  font-size: 1rem; font-weight: bold; color: white;
-  background: #45475a; cursor: not-allowed; transition: all 0.3s;
+  margin-top: 12px; padding: 12px 20px; border: none; border-radius: 12px;
+  font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600; color: var(--ard-muted);
+  background: var(--color-surface-container-high); cursor: not-allowed; transition: all 0.2s;
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-.ard-ejecutar-btn.ready { background: var(--ard-blue); cursor: pointer; }
-.ard-ejecutar-btn.ready:hover { background: #00b3b8; }
+.ard-ejecutar-btn.ready { background: var(--ard-blue); color: var(--color-on-primary); cursor: pointer; }
+.ard-ejecutar-btn.ready:hover { transform: translateY(-1px); box-shadow: 0 6px 18px color-mix(in srgb, var(--ard-blue) 30%, transparent); }
 
-.ard-empty-msg { color: #585b70; text-align: center; padding: 20px; font-style: italic; }
+.ard-empty-msg { color: var(--color-secondary); text-align: center; padding: 20px; font-weight: 600; }
 
 .ard-hardware { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: auto 0; }
-.ard-component { padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 0.85rem; }
-.ard-arduino { background: #005f60; border: 3px solid var(--ard-blue); width: 160px; color: white; }
-.ard-sensor { background: #45475a; border: 2px solid #bac2de; width: 80%; }
+.ard-component { padding: 10px; border-radius: 12px; font-weight: 600; text-align: center; font-size: 0.85rem; }
+/* Placa y LEDs: ilustración de hardware con sus colores reales */
+.ard-arduino { background: #00727a; border: 2px solid #00979d; width: 160px; color: #fff; }
+.ard-sensor { background: var(--ard-surface); border: 1px solid var(--ard-border); color: var(--ard-text); width: 80%; }
 .ard-leds { display: flex; gap: 15px; }
-.ard-led { width: 80px; color: white; opacity: 0.4; text-shadow: 1px 1px 2px black; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 0.85rem; }
-.ard-led-red { background: #990000; border: 2px solid #ff4d4d; }
-.ard-led-green { background: #006600; border: 2px solid #4dff4d; }
-.ard-led-red.active { opacity: 1; background: #ff0000; box-shadow: 0 0 15px #ff0000; }
-.ard-led-green.active { opacity: 1; background: #00ff00; box-shadow: 0 0 15px #00ff00; }
+.ard-led { width: 80px; color: #fff; opacity: 0.4; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); padding: 10px; border-radius: 12px; font-weight: 600; text-align: center; font-size: 0.85rem; transition: all .3s; }
+.ard-led-red { background: #8a1c1c; border: 2px solid #e04848; }
+.ard-led-green { background: #1c6a2c; border: 2px solid #4fc46a; }
+.ard-led-red.active { opacity: 1; background: #e53935; box-shadow: 0 0 18px #e53935; }
+.ard-led-green.active { opacity: 1; background: #34c759; box-shadow: 0 0 18px #34c759; }
+
+.ard-temp-hot { color: var(--color-error); font-weight: 700; }
+.ard-temp-ok { color: var(--color-secondary); font-weight: 700; }
 
 .ard-slider { width: 100%; margin-top: 5px; accent-color: var(--ard-blue); }
 
 .ard-serial {
-  background: #11111b; border-radius: 6px; height: 100px; padding: 8px;
-  font-family: monospace; overflow-y: auto; color: #a6e3a1; font-size: 0.8rem;
+  background: var(--ard-screen); border-radius: 10px; height: 100px; padding: 8px 10px;
+  font-family: var(--font-mono); overflow-y: auto; color: var(--ard-screen-text); font-size: 0.8rem;
   border: 1px solid var(--ard-border); margin-top: 5px;
 }
 .ard-btn {
-  margin-top: 12px; background: var(--ard-border); color: white; border: none; padding: 10px 16px;
-  font-size: 0.9rem; font-weight: bold; border-radius: 8px; cursor: not-allowed; width: 100%; transition: all .3s;
+  margin-top: 12px; background: var(--color-surface-container-high); color: var(--ard-muted); border: none; padding: 10px 16px;
+  font-family: var(--font-sans); font-size: 0.9rem; font-weight: 600; border-radius: 12px; cursor: not-allowed; width: 100%; transition: all .2s;
 }
-.ard-btn.ready { background: var(--ard-blue); cursor: pointer; }
-.ard-btn.ready:hover { background: #00b3b8; }
-.ard-btn.stop { background: #f38ba8; cursor: pointer; }
-.ard-btn.stop:hover { background: #e06c88; }
+.ard-btn.ready { background: var(--ard-blue); color: var(--color-on-primary); cursor: pointer; }
+.ard-btn.ready:hover { transform: translateY(-1px); box-shadow: 0 6px 18px color-mix(in srgb, var(--ard-blue) 30%, transparent); }
+.ard-btn.stop { background: var(--color-error); color: var(--color-on-error); cursor: pointer; }
+.ard-btn.stop:hover { filter: brightness(1.08); }
 
-.ard-title-section { margin: 5px 0; color: #a6adc8; font-size: 0.85rem; font-weight: 600; }
+.ard-title-section { margin: 5px 0; color: var(--ard-muted); font-size: 0.8rem; font-weight: 600; }

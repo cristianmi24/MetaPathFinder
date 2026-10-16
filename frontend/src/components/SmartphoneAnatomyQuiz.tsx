@@ -1,17 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useThemedSrcDoc } from '../lib/iframeTheme';
+import { type OnValidation, useIframeValidation, IFRAME_ACTIVITY_SCRIPT } from '../lib/boardValidation';
 
-export function SmartphoneAnatomyQuiz({ challengeId, onValidation }: { challengeId?: string; onValidation?: (success: boolean) => void }) {
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'QUIZ_SUCCESS') {
-        onValidation?.(true);
-      } else if (event.data?.type === 'QUIZ_FAIL') {
-        onValidation?.(false);
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [onValidation]);
+export function SmartphoneAnatomyQuiz({ challengeId, onValidation }: { challengeId?: string; onValidation?: OnValidation }) {
+  useIframeValidation(onValidation);
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -20,28 +12,31 @@ export function SmartphoneAnatomyQuiz({ challengeId, onValidation }: { challenge
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Partes del Celular — Diagnóstico</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f5f3ee;
-  --white: #ffffff;
-  --ink: #111118;
-  --muted: #888894;
-  --border: #e2dfd8;
-  --accent: #1a56db;
-  --accent2: #0e3fa8;
-  --green: #1a9e5c;
-  --red: #d63b3b;
-  --yellow: #f5a623;
+  --bg: var(--color-surface-container-low);
+  --white: var(--color-surface-container-lowest);
+  --ink: var(--color-on-surface);
+  --muted: var(--color-on-surface-variant);
+  --border: var(--color-outline-variant);
+  --accent: var(--color-primary);
+  --accent-soft: var(--color-primary-container);
+  --green: var(--color-secondary);
+  --red: var(--color-error);
+  --yellow: var(--color-warning);
   --radius: 20px;
-  --shadow: 0 4px 32px rgba(0,0,0,0.09);
+  --shadow: 0 4px 28px color-mix(in srgb, var(--color-on-surface) 8%, transparent);
+  /* tonos por parte del celular: se mezclan con la superficie para funcionar en claro y oscuro */
+  --hue-blue: #3b6fd8; --hue-purple: #7c5cc4; --hue-green: #3f8a5c; --hue-orange: #c26a2e;
+  --hue-pink: #b8507f; --hue-cyan: #2d8597; --hue-red: #b84a3e;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--color-surface);
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -57,8 +52,9 @@ body::after {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
-  opacity: 0.4;
+  opacity: 0.25;
 }
+.dark body::after { opacity: 0.08; }
 
 .app {
   width: 100%;
@@ -162,8 +158,8 @@ body::after {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #eef2ff;
-  border: 1px solid #c7d2fe;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   color: var(--accent);
   border-radius: 99px;
   padding: 5px 14px;
@@ -188,7 +184,7 @@ body::after {
 .intro-desc {
   font-size: 0.96rem;
   line-height: 1.75;
-  color: #444;
+  color: var(--muted);
   margin-bottom: 28px;
 }
 
@@ -270,7 +266,7 @@ body::after {
 .part-body {
   font-size: 0.95rem;
   line-height: 1.8;
-  color: #333;
+  color: var(--ink);
 }
 
 .part-body strong { color: var(--ink); }
@@ -278,11 +274,11 @@ body::after {
 .part-fun-fact {
   margin-top: 20px;
   padding: 14px 16px;
-  background: #f0f4ff;
+  background: color-mix(in srgb, var(--accent-soft) 55%, transparent);
   border-left: 3px solid var(--accent);
   border-radius: 0 10px 10px 0;
   font-size: 0.85rem;
-  color: #334;
+  color: var(--ink);
   line-height: 1.6;
 }
 
@@ -293,9 +289,9 @@ body::after {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #fff7ed;
-  border: 1px solid #fcd9a0;
-  color: var(--yellow);
+  background: var(--color-warning-container);
+  border: 1px solid color-mix(in srgb, var(--yellow) 35%, transparent);
+  color: var(--color-on-warning-container);
   border-radius: 99px;
   padding: 5px 14px;
   font-size: 11px;
@@ -343,13 +339,13 @@ body::after {
 
 .opt:hover:not(.disabled) {
   border-color: var(--accent);
-  background: #eef2ff;
+  background: var(--accent-soft);
   transform: translateX(4px);
 }
 
-.opt.selected { border-color: var(--accent); background: #eef2ff; }
-.opt.correct  { border-color: var(--green);  background: #ecfdf5; color: #1a5c3a; }
-.opt.wrong    { border-color: var(--red);    background: #fef2f2; color: #7f1d1d; }
+.opt.selected { border-color: var(--accent); background: var(--accent-soft); }
+.opt.correct  { border-color: var(--green);  background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
+.opt.wrong    { border-color: var(--red);    background: var(--color-error-container); color: var(--color-on-error-container); }
 .opt.disabled { cursor: default; }
 
 .opt-letter {
@@ -364,9 +360,9 @@ body::after {
   transition: background 0.2s, color 0.2s;
 }
 
-.opt.selected .opt-letter { background: var(--accent); color: #fff; }
-.opt.correct  .opt-letter { background: var(--green);  color: #fff; }
-.opt.wrong    .opt-letter { background: var(--red);    color: #fff; }
+.opt.selected .opt-letter { background: var(--accent); color: var(--color-on-primary); }
+.opt.correct  .opt-letter { background: var(--green);  color: var(--color-on-secondary); }
+.opt.wrong    .opt-letter { background: var(--red);    color: var(--color-on-error); }
 
 /* feedback inline */
 .inline-feedback {
@@ -380,8 +376,8 @@ body::after {
 }
 
 .inline-feedback.show { display: block; }
-.inline-feedback.ok   { background: #ecfdf5; border-left: 3px solid var(--green); color: #1a5c3a; }
-.inline-feedback.fail { background: #fef2f2; border-left: 3px solid var(--red);   color: #7f1d1d; }
+.inline-feedback.ok   { background: var(--color-secondary-container); border-left: 3px solid var(--green); color: var(--color-on-secondary-container); }
+.inline-feedback.fail { background: var(--color-error-container); border-left: 3px solid var(--red);   color: var(--color-on-error-container); }
 
 @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
@@ -429,7 +425,7 @@ body::after {
 
 .result-msg {
   font-size: 0.92rem;
-  color: #555;
+  color: var(--muted);
   line-height: 1.7;
   margin-bottom: 24px;
 }
@@ -473,17 +469,18 @@ body::after {
   transition: transform 0.15s, box-shadow 0.15s;
 }
 
-.btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 25%, transparent); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn:active { transform: translateY(0); }
 
 .btn-primary {
-  background: var(--ink);
-  color: var(--white);
+  background: var(--accent);
+  color: var(--color-on-primary);
 }
 
 .btn-accent {
   background: var(--accent);
-  color: var(--white);
+  color: var(--color-on-primary);
 }
 
 .btn-outline {
@@ -503,21 +500,21 @@ body::after {
 }
 
 /* part colors */
-.color-blue   { background: #dbeafe; }
-.color-purple { background: #ede9fe; }
-.color-green  { background: #dcfce7; }
-.color-orange { background: #ffedd5; }
-.color-pink   { background: #fce7f3; }
-.color-cyan   { background: #cffafe; }
-.color-red    { background: #fee2e2; }
+.color-blue   { background: color-mix(in srgb, var(--hue-blue) 16%, var(--white)); }
+.color-purple { background: color-mix(in srgb, var(--hue-purple) 16%, var(--white)); }
+.color-green  { background: color-mix(in srgb, var(--hue-green) 16%, var(--white)); }
+.color-orange { background: color-mix(in srgb, var(--hue-orange) 16%, var(--white)); }
+.color-pink   { background: color-mix(in srgb, var(--hue-pink) 16%, var(--white)); }
+.color-cyan   { background: color-mix(in srgb, var(--hue-cyan) 16%, var(--white)); }
+.color-red    { background: color-mix(in srgb, var(--hue-red) 16%, var(--white)); }
 
-.tc-blue   { color: #1d4ed8; }
-.tc-purple { color: #7c3aed; }
-.tc-green  { color: #15803d; }
-.tc-orange { color: #c2410c; }
-.tc-pink   { color: #be185d; }
-.tc-cyan   { color: #0e7490; }
-.tc-red    { color: #b91c1c; }
+.tc-blue   { color: color-mix(in srgb, var(--hue-blue) 75%, var(--ink)); }
+.tc-purple { color: color-mix(in srgb, var(--hue-purple) 75%, var(--ink)); }
+.tc-green  { color: color-mix(in srgb, var(--hue-green) 75%, var(--ink)); }
+.tc-orange { color: color-mix(in srgb, var(--hue-orange) 75%, var(--ink)); }
+.tc-pink   { color: color-mix(in srgb, var(--hue-pink) 75%, var(--ink)); }
+.tc-cyan   { color: color-mix(in srgb, var(--hue-cyan) 75%, var(--ink)); }
+.tc-red    { color: color-mix(in srgb, var(--hue-red) 75%, var(--ink)); }
 </style>
 </head>
 <body>
@@ -659,15 +656,15 @@ function setCard(html) {
 function showIntro() {
   setCard(\`
     <svg class="phone-svg" width="100" height="160" viewBox="0 0 100 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="5" y="5" width="90" height="150" rx="16" fill="#111118"/>
-      <rect x="10" y="18" width="80" height="118" rx="8" fill="#1a56db" opacity=".15"/>
-      <rect x="10" y="18" width="80" height="118" rx="8" fill="none" stroke="#1a56db" stroke-width="1"/>
-      <circle cx="50" cy="9" r="4" fill="#333"/>
-      <circle cx="50" cy="145" r="6" fill="#333"/>
-      <rect x="25" y="38" width="50" height="7" rx="3.5" fill="#1a56db" opacity=".5"/>
-      <rect x="30" y="52" width="40" height="5" rx="2.5" fill="#e2dfd8" opacity=".4"/>
-      <rect x="18" y="70" width="64" height="40" rx="8" fill="#1a56db" opacity=".1" stroke="#1a56db" stroke-width="1"/>
-      <text x="50" y="95" font-family="monospace" font-size="20" fill="#1a56db" text-anchor="middle">📱</text>
+      <rect x="5" y="5" width="90" height="150" rx="16" style="fill:var(--color-inverse-surface)"/>
+      <rect x="10" y="18" width="80" height="118" rx="8" style="fill:var(--color-inverse-primary)" opacity=".25"/>
+      <rect x="10" y="18" width="80" height="118" rx="8" fill="none" style="stroke:var(--color-inverse-primary)" stroke-width="1"/>
+      <circle cx="50" cy="9" r="4" style="fill:var(--color-outline)"/>
+      <circle cx="50" cy="145" r="6" style="fill:var(--color-outline)"/>
+      <rect x="25" y="38" width="50" height="7" rx="3.5" style="fill:var(--color-inverse-primary)" opacity=".6"/>
+      <rect x="30" y="52" width="40" height="5" rx="2.5" style="fill:var(--color-inverse-on-surface)" opacity=".4"/>
+      <rect x="18" y="70" width="64" height="40" rx="8" style="fill:var(--color-inverse-primary);stroke:var(--color-inverse-primary)" fill-opacity=".12" stroke-width="1"/>
+      <text x="50" y="97" font-size="20" text-anchor="middle">📱</text>
     </svg>
     <div class="intro-badge">📚 Diagnóstico interactivo</div>
     <div class="intro-title">Partes del<br><span>Celular</span></div>
@@ -779,9 +776,9 @@ function showResult() {
 
   // Notificar al entorno de React
   if (score === QUESTIONS.length) {
-    window.parent.postMessage({ type: 'QUIZ_SUCCESS' }, '*');
+    window.parent.postMessage({ type: 'QUIZ_SUCCESS', attempt: true, answer: qAnswers.slice() }, '*');
   } else {
-    window.parent.postMessage({ type: 'QUIZ_FAIL' }, '*');
+    window.parent.postMessage({ type: 'QUIZ_FAIL', attempt: true, answer: qAnswers.slice() }, '*');
   }
 }
 
@@ -833,14 +830,18 @@ buildTrack();
 updateTrack();
 showIntro();
 </script>
+${IFRAME_ACTIVITY_SCRIPT}
 </body>
 </html>
   `;
 
+  const { ref, srcDoc } = useThemedSrcDoc(htmlContent);
+
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: '620px', borderRadius: '0 0 2rem 2rem', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div className="flex h-full min-h-[620px] w-full flex-1 flex-col overflow-hidden rounded-b-2xl bg-surface">
       <iframe 
-        srcDoc={htmlContent} 
+        ref={ref}
+        srcDoc={srcDoc} 
         style={{ width: '100%', height: '100%', flex: 1, border: 'none' }} 
         title="Partes del Celular"
       />

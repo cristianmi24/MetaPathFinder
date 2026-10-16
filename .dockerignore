@@ -14,3 +14,16 @@ preguntas fases/
 dist/
 .DS_Store
 *.log
+
+# Solo lo necesario para ejecutar: fuera pruebas, documentación, vistas previas y herramientas locales
+.claude/
+docs/
+scripts/
+backend-python/tests/
+backend-python/.pytest_cache/
+frontend/tests/
+frontend/board-preview.html
+frontend/src/__preview/
+**/tsconfig.tsbuildinfo
+docker-compose.yml
+Dockerfile

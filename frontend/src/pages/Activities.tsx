@@ -35,6 +35,7 @@ import { DigitalIdentityBoard } from '../components/DigitalIdentityBoard';
 import { ArduinoHuertaBoard } from '../components/ArduinoHuertaBoard';
 import { SandwichAlgorithm } from '../components/SandwichAlgorithm';
 import LibraryPseudocode from '../components/LibraryPseudocode';
+import type { OnValidation, ValidationOpts } from '../lib/boardValidation';
 
 // Mapeo detallado de cada reto con su componente React real y su gameplay conceptual
 const componentInfo: Record<string, { name: string; type: string; desc: string }> = {
@@ -109,7 +110,7 @@ const compMeta: Record<string, { color: string; bg: string; icon: any }> = {
 };
 
 // Generar dinámicamente la instancia del componente React real
-const getLiveComponent = (id: string, onValidation: () => void): React.ReactNode => {
+const getLiveComponent = (id: string, onValidation: OnValidation): React.ReactNode => {
   switch (id) {
     // Nivel Básico (RB)
     case 'RB-C1-N1': return <TimelineGame onValidation={onValidation} />;
@@ -211,9 +212,11 @@ export function Activities() {
     setSimCompleted(false);
   };
 
-  const handleValidation = () => {
-    console.log('🎉 Simulación completada correctamente por el administrador.');
-    setSimCompleted(true);
+  // La vista previa solo se marca como completada cuando el tablero entero queda aprobado:
+  // los fallos y los aciertos parciales (una pregunta, un paso) no la cierran.
+  const handleValidation = (success: boolean, opts?: ValidationOpts) => {
+    if (opts?.partial) return;
+    setSimCompleted(success);
   };
 
   const restartSimulation = () => {

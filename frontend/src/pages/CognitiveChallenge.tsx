@@ -46,8 +46,10 @@ import { ReplanModal, type ReplanChoice } from '../components/tutor/ReplanModal'
 import { CertaintyPrompt, certaintyContrast } from '../components/tutor/CertaintyPrompt';
 import { getTutorHint3 } from '../data/tutorHints';
 import { useTutorStore } from '../stores/useTutorStore';
-import { blockingProbability, scaffoldLevel, longPauseThreshold, SCAFFOLD_INFO, type BlockingSignals } from '../lib/tutorEngine';
+import { blockingProbability, scaffoldLevel, longPauseThreshold, recordFinishedPause, SCAFFOLD_INFO, type BlockingSignals } from '../lib/tutorEngine';
 import { api } from '../services/api';
+import { ATTEMPT, answerDelta, compactAnswer, isTrialAndError, type BoardAnswer, type ValidationOpts } from '../lib/boardValidation';
+import { AttemptConfidence } from '../components/tutor/AttemptConfidence';
 import { v4 as uuidv4 } from 'uuid';
 
 import './CognitiveChallenge.css';
@@ -219,42 +221,136 @@ export function CognitiveChallenge() {
   errCountRef.current = errCount;
   runsRef.current = totalRuns;
   clickCountRef.current = clickCount;
-  const lastBoardValidationRef = useRef<boolean | null>(null);
+  // Último reporte de estado: los tableros que reportan en cada cambio (ensayos, orden tras
+  // arrastrar) repiten el mismo valor; solo importa cuando pasa de aprobado a no aprobado o al revés.
+  const lastStateReportRef = useRef<boolean | null>(null);
+  // Contadores síncronos de intentos: dos verificaciones en el mismo tick no se pierden.
+  const attemptStatsRef = useRef({ runs: 0, errors: 0 });
+
+  // --- Captura por intento (respuesta, cambio, confianza y ayuda) ---
+  // Última respuesta por ítem (la pregunta en los intentos parciales; '·' para el tablero entero).
+  const lastAnswerRef = useRef(new Map<string, BoardAnswer>());
+  const lastStateAnswerRef = useRef<BoardAnswer | undefined>(undefined);
+  const lastFeedbackAtRef = useRef<number | null>(null);
+  type AttemptLog = { t: number; correct: boolean; partial: boolean; confidence: number | null; delta: number | null;
+    secs_since_feedback: number | null; trial_and_error: boolean };
+  type HintLog = { t: number; level: HintLevel; auto: boolean; visible_ms: number; next_delta: number | null; next_changed: boolean | null };
+  const attemptLogRef = useRef<AttemptLog[]>([]);
+  const hintLogRef = useRef<HintLog[]>([]);
+  const editsSinceRunRef = useRef(0);
+  // Confianza por intento, por muestreo: tras un intento sin pregunta se pregunta con p = 0,5
+  // y nunca dos seguidos → tasa estacionaria p / (1 + p) = 1/3 de los intentos.
+  const confidenceRef = useRef<{ asked: boolean; value: number | null }>({ asked: Math.random() < 0.5, value: null });
+  const [confidenceAsk, setConfidenceAsk] = useState(confidenceRef.current.asked);
+  const [confidenceValue, setConfidenceValue] = useState<number | null>(null);
+  const [confidenceDismissed, setConfidenceDismissed] = useState(false);
 
   // Callback estable: los tableros hijos lo usan en useEffect y no debe cambiar cada tick.
-  const handleBoardValidation = useCallback((success: boolean, customMessage?: string) => {
-    if (lastBoardValidationRef.current === success) return;
-    lastBoardValidationRef.current = success;
+  // Contrato (lib/boardValidation): solo los intentos explícitos cuentan como run o error.
+  const handleBoardValidation = useCallback((success: boolean, opts?: ValidationOpts, customMessage?: string) => {
+    const showDone = () => setConsoleMessages([{
+      type: 'ok',
+      text: customMessage || '> ¡Lo lograste! La actividad quedó completa. Revisa los criterios y envía cuando quieras.'
+    }]);
 
-    setBoardSuccess(success);
-    setTotalRuns(prev => prev + 1);
+    if (!opts?.attempt) {
+      // Trayectoria de la respuesta en tableros sin botón de verificar (arrastrar y soltar):
+      // no cuenta como intento, pero deja ver cuánto cambia entre movimientos.
+      const answer = compactAnswer(opts?.answer);
+      if (answer !== undefined && answerDelta(lastStateAnswerRef.current, answer) !== 0) {
+        addEvent('BOARD_STATE', { challengeId: challenge.id, correct: success, answer,
+          delta: answerDelta(lastStateAnswerRef.current, answer), t_seconds: secondsRef.current });
+        lastStateAnswerRef.current = answer;
+      }
+      if (lastStateReportRef.current === success) return;
+      lastStateReportRef.current = success;
+      setBoardSuccess(success);
+      if (success) showDone();
+      return;
+    }
+
+    const stats = attemptStatsRef.current;
+    stats.runs += 1;
+    if (!success) stats.errors += 1;
+    setTotalRuns(stats.runs);
+    setErrCount(stats.errors);
     // Latencia entre verificaciones: alimenta el freno metacognitivo personalizado.
     const now = Date.now();
-    pushLatency((now - tutorMeta.current.lastValidationAt) / 1000);
+    const latency = (now - tutorMeta.current.lastValidationAt) / 1000;
+    pushLatency(latency);
     tutorMeta.current.lastValidationAt = now;
     setEditsSinceRun(0);
+    const editsBefore = editsSinceRunRef.current;
+    editsSinceRunRef.current = 0;
+
+    // Cuánto cambió la respuesta frente al intento anterior del mismo ítem y cuánto esperó tras el resultado.
+    const itemKey = opts.item !== undefined ? String(opts.item) : '·';
+    const answer = compactAnswer(opts.answer);
+    const delta = answerDelta(lastAnswerRef.current.get(itemKey), answer);
+    if (answer !== undefined) lastAnswerRef.current.set(itemKey, answer);
+    const secsSinceFeedback = lastFeedbackAtRef.current === null ? null : Number(((now - lastFeedbackAtRef.current) / 1000).toFixed(1));
+    lastFeedbackAtRef.current = now;
+    const trialAndError = isTrialAndError(delta, secsSinceFeedback);
+
+    // Confianza de este intento (si tocaba preguntarla) y sorteo del siguiente.
+    const conf = confidenceRef.current;
+    const confidence = conf.asked ? conf.value : null;
+    const nextAsk = conf.asked ? false : Math.random() < 0.5;
+    confidenceRef.current = { asked: nextAsk, value: null };
+    setConfidenceAsk(nextAsk);
+    setConfidenceValue(null);
+    setConfidenceDismissed(false);
+
+    // Pistas abiertas desde el intento anterior: ¿el intento siguiente cambió algo?
+    const hintsBefore = hintLogRef.current.filter(h => h.next_changed === null);
+    hintsBefore.forEach(h => { h.next_delta = delta; h.next_changed = delta !== null ? delta > 0 : editsBefore > 0; });
+
+    attemptLogRef.current.push({ t: secondsRef.current, correct: success, partial: Boolean(opts.partial), confidence,
+      delta, secs_since_feedback: secsSinceFeedback, trial_and_error: trialAndError });
     if (tutorMeta.current.hintAfterError !== null || tutorMeta.current.autoHintShown) tutorMeta.current.attemptsAfterHint += 1;
 
     if (success) {
-      setConsoleMessages([{
-        type: 'ok',
-        text: customMessage || '> ¡Lo lograste! La actividad quedó completa. Revisa los criterios y envía cuando quieras.'
-      }]);
-      setErrCount(0);
       setConsecutiveErrors(0);
     } else {
-      setErrCount(prev => prev + 1);
       setConsecutiveErrors(prev => prev + 1);
+      // Antes que ATTEMPT: el freno reflexivo mide el tiempo desde el evento anterior.
       addEvent('QUIZ_ANSWER', {
         questionId: challenge.id,
         correct: false,
         timeSpent: secondsRef.current,
         clicks: clickCountRef.current,
-        timestamp: Date.now(),
+        timestamp: now,
         source: 'phase-b-board'
       });
     }
-  }, [addEvent, challenge.id]);
+    // Un evento por verificación (aciertos incluidos): permite reconstruir fallo, fallo, acierto.
+    addEvent('ATTEMPT', {
+      challengeId: challenge.id,
+      correct: success,
+      partial: Boolean(opts.partial),
+      latency_s: Number(latency.toFixed(1)),
+      errors_so_far: stats.errors,
+      run: stats.runs,
+      t_seconds: secondsRef.current,
+      source: 'phase-b-board',
+      item: opts.item ?? null,
+      answer: answer ?? null,
+      delta,
+      secs_since_feedback: secsSinceFeedback,
+      trial_and_error: trialAndError,
+      confidence,
+      confidence_prompted: conf.asked,
+      edits_before: editsBefore,
+      hints_before: hintsBefore.map(h => h.level),
+    });
+
+    // Un intento parcial (una pregunta, un paso) no decide si el tablero quedó completo.
+    if (!opts.partial) {
+      lastStateReportRef.current = success;
+      setBoardSuccess(success);
+      if (success) showDone();
+    }
+  }, [addEvent, challenge.id, pushLatency]);
 
   const componentMap: Record<string, React.ReactNode> = {
     // Nivel Básico (RB)
@@ -310,9 +406,50 @@ export function CognitiveChallenge() {
 
   const handleBoardAreaClick = () => {
     setClickCount(p => p + 1);
-    setEditsSinceRun(c => c + 1);
-    lastEditTime.current = Date.now();
   };
+
+  // Detector único de actividad en el tablero (fase de captura, así ningún tablero lo bloquea).
+  // Toda actividad reinicia la pausa. Cuenta como edición cada pointerdown (también inicia los
+  // arrastres) y cada ráfaga de escritura (teclas separadas por más de 2 s), no cada tecla:
+  // si no, un párrafo bastaría para disparar "ediciones sin éxito".
+  const lastActivityAt = useRef(0);
+  const registerActivity = useCallback((kind: 'pointerdown' | 'keydown' | 'input' | 'dragend' | 'drop') => {
+    const now = Date.now();
+    const sinceLast = now - lastActivityAt.current;
+    lastActivityAt.current = now;
+    // La pausa que acaba de terminar es una muestra del propio ritmo (nunca la pausa en curso).
+    const finishedPause = (now - lastEditTime.current) / 1000;
+    setPauseSamples(prev => recordFinishedPause(prev, finishedPause));
+    lastEditTime.current = now;
+    setPauseSecs(0);
+    const typing = kind === 'keydown' || kind === 'input';
+    if (kind !== 'pointerdown' && !(typing && sinceLast > 2000)) return;
+    setEditCount(c => c + 1);
+    setEditsSinceRun(c => c + 1);
+    editsSinceRunRef.current += 1;
+    if (tutorMeta.current.firstEditAt === null) tutorMeta.current.firstEditAt = secondsRef.current;
+  }, []);
+  const activityProps = {
+    onPointerDownCapture: () => registerActivity('pointerdown'),
+    onKeyDownCapture: () => registerActivity('keydown'),
+    onInputCapture: () => registerActivity('input'),
+    onDragEndCapture: () => registerActivity('dragend'),
+    onDropCapture: () => registerActivity('drop'),
+  };
+
+  // Tableros en <iframe srcDoc>: el HTML interno avisa con postMessage({type:'ACTIVITY'}).
+  // Solo se aceptan mensajes de un iframe que esté dentro del tablero.
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      if (e.data?.type !== 'ACTIVITY') return;
+      const frames = Array.from(boardAreaRef.current?.querySelectorAll('iframe') ?? []);
+      if (!frames.some(f => f.contentWindow === e.source)) return;
+      if (e.data.kind === 'keydown') registerActivity('keydown');
+      else { setClickCount(p => p + 1); registerActivity('pointerdown'); }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [registerActivity]);
 
   // Pistas escalonadas (1 pregunta reflexiva · 2 señalamiento · 3 solución análoga).
   // Cada nivel se habilita tras el anterior. Se registra cuándo se pidió (tras error, antes del 3.er intento).
@@ -328,12 +465,31 @@ export function CognitiveChallenge() {
         tutorMeta.current.hintBeforeThird = totalRuns < 3;
         tutorMeta.current.evidenceBeforeHelp = Object.values(strategyEvidence).some(v => v !== undefined && v !== null && v !== 0 && v !== '' && !(Array.isArray(v) && v.length === 0));
       }
+      hintLogRef.current.push({ t: secondsRef.current, level: n, auto: false, visible_ms: 0, next_delta: null, next_changed: null });
       recordShownResource({ id: `${challenge.id}:hint${n}`, challengeId: challenge.id, level: n, tactic: n === 1 ? 'pregunta_socratica' : n === 2 ? 'senalamiento' : 'solucion_guiada' });
       addEvent('HINT_OPENED', { challengeId: challenge.id, level: n, errCount, runs: totalRuns });
       logIntervention('pista', { level: n, initiator: 'estudiante',
         tactic: n === 1 ? 'Pregunta socrática' : n === 2 ? 'Señalamiento del error' : (alternativeHint?.variant === 'contraejemplo' ? 'Contraejemplo' : 'Analogía cotidiana'),
         detail: n === 1 ? 'Pregunta reflexiva' : n === 2 ? 'Error frecuente del reto' : 'Solución análoga guiada' });
     }
+  };
+
+  // Tiempo que cada pista estuvo a la vista (se suma si se reabre).
+  const hintOpenRef = useRef<{ level: HintLevel; since: number } | null>(null);
+  useEffect(() => {
+    const prev = hintOpenRef.current;
+    if (prev) {
+      const ms = Date.now() - prev.since;
+      const entry = [...hintLogRef.current].reverse().find(h => h.level === prev.level);
+      if (entry) entry.visible_ms += ms;
+      addEvent('HINT_CLOSED', { challengeId: challenge.id, level: prev.level, visible_ms: ms, t_seconds: secondsRef.current });
+    }
+    hintOpenRef.current = activeHint !== null ? { level: activeHint, since: Date.now() } : null;
+  }, [activeHint]);
+
+  const pickConfidence = (value: number) => {
+    confidenceRef.current.value = value;
+    setConfidenceValue(value);
   };
 
   const rateHint = (level: HintLevel, helpful: boolean) => {
@@ -448,10 +604,6 @@ export function CognitiveChallenge() {
   }, [seconds, mandatoryCheckpoints]);
 
   useEffect(() => {
-    if (editCount === 1 && tutorMeta.current.firstEditAt === null) tutorMeta.current.firstEditAt = seconds;
-  }, [editCount, seconds]);
-
-  useEffect(() => {
     if (iframeRef.current) {
       const doc = iframeRef.current.contentDocument;
       if (doc) {
@@ -463,9 +615,6 @@ export function CognitiveChallenge() {
   }, [code]);
 
   const handleRun = () => {
-    const newRuns = totalRuns + 1;
-    setTotalRuns(newRuns);
-    
     // Sistema de Validación por Reto
     let isSuccess = false;
     const cleanCode = code.replace(/\s/g, '');
@@ -499,22 +648,19 @@ export function CognitiveChallenge() {
         isSuccess = code.length > 30; // Validación genérica para otros
     }
 
-    if (isSuccess) {
-      setConsoleMessages(prev => [...prev, { type: 'ok', text: `> Reto completado con éxito. Puedes terminar la fase.` }]);
-      setErrCount(0);
-    } else {
+    // Runs, errores, latencia y evento ATTEMPT se registran igual que en los tableros.
+    handleBoardValidation(isSuccess, ATTEMPT, '> Reto completado con éxito. Puedes terminar la fase.');
+    const newRuns = attemptStatsRef.current.runs;
+    if (!isSuccess) {
       setConsoleMessages(prev => [...prev, { type: 'err', text: `> Buen intento ${newRuns}: aún no cumple. Mira la condición que falta y prueba otra vez.` }]);
-      setErrCount(prev => prev + 1);
-      setConsecutiveErrors(prev => prev + 1);
       if (newRuns >= 2 && !showHint) {
         setShowHint(true);
         setActiveHint(1); // tras 2 intentos fallidos, la pista aparece sola (no cuenta contra la calibración)
         tutorMeta.current.autoHintShown = true;
+        hintLogRef.current.push({ t: secondsRef.current, level: 1, auto: true, visible_ms: 0, next_delta: null, next_changed: null });
         logIntervention('pista_auto', { level: 1, tactic: 'Pregunta socrática', detail: 'Pista 1 automática tras 2 intentos fallidos' });
       }
     }
-    setEditsSinceRun(0);
-    if (isSuccess) setConsecutiveErrors(0);
   };
 
   const handleVerify = () => {
@@ -626,6 +772,9 @@ export function CognitiveChallenge() {
         replan_choice: replanChoice,
         hint_ratings: hintRatings,
         p_block_final: pBlock,
+        // Por intento y por pista (Fase C: Brier por intento, Kalman con cada par, abuso/evitación de la ayuda).
+        attempt_log: attemptLogRef.current,
+        hint_log: hintLogRef.current,
       },
       challengeMeta: { titulo: challenge.titulo, criterios: challenge.criterios },
       tutorPendingEvents: tutorLog.current.filter(e => !e.sent).map(({ sent, ...e }) => e),
@@ -673,10 +822,7 @@ export function CognitiveChallenge() {
     return () => clearInterval(id);
   }, [addEvent, challenge.id]);
 
-  // Muestras de pausa (para el umbral relativo al propio ritmo) y racha de probabilidad alta (N3).
-  useEffect(() => {
-    if (pauseSecs > 0 && pauseSecs % 15 === 0) setPauseSamples(prev => [...prev.slice(-19), pauseSecs]);
-  }, [pauseSecs]);
+  // Racha de probabilidad alta (N3). Las muestras de pausa se toman al terminar cada pausa (registerActivity).
   useEffect(() => {
     setConsecutiveHigh(prev => (pBlock >= 0.7 ? prev + 1 : 0));
   }, [errCount, totalRuns, signals.pausa_larga, signals.ediciones_sin_exito]);
@@ -853,46 +999,49 @@ export function CognitiveChallenge() {
             </>
           )}
           <div className={toolsOpen ? 'hidden' : 'contents'}>
+          {confidenceAsk && !confidenceDismissed && !isChallengeDone && (
+            <AttemptConfidence value={confidenceValue} onPick={pickConfidence} onDismiss={() => setConfidenceDismissed(true)} />
+          )}
           {componentMap[challenge.id] ? (
-            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} {...activityProps} className={boardWrapperClass}>
               {React.cloneElement(componentMap[challenge.id] as any, {
                 challengeId: challenge.id,
-                onValidation: (success: boolean) => handleBoardValidation(success)
+                onValidation: handleBoardValidation
               })}
             </div>
           ) : getBoardType(challenge.id) === 'drag_drop' ? (
-            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} {...activityProps} className={boardWrapperClass}>
               <DragAndDropBoard 
                 challengeId={challenge.id} 
-                onValidation={(success) => handleBoardValidation(success, '> ¡Orden correcto! Reto completado con éxito.')} 
+                onValidation={(success, opts) => handleBoardValidation(success, opts, '> ¡Orden correcto! Reto completado con éxito.')} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'text' ? (
-            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} {...activityProps} className={boardWrapperClass}>
               <EssayBoard 
                 challengeId={challenge.id} 
-                onValidation={(success) => handleBoardValidation(success)} 
+                onValidation={handleBoardValidation} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'canvas' ? (
-            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} {...activityProps} className={boardWrapperClass}>
               <CanvasBoard 
                 challengeId={challenge.id} 
-                onValidation={(success) => handleBoardValidation(success)} 
+                onValidation={handleBoardValidation} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'phone' ? (
-            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} {...activityProps} className={boardWrapperClass}>
               <PhoneDismantlingBoard 
                 challengeId={challenge.id} 
-                onValidation={(success) => handleBoardValidation(success)} 
+                onValidation={handleBoardValidation} 
               />
             </div>
           ) : getBoardType(challenge.id) === 'ide' ? (
-            <div ref={boardAreaRef} onClick={handleBoardAreaClick} className={boardWrapperClass}>
+            <div ref={boardAreaRef} onClick={handleBoardAreaClick} {...activityProps} className={boardWrapperClass}>
               <CodingIDEBoard 
                 challengeId={challenge.id} 
-                onValidation={(success) => handleBoardValidation(success)} 
+                onValidation={handleBoardValidation} 
               />
             </div>
           ) : (
@@ -911,11 +1060,11 @@ export function CognitiveChallenge() {
                 </div>
               </div>
 
-              <div ref={boardAreaRef} onClick={handleBoardAreaClick} className="fb-editor-area">
+              <div ref={boardAreaRef} onClick={handleBoardAreaClick} {...activityProps} className="fb-editor-area">
                 <textarea
                   className="fb-editor-field"
                   value={code}
-                  onChange={(e) => { setCode(e.target.value); setEditCount(c => c+1); setEditsSinceRun(c => c + 1); lastEditTime.current = Date.now(); }}
+                  onChange={(e) => setCode(e.target.value)}
                   spellCheck={false}
                   placeholder="# Desarrolla tu código aquí..."
                 />
@@ -1066,6 +1215,14 @@ export function CognitiveChallenge() {
             isDone={isChallengeDone}
             pendingCriteriaTexts={pendingCriteriaTexts}
             peerRecommendation={peerRecommendation}
+            alertsBlocked={replanOpen || certaintyOpen || showResultModal || activeHint !== null || isActivityTourOpen}
+            onAlertDismissed={(info) => addEvent('ALERT_DISMISSED', { challengeId: challenge.id, ...info, t_seconds: secondsRef.current })}
+            onAffect={(affect) => addEvent('AFFECT_REPORT', {
+              // Autoinforme con el estado del modelo de bloqueo en ese instante: permite validar p_block después.
+              challengeId: challenge.id, affect, source: 'checkpoint', p_block: Number(pBlock.toFixed(3)), scaffold,
+              signals, consecutive_errors: consecutiveErrors, pause_secs: pauseSecs, edits_since_run: editsSinceRun,
+              runs: totalRuns, err_count: errCount, hints: hintCount, t_seconds: secondsRef.current,
+            })}
           />
 
           <div className="fb-checkpoint">

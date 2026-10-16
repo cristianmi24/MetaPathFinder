@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import './SqlBlockBoard.css';
+import { type OnValidation, ATTEMPT, PARTIAL_ATTEMPT, attempt } from '../lib/boardValidation';
 
 interface FieldTagProps {
   val: string;
@@ -94,7 +95,7 @@ const CHALLENGES = [
 
 interface SqlBlockBoardProps {
   challengeId: string;
-  onValidation: (success: boolean) => void;
+  onValidation: OnValidation;
 }
 
 interface Result {
@@ -249,25 +250,27 @@ export function SqlBlockBoard({ challengeId, onValidation }: SqlBlockBoardProps)
     if (phase === 0) {
       setResult({ type:'ok', msg:'✓ Tablas creadas exitosamente: Proveedores, Productos, Ventas.' });
       setPhaseDone(prev => { const next = [...prev]; next[0] = true; return next; });
+      onValidation(true, PARTIAL_ATTEMPT);
       setTimeout(() => { setPhase(1); setBlocks([]); setResult(null); }, 1500);
     } else if (phase === 1) {
       setResult({ type:'ok', msg:'✓ 10 registros insertados en cada tabla.' });
       setPhaseDone(prev => { const next = [...prev]; next[1] = true; return next; });
+      onValidation(true, PARTIAL_ATTEMPT);
       setTimeout(() => { setPhase(2); setBlocks([]); setResult(null); }, 1500);
     } else {
       const sql = genSQL(blocks);
       if (!sql) {
         setResult({ type:'err', msg:'Arma una consulta con los bloques primero.' });
-        onValidation(false); // Intento fallido
+        onValidation(false, ATTEMPT); // Intento fallido
         return;
       }
       const res = execSQL(sql);
       setResult(res);
       if (res.type !== 'err') {
         setPhaseDone(prev => { const next = [...prev]; next[2] = true; return next; });
-        setTimeout(() => { setCompleted(true); onValidation(true); }, 1500); // Éxito final
+        setTimeout(() => { setCompleted(true); onValidation(true, attempt(blocks.map(b => b.type))); }, 1500); // Éxito final
       } else {
-        onValidation(false); // Intento fallido
+        onValidation(false, attempt(blocks.map(b => b.type))); // Intento fallido
       }
     }
   }, [phase, blocks, genSQL, execSQL, onValidation]);
@@ -598,7 +601,7 @@ INSERT INTO Ventas VALUES (1,1,3,10500,'2025-05-17','Juan Pérez'),...;`)}
               ) : (
                 <>
                   <div className="sqlb-rhead">
-                    <span style={{fontSize:12,color:'#b8b0f0'}}><i className="ti ti-table" style={{fontSize:13}} /> {result.rows?.length || 0} fila(s){result.ms ? ` · ${result.ms}ms` : ''}</span>
+                    <span style={{fontSize:12,color:'var(--sqlb-primary)'}}><i className="ti ti-table" style={{fontSize:13}} /> {result.rows?.length || 0} fila(s){result.ms ? ` · ${result.ms}ms` : ''}</span>
                   </div>
                   <div className="sqlb-rscroll">
                     <table>
@@ -629,8 +632,13 @@ INSERT INTO Ventas VALUES (1,1,3,10500,'2025-05-17','Juan Pérez'),...;`)}
   );
 }
 
-function highlightSQL(sql: string): string {
-  let s = sql;
+/** Resalta el SQL; se escapa el texto antes de insertar las etiquetas de color. */
+function highlightSQL(sql: string) {
+  return <span dangerouslySetInnerHTML={{ __html: highlightSQLHtml(sql) }} />;
+}
+
+function highlightSQLHtml(sql: string): string {
+  let s = sql.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const keywords = ['SELECT','FROM','WHERE','JOIN','ON','GROUP BY','ORDER BY','LIMIT','HAVING','AND','OR','AS','ASC','DESC','LIKE','INSERT INTO','VALUES','CREATE TABLE','INTEGER','PRIMARY KEY','FOREIGN KEY','REFERENCES','REAL','TEXT'];
   keywords.forEach(kw => {
     const re = new RegExp('\\b' + kw.replace(/ /g,'\\s+') + '\\b', 'gi');

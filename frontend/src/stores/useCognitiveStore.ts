@@ -493,6 +493,8 @@ export const useCognitiveStore = create<CognitiveStore>()(
     {
       name: 'meta-pathfinder-storage',
       storage: createJSONStorage(() => localStorage),
+      // El freno es momentáneo: si se guardara, reaparecería al recargar en cualquier pantalla (incluido el login).
+      partialize: ({ isReflexiveBrakeActive: _active, brakeMessage: _message, ...rest }) => rest,
     }
   )
 );

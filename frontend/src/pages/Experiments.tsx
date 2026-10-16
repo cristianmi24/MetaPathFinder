@@ -32,7 +32,7 @@ export function Experiments() {
             Evaluación en tiempo real de estructuras de prompts socráticos vs configuraciones base en tareas de razonamiento.
           </p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-3">
           <button className="px-6 py-3 glass rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-surface-container-high transition-colors">
             <StopCircle className="w-4 h-4" /> Detener Proceso
           </button>
@@ -81,7 +81,7 @@ export function Experiments() {
           </div>
 
           <div className="bento-card p-8">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-wrap justify-between items-center gap-3 mb-8">
               <h3 className="text-2xl font-semibold">Rendimiento por Categoría</h3>
               <div className="flex gap-4">
                 <div className="flex items-center gap-2 text-xs font-bold text-on-surface-variant">

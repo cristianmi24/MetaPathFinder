@@ -28,12 +28,13 @@ COPY backend-python/requirements.txt /tmp/requirements.txt
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --retries 10 --timeout 120 -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
-# Node backend
+# Node backend: solo las dependencias del workspace backend (Express + tsx), sin las del
+# frontend (ya compilado) ni las de la raíz. frontend/package.json hace falta para el lockfile.
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY backend/package.json backend/tsconfig.json ./backend/
 COPY frontend/package.json ./frontend/
-RUN npm ci
+RUN npm ci -w backend --include-workspace-root=false && npm cache clean --force
 COPY backend/ ./backend/
 
 # Frontend compilado (Express lo sirve como estático)

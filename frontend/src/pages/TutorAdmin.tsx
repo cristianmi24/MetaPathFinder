@@ -234,7 +234,7 @@ function ActivityCard({ a, defaultOpen }: { a: TutorAdminActivity; defaultOpen: 
             ))}
           </div>
           <Timeline activity={a} />
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 [&>*]:min-w-0">
             <div className="rounded-xl bg-surface-container p-4 text-sm">
               <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Plan del tutor (Fase A)</div>
               <p><b>Estrategia:</b> {strategy?.nombre ?? '—'} {a.plan?.strategy?.method && <span className="text-on-surface-variant">({a.plan.strategy.method === 'thompson' ? 'muestreo de Thompson' : 'al azar · grupo control'})</span>}</p>
@@ -298,7 +298,7 @@ function StudentDetail({ id, onBack }: { id: string; onBack: () => void }) {
         <Kpi icon={Hand} label="Decisiones propias" value={summary.overrides} hint="Rechazó una sugerencia del tutor" tone="bg-violet-500/15 text-violet-700 dark:text-violet-300" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3 [&>*]:min-w-0">
         <Card title="Modelo del estudiante" subtitle="Lo que el tutor sabe hoy">
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between gap-3"><dt className="text-on-surface-variant">ZDP metacognitiva</dt><dd><ZdpPill zdp={tutor.zdp.zdp} /></dd></div>
@@ -416,7 +416,7 @@ function Overview({ onOpen }: { onOpen: (id: string) => void }) {
         <Kpi icon={Users} label="Decisiones propias" value={s.overrides} hint="Sugerencias rechazadas" tone="bg-pink-500/15 text-pink-700 dark:text-pink-300" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3 [&>*]:min-w-0">
         <Card title="Intervenciones por tipo" subtitle="Toda la clase" className="lg:col-span-2">
           {s.interventions === 0 ? (
             <p className="py-10 text-center text-sm text-on-surface-variant">Aún no hay intervenciones registradas.</p>
@@ -516,7 +516,7 @@ function Overview({ onOpen }: { onOpen: (id: string) => void }) {
         )}
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-5">
+      <div className="grid gap-6 lg:grid-cols-5 [&>*]:min-w-0">
         <Card title="Por actividad (reto)" subtitle="Dónde interviene más el tutor y si la ayuda se traduce en superar el reto" className="lg:col-span-3">
           <div className="overflow-x-auto">
             <table className="ta-table">

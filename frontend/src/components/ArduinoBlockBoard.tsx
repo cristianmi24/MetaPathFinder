@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import './ArduinoBlockBoard.css';
+import { type OnValidation, attempt } from '../lib/boardValidation';
 
 interface BlockDef {
   id: string;
@@ -27,7 +28,7 @@ const typeLabel: Record<string, string> = {
 
 interface ArduinoBlockBoardProps {
   challengeId: string;
-  onValidation: (success: boolean) => void;
+  onValidation: OnValidation;
 }
 
 export function ArduinoBlockBoard({ challengeId, onValidation }: ArduinoBlockBoardProps) {
@@ -92,11 +93,11 @@ export function ArduinoBlockBoard({ challengeId, onValidation }: ArduinoBlockBoa
     if (isValid) {
       setSuccess(true);
       setMessage({ type: 'ok', text: '✓ ¡Código correcto! Simulación desbloqueada.' });
-      onValidation(true);
+      onValidation(true, attempt(ids));
       setSerialLog(['[Código validado. Inicia la simulación.]']);
     } else {
       setMessage({ type: 'err', text: '❌ Código incorrecto. Has agotado tus oportunidades.' });
-      onValidation(false);
+      onValidation(false, attempt(ids));
     }
   }, [attempted, workspace, onValidation]);
 
@@ -206,7 +207,7 @@ export function ArduinoBlockBoard({ challengeId, onValidation }: ArduinoBlockBoa
                 onChange={e => setTemp(parseInt(e.target.value))}
                 disabled={!success}
               />
-              <div><span style={{ color: temp > 30 ? '#ff4d4d' : '#4dff4d', fontWeight: 'bold' }}>{temp}°C</span></div>
+              <div><span className={temp > 30 ? 'ard-temp-hot' : 'ard-temp-ok'}>{temp}°C</span></div>
             </div>
             <div className="ard-leds">
               <div className={`ard-led ard-led-red ${simulating && temp > 30 ? 'active' : ''}`}>🔴 LED R</div>

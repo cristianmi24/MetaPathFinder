@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Bot, Lightbulb, Lock, Sparkles, ThumbsDown, ThumbsUp, Target } from 'lucide-react';
 import { WhyThis } from './WhyThis';
-import { TutorAlert } from './TutorAlert';
+import { TutorAlert, type AffectId, type AlertDismissal } from './TutorAlert';
 import { SCAFFOLD_INFO, LEVEL_SHORT, type BlockingSignals, type ScaffoldLevel } from '../../lib/tutorEngine';
 import { getTutorHint3 } from '../../data/tutorHints';
 import type { ChallengeProfile } from '../../data/challengeProfiles';
@@ -35,6 +35,10 @@ export interface TutorAdvisorProps {
   isDone: boolean;
   pendingCriteriaTexts: { id: string; text: string }[];
   peerRecommendation?: { level: HintLevel; ratio: number; neighbours: number } | null;
+  onAlertDismissed?: (info: AlertDismissal) => void;
+  onAffect?: (affect: AffectId) => void;
+  /** Hay un modal bloqueante abierto: las alertas del tutor esperan a que se cierre. */
+  alertsBlocked?: boolean;
 }
 
 const LEVEL_META: Record<HintLevel, { title: string; tactic: string }> = {
@@ -94,6 +98,9 @@ export function TutorAdvisor(p: TutorAdvisorProps) {
       onOpenHint={p.onOpenHint}
       onRateHint={p.onRateHint}
       onCheckpoint={(n) => { setSel(n); p.onCheckpoint(n); }}
+      onDismiss={p.onAlertDismissed}
+      onAffect={p.onAffect}
+      blocked={p.alertsBlocked}
     />
     <aside className="tut-panel" id="tour-tutor-panel" aria-label="Tu tutor">
       <div className="tut-head">

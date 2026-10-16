@@ -1,29 +1,29 @@
 .cib-root {
-  /* Light mode defaults */
-  --bg-editor: #ffffff;
-  --bg-sidebar: #f8fafc;
-  --bg-tab: #f1f5f9;
-  --bg-tab-active: #e0e7ff;
-  --bg-line: #e2e8f0;
-  --accent: #674bb5;
-  --accent2: #2563eb;
-  --accent3: #16a34a;
-  --accent4: #dc2626;
-  --accent5: #ea580c;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --text-comment: #94a3b8;
-  --border: #e2e8f0;
-  --green: #16a34a;
-  --red: #dc2626;
-  --yellow: #ca8a04;
-  --blue: #2563eb;
-  --purple: #674bb5;
-  --teal: #0d9488;
-  --blank-bg: #f1f5f9;
-  --blank-border: #cbd5e1;
+  /* Tokens del tema de la app (claro/oscuro vía .dark en <html>) */
+  --bg-editor: var(--color-surface-container-lowest);
+  --bg-sidebar: var(--color-surface-container-low);
+  --bg-tab: var(--color-surface-container);
+  --bg-tab-active: var(--color-surface-container-lowest);
+  --bg-line: var(--color-surface-container);
+  --accent: var(--color-primary);
+  --accent2: var(--blue);
+  --accent3: var(--color-secondary);
+  --accent4: var(--color-error);
+  --accent5: color-mix(in srgb, #ea580c 72%, var(--color-on-surface));
+  --text-main: var(--color-on-surface);
+  --text-muted: var(--color-on-surface-variant);
+  --text-comment: color-mix(in srgb, var(--color-on-surface-variant) 75%, var(--color-surface));
+  --border: var(--color-outline-variant);
+  --green: var(--color-secondary);
+  --red: var(--color-error);
+  --yellow: var(--color-warning);
+  --blue: color-mix(in srgb, #3b82f6 72%, var(--color-on-surface));
+  --purple: var(--color-primary);
+  --teal: color-mix(in srgb, #0891b2 72%, var(--color-on-surface));
+  --blank-bg: var(--color-primary-container);
+  --blank-border: color-mix(in srgb, var(--color-primary) 45%, transparent);
 
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sans);
   background: var(--bg-editor);
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -33,32 +33,6 @@
   min-height: 620px;
   color: var(--text-main);
   width: 100%;
-}
-
-/* Dark mode for CodingIDEBoard (Catppuccin-inspired) */
-.dark .cib-root {
-  --bg-editor: #1e1e2e;
-  --bg-sidebar: #181825;
-  --bg-tab: #252538;
-  --bg-tab-active: #1e1e2e;
-  --bg-line: #2a2a3e;
-  --accent: #cba6f7;
-  --accent2: #89b4fa;
-  --accent3: #a6e3a1;
-  --accent4: #f38ba8;
-  --accent5: #fab387;
-  --text-main: #cdd6f4;
-  --text-muted: #6c7086;
-  --text-comment: #585b70;
-  --border: #313244;
-  --green: #a6e3a1;
-  --red: #f38ba8;
-  --yellow: #f9e2af;
-  --blue: #89b4fa;
-  --purple: #cba6f7;
-  --teal: #94e2d5;
-  --blank-bg: #3d3d5c;
-  --blank-border: #7c7caa;
 }
 
 .cib-titlebar {
@@ -87,12 +61,12 @@
   border-radius: 50%;
 }
 
-.cib-dot-r { background: #f38ba8; }
-.cib-dot-y { background: #f9e2af; }
-.cib-dot-g { background: #a6e3a1; }
+.cib-dot-r { background: #ff5f57; }
+.cib-dot-y { background: #febc2e; }
+.cib-dot-g { background: #28c840; }
 
 .cib-filename {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-muted);
 }
@@ -102,8 +76,8 @@
 .cib-badge-eval {
   font-size: 11px;
   padding: 3px 10px;
-  background: rgba(203,166,247,0.15);
-  border: 1px solid rgba(203,166,247,0.3);
+  background: color-mix(in srgb, var(--purple) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--purple) 30%, transparent);
   border-radius: 20px;
   color: var(--accent);
   font-weight: 600;
@@ -119,7 +93,7 @@
 }
 
 .cib-tab {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   padding: 8px 16px;
   cursor: pointer;
@@ -188,7 +162,7 @@
 }
 
 .cib-sidebar-item.active {
-  background: rgba(203,166,247,0.12);
+  background: color-mix(in srgb, var(--purple) 12%, transparent);
   color: var(--accent);
 }
 
@@ -238,9 +212,9 @@
   transition: all 0.2s;
 }
 
-.cib-ex-item:hover { background: rgba(255,255,255,0.04); }
+.cib-ex-item:hover { background: color-mix(in srgb, var(--text-main) 4%, transparent); }
 
-.cib-ex-item.active-ex { background: rgba(137,180,250,0.1); color: var(--blue); }
+.cib-ex-item.active-ex { background: color-mix(in srgb, var(--blue) 10%, transparent); color: var(--blue); }
 .cib-ex-item.done { color: var(--green); }
 .cib-ex-item.failed { color: var(--red); }
 .cib-ex-item.locked { opacity: 0.4; }
@@ -268,7 +242,7 @@
 .cib-ex-header {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
-  background: rgba(137,180,250,0.04);
+  background: color-mix(in srgb, var(--blue) 4%, transparent);
 }
 
 .cib-ex-title {
@@ -296,10 +270,10 @@
   letter-spacing: 0.3px;
 }
 
-.cib-hint-logic { background: rgba(203,166,247,0.15); color: var(--purple); }
-.cib-hint-indent { background: rgba(249,226,175,0.15); color: var(--yellow); }
-.cib-hint-syntax { background: rgba(137,180,250,0.15); color: var(--blue); }
-.cib-hint-scope { background: rgba(148,226,213,0.15); color: var(--teal); }
+.cib-hint-logic { background: color-mix(in srgb, var(--purple) 15%, transparent); color: var(--purple); }
+.cib-hint-indent { background: color-mix(in srgb, var(--yellow) 15%, transparent); color: var(--yellow); }
+.cib-hint-syntax { background: color-mix(in srgb, var(--blue) 15%, transparent); color: var(--blue); }
+.cib-hint-scope { background: color-mix(in srgb, var(--teal) 15%, transparent); color: var(--teal); }
 
 .cib-editor-area {
   flex: 1;
@@ -318,7 +292,7 @@
   background: var(--bg-editor);
   text-align: right;
   color: var(--text-comment);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   line-height: 22px;
   padding-right: 12px;
@@ -332,7 +306,7 @@
 .cib-code-content {
   flex: 1;
   padding: 16px 16px 16px 0;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   line-height: 22px;
   white-space: pre;
@@ -348,22 +322,23 @@
   flex-wrap: wrap;
 }
 
-.cib-kw { color: #cba6f7; }
-.cib-fn { color: #89b4fa; }
-.cib-str { color: #a6e3a1; }
-.cib-num { color: #fab387; }
-.cib-cm { color: #585b70; font-style: italic; }
-.cib-op { color: #89dceb; }
-.cib-var { color: #cdd6f4; }
-.cib-cls { color: #f9e2af; }
-.cib-builtin { color: #94e2d5; }
+/* Resaltado de sintaxis: el tono se oscurece en claro y se aclara en oscuro */
+.cib-kw { color: color-mix(in srgb, #8b5cf6 72%, var(--color-on-surface)); }
+.cib-fn { color: var(--blue); }
+.cib-str { color: color-mix(in srgb, #16a34a 72%, var(--color-on-surface)); }
+.cib-num { color: var(--accent5); }
+.cib-cm { color: var(--text-comment); font-style: italic; }
+.cib-op { color: var(--teal); }
+.cib-var { color: var(--text-main); }
+.cib-cls { color: color-mix(in srgb, #ca8a04 72%, var(--color-on-surface)); }
+.cib-builtin { color: var(--teal); }
 
 .cib-blank-input {
   display: inline-block;
   background: var(--blank-bg);
   border: 1.5px dashed var(--blank-border);
   border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   color: var(--accent);
   padding: 0 6px;
@@ -376,19 +351,19 @@
 
 .cib-blank-input:focus {
   border-color: var(--accent);
-  background: rgba(203,166,247,0.1);
-  box-shadow: 0 0 0 2px rgba(203,166,247,0.15);
+  background: color-mix(in srgb, var(--purple) 10%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--purple) 15%, transparent);
 }
 
 .cib-blank-input.correct {
   border-color: var(--green);
-  background: rgba(166,227,161,0.1);
+  background: color-mix(in srgb, var(--green) 10%, transparent);
   color: var(--green);
 }
 
 .cib-blank-input.incorrect {
   border-color: var(--red);
-  background: rgba(243,139,168,0.1);
+  background: color-mix(in srgb, var(--red) 10%, transparent);
   color: var(--red);
 }
 
@@ -400,7 +375,7 @@
 .cib-console-panel {
   height: 180px;
   border-top: 1px solid var(--border);
-  background: #11111b;
+  background: var(--bg-sidebar);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -426,11 +401,11 @@
   border-radius: 4px;
   cursor: pointer;
   color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-sans);
 }
 
 .cib-console-tab.active {
-  background: rgba(137,180,250,0.12);
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
   color: var(--blue);
 }
 
@@ -445,19 +420,19 @@
   align-items: center;
   gap: 6px;
   padding: 5px 14px;
-  background: rgba(166,227,161,0.15);
-  border: 1px solid rgba(166,227,161,0.3);
+  background: color-mix(in srgb, var(--green) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
   border-radius: 6px;
   color: var(--green);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .cib-btn-run:hover {
-  background: rgba(166,227,161,0.25);
+  background: color-mix(in srgb, var(--green) 25%, transparent);
   transform: scale(1.02);
 }
 
@@ -472,19 +447,19 @@
   align-items: center;
   gap: 6px;
   padding: 5px 14px;
-  background: rgba(203,166,247,0.15);
-  border: 1px solid rgba(203,166,247,0.3);
+  background: color-mix(in srgb, var(--purple) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--purple) 30%, transparent);
   border-radius: 6px;
   color: var(--accent);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .cib-btn-next:hover {
-  background: rgba(203,166,247,0.25);
+  background: color-mix(in srgb, var(--purple) 25%, transparent);
 }
 
 .cib-btn-next:disabled {
@@ -496,7 +471,7 @@
   flex: 1;
   overflow-y: auto;
   padding: 10px 16px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.8;
 }
@@ -518,7 +493,8 @@
   display: none;
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(17,17,27,0.92);
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  backdrop-filter: blur(4px);
   align-items: center;
   justify-content: center;
   z-index: 10;
@@ -562,7 +538,7 @@
   border-radius: 10px;
   padding: 16px;
   margin-bottom: 20px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-sans);
 }
 
 .cib-score-big {

@@ -1,20 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { type OnValidation, useIframeValidation, IFRAME_ACTIVITY_SCRIPT } from '../lib/boardValidation';
+import { useThemedSrcDoc } from '../lib/iframeTheme';
 
 interface DigitalIdentityBoardProps {
   challengeId?: string;
-  onValidation?: (success: boolean) => void;
+  onValidation?: OnValidation;
 }
 
 export function DigitalIdentityBoard({ challengeId, onValidation }: DigitalIdentityBoardProps) {
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'EVAL_SUCCESS' && onValidation) {
-        onValidation(true);
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [onValidation]);
+  useIframeValidation(onValidation);
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -23,85 +17,86 @@ export function DigitalIdentityBoard({ challengeId, onValidation }: DigitalIdent
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Diseño de logos SVG</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.36.0/tabler-icons.min.css">
 <style>
 :root {
-  --font-sans: 'Sora', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --color-background-primary: #ffffff;
-  --color-background-secondary: #f9f9fb;
-  --color-background-info: #eef6ff;
-  --color-background-success: #edfcf5;
-  --color-background-danger: #fef2f2;
-  --color-border-secondary: #e5e7eb;
-  --color-border-tertiary: #f3f4f6;
-  --color-border-success: #a7f3d0;
-  --color-text-primary: #111827;
-  --color-text-secondary: #4b5563;
-  --color-text-tertiary: #9ca3af;
-  --color-text-info: #0369a1;
-  --color-text-success: #047857;
-  --color-text-danger: #b91c1c;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
+  /* Alias locales sobre los tokens del tema de la app (inyectados en :root) */
+  --color-background-primary: var(--color-surface-container-lowest);
+  --color-background-secondary: var(--color-surface-container-low);
+  --color-background-info: var(--color-primary-container);
+  --color-background-success: var(--color-secondary-container);
+  --color-background-danger: var(--color-error-container);
+  --color-border-secondary: var(--color-outline-variant);
+  --color-border-tertiary: var(--color-outline-variant);
+  --color-border-success: color-mix(in srgb, var(--color-secondary) 40%, transparent);
+  --color-text-primary: var(--color-on-surface);
+  --color-text-secondary: var(--color-on-surface-variant);
+  --color-text-tertiary: color-mix(in srgb, var(--color-on-surface-variant) 75%, var(--color-surface));
+  --color-text-info: var(--color-on-primary-container);
+  --color-text-success: var(--color-on-secondary-container);
+  --color-text-danger: var(--color-on-error-container);
+  --border-radius-md: 10px;
+  --border-radius-lg: 14px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-sans)}
+body{font-family:var(--font-sans);background:var(--color-surface);color:var(--color-text-primary);padding:0 16px}
 .module{max-width:680px;padding:1.5rem 0;margin:0 auto;}
 .phase{display:none}
 .phase.active{display:block}
-.step-intro{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
-.step-intro h3{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:.5rem;display:flex;align-items:center;gap:6px;}
+.step-intro{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px color-mix(in srgb,var(--color-on-surface) 6%,transparent)}
+.step-intro h3 i{color:var(--color-primary);font-size:18px}
+.step-intro h3{font-size:15px;font-weight:600;color:var(--color-text-primary);margin-bottom:.5rem;display:flex;align-items:center;gap:6px;}
 .step-intro p{font-size:13px;color:var(--color-text-secondary);line-height:1.6}
-.code-block{background:#f8fafc;border:0.5px solid #e2e8f0;border-radius:var(--border-radius-md);padding:1rem;font-family:var(--font-mono);font-size:12px;color:#0f172a;margin:.75rem 0;overflow-x:auto;white-space:pre}
-.dark .code-block{background:#1e1e2e;border-color:#313244;color:#cdd6f4;}
-.svg-demo{display:flex;justify-content:center;align-items:center;padding:1.25rem;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin:.75rem 0}
+.code-block{background:var(--color-surface-container);border:1px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:1rem;font-family:var(--font-mono);font-size:12px;color:var(--color-on-surface);margin:.75rem 0;overflow-x:auto;white-space:pre}
+/* Los ejemplos de logos se ven sobre un lienzo blanco fijo: sus colores son parte de la lección */
+.svg-demo{display:flex;justify-content:center;align-items:center;padding:1.25rem;background:#fff;border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin:.75rem 0}
 .color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:.75rem 0}
 .color-swatch{height:36px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:transform .15s}
 .color-swatch:hover,.color-swatch.selected{transform:scale(1.1);border-color:var(--color-text-primary)}
-.tip{background:var(--color-background-info);border-left:3px solid #378ADD;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:.75rem 1rem;font-size:13px;color:var(--color-text-info);margin:.75rem 0}
-.section-title{font-size:18px;font-weight:500;color:var(--color-text-primary);margin-bottom:.25rem}
+.tip{background:var(--color-background-info);border-left:3px solid var(--color-primary);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:.75rem 1rem;font-size:13px;color:var(--color-text-info);margin:.75rem 0}
+.section-title{font-size:20px;font-weight:700;letter-spacing:-0.01em;color:var(--color-text-primary);margin-bottom:.25rem}
 .section-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:1.25rem}
-.progress-bar{height:4px;background:var(--color-background-secondary);border-radius:2px;margin-bottom:1.5rem;overflow:hidden}
-.progress-fill{height:100%;background:#7F77DD;border-radius:2px;transition:width .4s ease}
+.progress-bar{height:6px;background:var(--color-surface-container-high);border-radius:2px;margin-bottom:1.5rem;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--color-primary),var(--color-secondary));border-radius:2px;transition:width .4s ease}
 .phase-tabs{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap}
-.phase-tab{padding:6px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);font-size:12px;cursor:pointer;background:var(--color-background-secondary);color:var(--color-text-secondary);transition:all .15s}
-.phase-tab.active{background:#EEEDFE;color:#533AB7;border-color:#7F77DD;font-weight:600}
+.phase-tab{padding:6px 14px;border-radius:99px;border:1px solid var(--color-border-secondary);font-size:12px;cursor:pointer;background:var(--color-background-secondary);color:var(--color-text-secondary);transition:all .15s}
+.phase-tab:hover{border-color:var(--color-primary);color:var(--color-text-primary)}
+.phase-tab.active{background:var(--color-primary);color:var(--color-on-primary);border-color:var(--color-primary);font-weight:600}
 .phase-tab.done{background:var(--color-background-success);color:var(--color-text-success);border-color:var(--color-border-success)}
 .eval-section{margin-top:1.5rem}
-.eval-title{font-size:16px;font-weight:500;margin-bottom:1rem;color:var(--color-text-primary);display:flex;align-items:center;gap:6px;}
+.eval-title{font-size:16px;font-weight:600;margin-bottom:1rem;color:var(--color-text-primary);display:flex;align-items:center;gap:6px;}
 .blocks-container{min-height:100px;border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:1rem;display:flex;flex-direction:column;gap:8px;background:var(--color-background-secondary)}
-.block{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.75rem 1rem;font-size:13px;color:var(--color-text-primary);cursor:grab;display:flex;align-items:center;gap:10px;user-select:none;transition:box-shadow .15s;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
-.block:active{cursor:grabbing;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.block{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.75rem 1rem;font-size:13px;color:var(--color-text-primary);cursor:grab;display:flex;align-items:center;gap:10px;user-select:none;transition:box-shadow .15s,transform .15s,border-color .15s;box-shadow:0 1px 2px color-mix(in srgb,var(--color-on-surface) 6%,transparent)}
+.block:hover{border-color:var(--color-primary);transform:translateY(-1px)}
+.block:active{cursor:grabbing;box-shadow:0 4px 12px color-mix(in srgb,var(--color-on-surface) 14%,transparent)}
 .block.dragging{opacity:.4}
 .block .drag-handle{color:var(--color-text-tertiary);font-size:16px}
-.block .block-num{width:24px;height:24px;border-radius:50%;background:#EEEDFE;color:#534AB7;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.block .block-num{width:24px;height:24px;border-radius:50%;background:var(--color-primary-container);color:var(--color-on-primary-container);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .block.correct .block-num{background:var(--color-background-success);color:var(--color-text-success)}
 .block.incorrect .block-num{background:var(--color-background-danger);color:var(--color-text-danger)}
-.check-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;cursor:pointer;margin-top:1rem;font-weight:500}
+.check-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;border-radius:var(--border-radius-md);transition:background .15s,transform .15s;border:1px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;cursor:pointer;margin-top:1rem;font-weight:500}
 .check-btn:hover{background:var(--color-background-secondary)}
 .result-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--border-radius-md);font-size:13px;margin-top:1rem;font-weight:500}
 .result-ok{background:var(--color-background-success);color:var(--color-text-success);border:1px solid var(--color-border-success)}
-.result-fail{background:var(--color-background-danger);color:var(--color-text-danger);border:1px solid #fecaca}
+.result-fail{background:var(--color-background-danger);color:var(--color-text-danger);border:1px solid color-mix(in srgb,var(--color-error) 35%,transparent)}
 .nav-btns{display:flex;gap:10px;margin-top:1.5rem}
-.btn-next{padding:8px 20px;border-radius:var(--border-radius-md);border:0.5px solid #7F77DD;background:#EEEDFE;color:#534AB7;font-size:13px;cursor:pointer;font-weight:600}
-.btn-next:hover{background:#CECBF6}
-.btn-back{padding:8px 20px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:13px;cursor:pointer}
-.live-svg-area{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;margin:.75rem 0}
+.btn-next{padding:9px 20px;border-radius:var(--border-radius-md);border:1px solid var(--color-primary);background:var(--color-primary);color:var(--color-on-primary);font-size:13px;cursor:pointer;font-weight:600;transition:transform .15s,box-shadow .15s}
+.btn-next:hover{transform:translateY(-1px);box-shadow:0 4px 14px color-mix(in srgb,var(--color-primary) 30%,transparent)}
+.btn-back{padding:9px 20px;border-radius:var(--border-radius-md);border:1px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:13px;cursor:pointer}
+.live-svg-area{border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;margin:.75rem 0}
 .live-editor{display:grid;grid-template-columns:1fr 1fr;gap:0}
 .editor-pane{padding:.75rem;background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary)}
-.editor-pane textarea{width:100%;height:160px;font-family:var(--font-mono);font-size:12px;border:0.5px solid #e2e8f0;border-radius:6px;padding:.5rem;background:#ffffff;color:#0f172a;resize:none;outline:none}
-.dark .editor-pane textarea{background:#1e1e2e;border-color:#313244;color:#cdd6f4;}
-.preview-pane{display:flex;align-items:center;justify-content:center;background:white;padding:1rem;min-height:160px}
+.editor-pane textarea{width:100%;height:160px;font-family:var(--font-mono);font-size:12px;border:1px solid var(--color-border-secondary);border-radius:8px;padding:.5rem;background:var(--color-surface-container-lowest);color:var(--color-on-surface);resize:none;outline:none}
+.editor-pane textarea:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--color-primary) 20%,transparent)}
+.preview-pane{display:flex;align-items:center;justify-content:center;background:#fff;padding:1rem;min-height:160px}
 .color-interactive{margin:.75rem 0}
 .color-row{display:flex;align-items:center;gap:10px;margin-bottom:.5rem}
 .color-row label{font-size:12px;color:var(--color-text-secondary);width:90px;font-weight:500}
 .color-row input[type=color]{width:36px;height:28px;border:0.5px solid var(--color-border-tertiary);border-radius:4px;padding:2px;cursor:pointer;background:none}
-.color-row input[type=range]{flex:1;accent-color:#7F77DD}
+.color-row input[type=range]{flex:1;accent-color:var(--color-primary)}
 .color-row .val{font-size:11px;font-family:var(--font-mono);color:var(--color-text-secondary);width:48px}
 .score-display{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;text-align:center;margin-top:1rem}
-.score-num{font-size:36px;font-weight:600;color:#534AB7}
+.score-num{font-size:36px;font-weight:700;color:var(--color-primary)}
 .medal{font-size:48px;margin-bottom:.5rem}
 .drag-source{min-height:60px;border:1.5px dashed var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.75rem;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem;background:var(--color-background-primary)}
 </style>
@@ -284,7 +279,7 @@ body{font-family:var(--font-sans)}
       <div class="color-row"><label>Color texto</label><input type="color" id="lText" value="#534AB7" oninput="applyLogo()"><span class="val" id="lvText">#534AB7</span></div>
       <div class="color-row"><label>Radio esquinas</label><input type="range" id="lRadius" min="0" max="30" step="1" value="12" oninput="applyLogo()"><span class="val" id="lvRadius">12</span></div>
     </div>
-    <div style="display:flex;justify-content:center;padding:.5rem;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:white;margin:.5rem 0">
+    <div style="display:flex;justify-content:center;padding:.5rem;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:#fff;margin:.5rem 0">
       <svg id="logoDemo" viewBox="0 0 200 80" width="280" height="112" xmlns="http://www.w3.org/2000/svg">
         <rect id="logoRect" x="5" y="10" width="60" height="60" rx="12" fill="#7F77DD"/>
         <polygon points="35,22 52,52 18,52" fill="white" opacity="0.9"/>
@@ -437,6 +432,7 @@ function checkOrder(dropId, correct, resultId, isA) {
     else { b.classList.add('incorrect'); num.textContent = '✗'; allCorrect = false; }
   });
   const res = document.getElementById(resultId);
+  window.parent.postMessage({ type: allCorrect ? 'QUIZ_SUCCESS' : 'QUIZ_FAIL', attempt: true, partial: true }, '*');
   if (allCorrect) {
     res.innerHTML = \`<div class="result-badge result-ok"><i class="ti ti-check"></i> ¡Orden correcto! Excelente comprensión del flujo SVG.</div>\`;
     if (isA) scoreA = true; else scoreB = true;
@@ -480,14 +476,14 @@ function updateScore() {
     \${correctA.map((id,i) => {
       const s = stepsA.find(x=>x.id===id);
       return \`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px">
-        <span style="min-width:20px;height:20px;border-radius:50%;background:#EEEDFE;color:#534AB7;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:500">\${i+1}</span>
+        <span style="min-width:20px;height:20px;border-radius:50%;background:var(--color-primary-container);color:var(--color-on-primary-container);font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:500">\${i+1}</span>
         <span style="font-size:13px;color:var(--color-text-primary)">\${s.text}</span></div>\`;
     }).join('')}
     <p style="font-size:13px;color:var(--color-text-secondary);margin:1rem 0 .75rem">Orden correcto para aplicar colores:</p>
     \${correctB.map((id,i) => {
       const s = stepsB.find(x=>x.id===id);
       return \`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px">
-        <span style="min-width:20px;height:20px;border-radius:50%;background:#E1F5EE;color:#0F6E56;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:500">\${i+1}</span>
+        <span style="min-width:20px;height:20px;border-radius:50%;background:var(--color-secondary-container);color:var(--color-on-secondary-container);font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:500">\${i+1}</span>
         <span style="font-size:13px;color:var(--color-text-primary)">\${s.text}</span></div>\`;
     }).join('')}
     </div>\`;
@@ -545,14 +541,18 @@ window.applyLogo = function() {
 initEval();
 updateScore();
 </script>
+${IFRAME_ACTIVITY_SCRIPT}
 </body>
 </html>
   `;
 
+  const { ref, srcDoc } = useThemedSrcDoc(htmlContent);
+
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: '620px', borderRadius: '0 0 2rem 2rem', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div className="flex h-full min-h-[620px] w-full flex-1 flex-col overflow-hidden rounded-b-2xl bg-surface">
       <iframe 
-        srcDoc={htmlContent} 
+        ref={ref}
+        srcDoc={srcDoc} 
         style={{ width: '100%', height: '100%', flex: 1, border: 'none' }} 
         title="Diseño de Identidad Digital SVG"
       />

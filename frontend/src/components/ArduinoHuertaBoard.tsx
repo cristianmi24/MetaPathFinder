@@ -1,20 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { type OnValidation, useIframeValidation, IFRAME_ACTIVITY_SCRIPT } from '../lib/boardValidation';
+import { useThemedSrcDoc } from '../lib/iframeTheme';
 
 interface ArduinoHuertaBoardProps {
   challengeId?: string;
-  onValidation?: (success: boolean) => void;
+  onValidation?: OnValidation;
 }
 
 export function ArduinoHuertaBoard({ challengeId, onValidation }: ArduinoHuertaBoardProps) {
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'EVAL_SUCCESS' && onValidation) {
-        onValidation(true);
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [onValidation]);
+  useIframeValidation(onValidation);
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -23,29 +17,21 @@ export function ArduinoHuertaBoard({ challengeId, onValidation }: ArduinoHuertaB
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Huerta Escolar con Arduino</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.36.0/tabler-icons.min.css">
 <style>
 :root {
-  --font-sans: 'Sora', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
-  --color-background-primary: #ffffff;
-  --color-background-secondary: #f9f9fb;
-  --color-border-secondary: #e5e7eb;
-  --color-border-tertiary: #f3f4f6;
-  --color-text-primary: #111827;
-  --color-text-secondary: #4b5563;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-}
-
-.dark {
-  --color-background-primary: #161b22;
-  --color-background-secondary: #0d1117;
-  --color-border-secondary: #30363d;
-  --color-border-tertiary: #21262d;
-  --color-text-primary: #c9d1d9;
-  --color-text-secondary: #8b949e;
+  /* Alias locales sobre los tokens del tema de la app (inyectados en :root) */
+  --color-background-primary: var(--color-surface-container-lowest);
+  --color-background-secondary: var(--color-surface-container-low);
+  --color-border-secondary: var(--color-outline-variant);
+  --color-border-tertiary: var(--color-outline-variant);
+  --color-text-primary: var(--color-on-surface);
+  --color-text-secondary: var(--color-on-surface-variant);
+  --border-radius-md: 10px;
+  --border-radius-lg: 14px;
+  /* Terminal y LCD: pantallas de dispositivo, oscuras en ambos temas */
+  --term-bg: #16151b; --term-border: #2c2b33; --term-text: #dcd8e8;
+  --term-blue: #9fb7f5; --term-green: #a7d9a4; --term-red: #f0a3b4; --term-amber: #f2c08f;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -62,33 +48,33 @@ body {
 
 .step-nav{display:flex;align-items:center;gap:0;margin-bottom:1.5rem;overflow-x:auto;padding-bottom:4px}
 .snav-item{display:flex;align-items:center;gap:0;flex-shrink:0}
-.snav-btn{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);cursor:pointer;font-size:12px;color:var(--color-text-secondary);transition:all .2s;white-space:nowrap; border-radius: 4px;}
-.snav-btn.active{background:#EAF3DE;color:#27500A;border-color:#97C459;font-weight:500;z-index:1}
-.snav-btn.done{background:#E6F1FB;color:#0C447C;border-color:#85B7EB}
+.snav-btn{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);cursor:pointer;font-size:12px;color:var(--color-text-secondary);transition:all .2s;white-space:nowrap; border-radius: 4px;}
+.snav-btn.active{background:var(--color-secondary-container);color:var(--color-on-secondary-container);border-color:color-mix(in srgb,var(--color-secondary) 45%,transparent);font-weight:500;z-index:1}
+.snav-btn.done{background:var(--color-primary-container);color:var(--color-on-primary-container);border-color:color-mix(in srgb,var(--color-primary) 40%,transparent)}
 .snav-btn.locked{opacity:0.45;cursor:not-allowed}
 .snav-sep{width:1px;background:var(--color-border-tertiary);height:36px;flex-shrink:0}
 .step-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;background:var(--color-background-secondary);color:var(--color-text-secondary);flex-shrink:0}
-.snav-btn.active .step-num{background:#639922;color:#fff}
-.snav-btn.done .step-num{background:#378ADD;color:#fff}
+.snav-btn.active .step-num{background:var(--color-secondary);color:var(--color-on-secondary)}
+.snav-btn.done .step-num{background:var(--color-primary);color:var(--color-on-secondary)}
 
 .page{display:none}
 .page.active{display:block}
 
-.guide-box{background:#EAF3DE;border:0.5px solid #97C459;border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;gap:12px;align-items:flex-start}
+.guide-box{background:var(--color-secondary-container);border:1px solid color-mix(in srgb,var(--color-secondary) 45%,transparent);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;gap:12px;align-items:flex-start}
 .guide-icon{font-size:22px;flex-shrink:0;margin-top:2px}
-.guide-title{font-size:13px;font-weight:500;color:#27500A;margin-bottom:4px}
-.guide-text{font-size:13px;color:#3B6D11;line-height:1.6}
+.guide-title{font-size:13px;font-weight:500;color:var(--color-on-secondary-container);margin-bottom:4px}
+.guide-text{font-size:13px;color:var(--color-on-secondary-container);line-height:1.6}
 .guide-text b{font-weight:500}
 
-.warn-box{background:#FAEEDA;border:0.5px solid #FAC775;border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;gap:12px;align-items:flex-start}
-.warn-title{font-size:13px;font-weight:500;color:#633806;margin-bottom:4px}
-.warn-text{font-size:13px;color:#854F0B;line-height:1.6}
+.warn-box{background:var(--color-warning-container);border:1px solid color-mix(in srgb,var(--color-warning) 45%,transparent);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;gap:12px;align-items:flex-start}
+.warn-title{font-size:13px;font-weight:500;color:var(--color-on-warning-container);margin-bottom:4px}
+.warn-text{font-size:13px;color:var(--color-on-warning-container);line-height:1.6}
 
-.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
+.card{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
 .card-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:12px;display:flex;align-items:center;gap:8px}
 
 .concept-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1rem}
-.concept-card{border-radius:var(--border-radius-md);padding:12px;border:0.5px solid var(--color-border-tertiary)}
+.concept-card{border-radius:var(--border-radius-md);padding:12px;border:1px solid var(--color-border-tertiary)}
 .concept-card .cc-icon{font-size:20px;margin-bottom:6px}
 .concept-card .cc-name{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
 .concept-card .cc-desc{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
@@ -96,84 +82,84 @@ body {
 .step-list{list-style:none;padding:0}
 .step-list li{display:flex;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px;color:var(--color-text-primary);line-height:1.5;align-items:flex-start}
 .step-list li:last-child{border-bottom:none}
-.step-list .sn{min-width:24px;height:24px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-list .sn{min-width:24px;height:24px;border-radius:50%;background:var(--color-primary-container);color:var(--color-on-primary-container);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 
 .circuit-svg{width:100%;max-width:720px;display:block;margin:0 auto 1rem}
 
 .editor-wrap{margin-bottom:1rem}
-.editor-header{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;padding:9px 14px;display:flex;align-items:center;justify-content:space-between}
-.dark .editor-header{background:#1e1e2e;border-color:#313244;}
+.editor-header{background:var(--color-surface-container);border:1px solid var(--color-border-secondary);border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;padding:9px 14px;display:flex;align-items:center;justify-content:space-between}
 .e-dots{display:flex;gap:5px}
 .e-dot{width:11px;height:11px;border-radius:50%}
-.e-fname{font-size:11px;color:#2563eb;font-family:var(--font-mono)}
-.dark .e-fname{color:#89b4fa}
-.e-lang{font-size:10px;color:#64748b}
-.dark .e-lang{color:#6c7086}
-.editor-body{background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg)}
-.dark .editor-body{background:#1e1e2e;border-color:#313244;}
-#code-ed{width:100%;min-height:360px;background:transparent;border:none;outline:none;font-family:var(--font-mono);font-size:12.5px;color:#1f2937;padding:14px;resize:vertical;line-height:1.75;tab-size:2}
-.dark #code-ed{color:#cdd6f4}
+.e-fname{font-size:11px;color:var(--color-primary);font-family:var(--font-mono)}
+.e-lang{font-size:10px;color:var(--color-text-secondary)}
+.editor-body{background:var(--color-surface-container-lowest);border:1px solid var(--color-border-secondary);border-top:none;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg)}
+#code-ed{width:100%;min-height:360px;background:transparent;border:none;outline:none;font-family:var(--font-mono);font-size:12.5px;color:var(--color-on-surface);caret-color:var(--color-primary);padding:14px;resize:vertical;line-height:1.75;tab-size:2}
 
 .hint-section{margin-bottom:14px}
 .hint-section-title{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px}
 .hints-row{display:flex;flex-wrap:wrap;gap:6px}
-.hpill{font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);transition:all .2s;display:flex;align-items:center;gap:5px}
+.hpill{font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);transition:all .2s;display:flex;align-items:center;gap:5px}
 .hpill:hover{background:var(--color-background-secondary)}
-.hpill.used{background:#EAF3DE;color:#3B6D11;border-color:#97C459}
-#hint-reveal{display:none;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px;font-size:12px;font-family:var(--font-mono);color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);margin-top:8px;line-height:1.7}
+.hpill.used{background:var(--color-secondary-container);color:var(--color-on-secondary-container);border-color:color-mix(in srgb,var(--color-secondary) 45%,transparent)}
+#hint-reveal{display:none;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px;font-size:12px;font-family:var(--font-mono);color:var(--color-text-primary);border:1px solid var(--color-border-tertiary);margin-top:8px;line-height:1.7}
 
-.btn-main{background:#639922;color:#fff;border:none;padding:10px 22px;border-radius:var(--border-radius-md);font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .2s}
-.btn-main:hover{background:#3B6D11}
+.btn-main{background:var(--color-secondary);color:var(--color-on-secondary);border:none;padding:10px 22px;border-radius:var(--border-radius-md);font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn-main:hover{background:var(--color-on-secondary-container)}
 .btn-main:disabled{opacity:0.4;cursor:not-allowed}
-.btn-sec{background:var(--color-background-primary);color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);padding:10px 18px;border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-sec{background:var(--color-background-primary);color:var(--color-text-primary);border:1px solid var(--color-border-secondary);padding:10px 18px;border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
 .btn-sec:hover{background:var(--color-background-secondary)}
 .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 
-.terminal{background:#11111b;border-radius:var(--border-radius-lg);padding:14px;font-family:var(--font-mono);font-size:12px;min-height:100px;max-height:200px;overflow-y:auto;border:0.5px solid #313244;margin-top:10px;display:none}
+.terminal{background:var(--term-bg);border-radius:var(--border-radius-lg);padding:14px;font-family:var(--font-mono);font-size:12px;min-height:100px;max-height:200px;overflow-y:auto;border:1px solid var(--term-border);margin-top:10px;display:none}
 .tl{margin-bottom:3px;display:flex;gap:8px}
-.ttime{color:#89b4fa}.tok{color:#a6e3a1}.twarn{color:#f38ba8}.tinfo{color:#fab387}
+.ttime{color:var(--term-blue)}.tok{color:var(--term-green)}.twarn{color:var(--term-red)}.tinfo{color:var(--term-amber)}
 
 .score-wrap{display:none;margin-top:1rem}
-.score-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.5rem;text-align:center}
+.score-card{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.5rem;text-align:center}
 .score-ring{width:86px;height:86px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:500}
-.ring-pass{background:#EAF3DE;color:#27500A;border:3px solid #639922}
-.ring-warn{background:#FAEEDA;color:#633806;border:3px solid #EF9F27}
-.ring-fail{background:#FCEBEB;color:#791F1F;border:3px solid #E24B4A}
+.ring-pass{background:var(--color-secondary-container);color:var(--color-on-secondary-container);border:3px solid var(--color-secondary)}
+.ring-warn{background:var(--color-warning-container);color:var(--color-on-warning-container);border:3px solid var(--color-warning)}
+.ring-fail{background:var(--color-error-container);color:var(--color-on-error-container);border:3px solid var(--color-error)}
 .crit-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px;text-align:left}
 .crit-row:last-child{border-bottom:none}
 
-.sim-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
+.sim-card{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
 .sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.sv-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;border:0.5px solid var(--color-border-tertiary)}
+.sv-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;border:1px solid var(--color-border-tertiary)}
 .sv-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:5px;display:flex;align-items:center;gap:5px}
 .sv-val{font-size:22px;font-weight:500;color:var(--color-text-primary)}
 .sv-unit{font-size:12px;color:var(--color-text-secondary);font-weight:400}
-.pbar{height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden;margin-top:6px;border:0.5px solid var(--color-border-tertiary)}
+.pbar{height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden;margin-top:6px;border:1px solid var(--color-border-tertiary)}
 .pfill{height:100%;border-radius:3px;transition:width .4s}
-.pump-row{display:flex;align-items:center;gap:10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px;border:0.5px solid var(--color-border-tertiary)}
-.pdot{width:12px;height:12px;border-radius:50%;background:#E24B4A;transition:all .4s;flex-shrink:0}
-.pdot.on{background:#639922}
-.csv-log{background:#11111b;border-radius:var(--border-radius-md);padding:10px;font-family:var(--font-mono);font-size:11px;max-height:110px;overflow-y:auto;margin-top:8px}
-.csv-hdr{color:#a6e3a1;margin-bottom:5px;padding-bottom:5px;border-bottom:0.5px solid #313244}
-.csv-r{color:#cdd6f4;margin-bottom:2px}
+.pump-row{display:flex;align-items:center;gap:10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px;border:1px solid var(--color-border-tertiary)}
+.pdot{width:12px;height:12px;border-radius:50%;background:var(--color-error);transition:all .4s;flex-shrink:0}
+.pdot.on{background:var(--color-secondary)}
+.csv-log{background:var(--term-bg);border-radius:var(--border-radius-md);padding:10px;font-family:var(--font-mono);font-size:11px;max-height:110px;overflow-y:auto;margin-top:8px}
+.csv-hdr{color:var(--term-green);margin-bottom:5px;padding-bottom:5px;border-bottom:0.5px solid var(--term-border)}
+.csv-r{color:var(--term-text);margin-bottom:2px}
 .sl-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .sl-label{font-size:12px;color:var(--color-text-secondary);min-width:100px}
 .sl-val{font-size:12px;font-weight:500;color:var(--color-text-primary);min-width:36px;font-family:var(--font-mono)}
-input[type=range]{flex:1;accent-color:#639922}
+input[type=range]{flex:1;accent-color:var(--color-secondary)}
 
-.lcd-screen{font-family:var(--font-mono);font-size:13px;color:#a6e3a1;background:#1a1a1a;padding:8px 12px;border-radius:4px;letter-spacing:0.5px;margin-top:8px}
+.lcd-screen{font-family:var(--font-mono);font-size:13px;color:var(--term-green);background:var(--term-bg);padding:8px 12px;border-radius:4px;letter-spacing:0.5px;margin-top:8px}
 
 .rubric-tbl{width:100%;border-collapse:collapse;font-size:13px}
 .rubric-tbl th{text-align:left;padding:8px 10px;font-size:11px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
 .rubric-tbl td{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);vertical-align:top}
 .rubric-tbl tr:last-child td{border-bottom:none}
-.pts-pill{font-size:11px;background:#E6F1FB;color:#185FA5;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.pts-pill{font-size:11px;background:var(--color-primary-container);color:var(--color-on-primary-container);padding:2px 8px;border-radius:20px;white-space:nowrap}
 
-.progress-overall{height:6px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin-bottom:1.5rem;border:0.5px solid var(--color-border-tertiary)}
-.progress-fill-overall{height:100%;background:#639922;border-radius:4px;transition:width .5s}
+.progress-overall{height:6px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin-bottom:1.5rem;border:1px solid var(--color-border-tertiary)}
+.progress-fill-overall{height:100%;background:var(--color-secondary);border-radius:4px;transition:width .5s}
 .progress-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:6px;display:flex;justify-content:space-between}
 
-.next-hint{background:#E6F1FB;border:0.5px solid #85B7EB;border-radius:var(--border-radius-md);padding:8px 14px;font-size:12px;color:#185FA5;margin-top:12px;display:flex;align-items:center;gap:8px}
+.next-hint{background:var(--color-primary-container);border:1px solid color-mix(in srgb,var(--color-primary) 40%,transparent);border-radius:var(--border-radius-md);padding:8px 14px;font-size:12px;color:var(--color-on-primary-container);margin-top:12px;display:flex;align-items:center;gap:8px}
+.btn-main{font-weight:600}
+.btn-main:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 14px color-mix(in srgb,var(--color-secondary) 30%,transparent)}
+.btn-main:focus-visible,.btn-sec:focus-visible,.snav-btn:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}
+.card,.sim-card{box-shadow:0 1px 3px color-mix(in srgb,var(--color-on-surface) 5%,transparent)}
+.concept-card{transition:transform .15s,border-color .15s}.concept-card:hover{transform:translateY(-2px);border-color:var(--color-primary)}
 </style>
 </head>
 <body>
@@ -237,35 +223,35 @@ input[type=range]{flex:1;accent-color:#639922}
   <div class="card">
     <div class="card-title"><i class="ti ti-book" aria-hidden="true"></i> Conceptos clave — léelos antes de continuar</div>
     <div class="concept-grid">
-      <div class="concept-card" style="background:#EAF3DE;border-color:#97C459">
+      <div class="concept-card" style="background:var(--color-secondary-container);border-color:color-mix(in srgb,var(--color-secondary) 45%,transparent)">
         <div class="cc-icon">💧</div>
-        <div class="cc-name" style="color:#27500A">Sensor de humedad</div>
-        <div class="cc-desc" style="color:#3B6D11">Mide qué tan húmeda está la tierra. Devuelve un número entre 0 y 1023. Nosotros lo convertimos a porcentaje (0%–100%).</div>
+        <div class="cc-name" style="color:var(--color-on-secondary-container)">Sensor de humedad</div>
+        <div class="cc-desc" style="color:var(--color-on-secondary-container)">Mide qué tan húmeda está la tierra. Devuelve un número entre 0 y 1023. Nosotros lo convertimos a porcentaje (0%–100%).</div>
       </div>
-      <div class="concept-card" style="background:#FAEEDA;border-color:#FAC775">
+      <div class="concept-card" style="background:var(--color-warning-container);border-color:color-mix(in srgb,var(--color-warning) 45%,transparent)">
         <div class="cc-icon">🌡️</div>
-        <div class="cc-name" style="color:#633806">Sensor de temperatura</div>
-        <div class="cc-desc" style="color:#854F0B">Mide el calor del ambiente. El LM35 devuelve voltaje: 10mV por cada grado centígrado.</div>
+        <div class="cc-name" style="color:var(--color-on-warning-container)">Sensor de temperatura</div>
+        <div class="cc-desc" style="color:var(--color-on-warning-container)">Mide el calor del ambiente. El LM35 devuelve voltaje: 10mV por cada grado centígrado.</div>
       </div>
-      <div class="concept-card" style="background:#FAECE7;border-color:#F0997B">
+      <div class="concept-card" style="background:var(--color-tertiary-container);border-color:color-mix(in srgb,var(--color-tertiary) 45%,transparent)">
         <div class="cc-icon">⚡</div>
-        <div class="cc-name" style="color:#4A1B0C">Relay (interruptor)</div>
-        <div class="cc-desc" style="color:#712B13">Es como un interruptor eléctrico controlado por Arduino. HIGH = encender bomba, LOW = apagar bomba.</div>
+        <div class="cc-name" style="color:var(--color-on-tertiary-container)">Relay (interruptor)</div>
+        <div class="cc-desc" style="color:var(--color-on-tertiary-container)">Es como un interruptor eléctrico controlado por Arduino. HIGH = encender bomba, LOW = apagar bomba.</div>
       </div>
-      <div class="concept-card" style="background:#EEEDFE;border-color:#AFA9EC">
+      <div class="concept-card" style="background:var(--color-primary-container);border-color:color-mix(in srgb,var(--color-primary) 45%,transparent)">
         <div class="cc-icon">📺</div>
-        <div class="cc-name" style="color:#26215C">LCD 16x2</div>
-        <div class="cc-desc" style="color:#3C3489">Pantalla que muestra 2 filas de 16 caracteres. Usa I2C: solo 2 cables de datos (SDA y SCL).</div>
+        <div class="cc-name" style="color:var(--color-on-primary-container)">LCD 16x2</div>
+        <div class="cc-desc" style="color:var(--color-on-primary-container)">Pantalla que muestra 2 filas de 16 caracteres. Usa I2C: solo 2 cables de datos (SDA y SCL).</div>
       </div>
-      <div class="concept-card" style="background:#E6F1FB;border-color:#85B7EB">
+      <div class="concept-card" style="background:var(--color-primary-container);border-color:color-mix(in srgb,var(--color-primary) 40%,transparent)">
         <div class="cc-icon">📊</div>
-        <div class="cc-name" style="color:#042C53">Formato CSV</div>
-        <div class="cc-desc" style="color:#0C447C">Datos separados por comas. Ejemplo: 300000,55,24.3,0 — así los puede abrir Excel o Google Sheets.</div>
+        <div class="cc-name" style="color:var(--color-on-primary-container)">Formato CSV</div>
+        <div class="cc-desc" style="color:var(--color-on-primary-container)">Datos separados por comas. Ejemplo: 300000,55,24.3,0 — así los puede abrir Excel o Google Sheets.</div>
       </div>
-      <div class="concept-card" style="background:#F1EFE8;border-color:#B4B2A9">
+      <div class="concept-card" style="background:var(--color-surface-container);border-color:var(--color-outline)">
         <div class="cc-icon">⏱️</div>
-        <div class="cc-name" style="color:#2C2C2A">millis()</div>
-        <div class="cc-desc" style="color:#5F5E5A">Función de Arduino que cuenta milisegundos desde que encendió. Úsala para medir tiempo sin pausar el programa.</div>
+        <div class="cc-name" style="color:var(--color-on-surface)">millis()</div>
+        <div class="cc-desc" style="color:var(--color-on-surface-variant)">Función de Arduino que cuenta milisegundos desde que encendió. Úsala para medir tiempo sin pausar el programa.</div>
       </div>
     </div>
   </div>
@@ -349,20 +335,20 @@ input[type=range]{flex:1;accent-color:#639922}
         <th style="padding:7px 10px;text-align:left;font-weight:500;font-size:11px;color:var(--color-text-secondary)">¿Para qué?</th>
       </tr></thead>
       <tbody>
-        <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:7px 10px">Sensor humedad</td><td style="padding:7px 10px;font-family:var(--font-mono);font-size:12px;color:#185FA5">A0</td><td style="padding:7px 10px">Entrada analógica</td><td style="padding:7px 10px;font-size:12px;color:var(--color-text-secondary)">Lee valor 0–1023</td></tr>
-        <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:7px 10px">Sensor temperatura LM35</td><td style="padding:7px 10px;font-family:var(--font-mono);font-size:12px;color:#185FA5">A1</td><td style="padding:7px 10px">Entrada analógica</td><td style="padding:7px 10px;font-size:12px;color:var(--color-text-secondary)">Voltaje → grados °C</td></tr>
-        <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:7px 10px">Relay / Bomba</td><td style="padding:7px 10px;font-family:var(--font-mono);font-size:12px;color:#185FA5">D7</td><td style="padding:7px 10px">Salida digital</td><td style="padding:7px 10px;font-size:12px;color:var(--color-text-secondary)">HIGH=bomba ON</td></tr>
-        <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:7px 10px">LCD I2C — datos</td><td style="padding:7px 10px;font-family:var(--font-mono);font-size:12px;color:#185FA5">A4 (SDA)</td><td style="padding:7px 10px">I2C datos</td><td style="padding:7px 10px;font-size:12px;color:var(--color-text-secondary)">Envía texto a pantalla</td></tr>
-        <tr><td style="padding:7px 10px">LCD I2C — reloj</td><td style="padding:7px 10px;font-family:var(--font-mono);font-size:12px;color:#185FA5">A5 (SCL)</td><td style="padding:7px 10px">I2C reloj</td><td style="padding:7px 10px;font-size:12px;color:var(--color-text-secondary)">Sincroniza comunicación</td></tr>
+        <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:7px 10px">Sensor humedad</td><td style="padding:7px 10px;font-family:var(--font-mono);font-size:12px;color:var(--color-on-primary-container)">A0</td><td style="padding:7px 10px">Entrada analógica</td><td style="padding:7px 10px;font-size:12px;color:var(--color-text-secondary)">Lee valor 0–1023</td></tr>
+        <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:7px 10px">Sensor temperatura LM35</td><td style="padding:7px 10px;font-family:var(--font-mono);font-size:12px;color:var(--color-on-primary-container)">A1</td><td style="padding:7px 10px">Entrada analógica</td><td style="padding:7px 10px;font-size:12px;color:var(--color-text-secondary)">Voltaje → grados °C</td></tr>
+        <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:7px 10px">Relay / Bomba</td><td style="padding:7px 10px;font-family:var(--font-mono);font-size:12px;color:var(--color-on-primary-container)">D7</td><td style="padding:7px 10px">Salida digital</td><td style="padding:7px 10px;font-size:12px;color:var(--color-text-secondary)">HIGH=bomba ON</td></tr>
+        <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:7px 10px">LCD I2C — datos</td><td style="padding:7px 10px;font-family:var(--font-mono);font-size:12px;color:var(--color-on-primary-container)">A4 (SDA)</td><td style="padding:7px 10px">I2C datos</td><td style="padding:7px 10px;font-size:12px;color:var(--color-text-secondary)">Envía texto a pantalla</td></tr>
+        <tr><td style="padding:7px 10px">LCD I2C — reloj</td><td style="padding:7px 10px;font-family:var(--font-mono);font-size:12px;color:var(--color-on-primary-container)">A5 (SCL)</td><td style="padding:7px 10px">I2C reloj</td><td style="padding:7px 10px;font-size:12px;color:var(--color-text-secondary)">Sincroniza comunicación</td></tr>
       </tbody>
     </table>
   </div>
 
-  <div class="guide-box" style="background:#E6F1FB;border-color:#85B7EB">
+  <div class="guide-box" style="background:var(--color-primary-container);border-color:color-mix(in srgb,var(--color-primary) 40%,transparent)">
     <div class="guide-icon">💡</div>
     <div>
-      <div class="guide-title" style="color:#0C447C">Tip importante sobre los sensores</div>
-      <div class="guide-text" style="color:#185FA5">El sensor de humedad devuelve <b>1023 cuando está seco</b> y cerca de 0 cuando está mojado. Por eso en el código usamos <code style="background:#B5D4F4;padding:1px 4px;border-radius:3px">map(valor, 1023, 0, 0, 100)</code> para invertir y convertir a porcentaje.</div>
+      <div class="guide-title" style="color:var(--color-on-primary-container)">Tip importante sobre los sensores</div>
+      <div class="guide-text" style="color:var(--color-on-primary-container)">El sensor de humedad devuelve <b>1023 cuando está seco</b> y cerca de 0 cuando está mojado. Por eso en el código usamos <code style="background:color-mix(in srgb,var(--color-primary) 35%,transparent);padding:1px 4px;border-radius:3px">map(valor, 1023, 0, 0, 100)</code> para invertir y convertir a porcentaje.</div>
     </div>
   </div>
 
@@ -376,7 +362,7 @@ input[type=range]{flex:1;accent-color:#639922}
     <div class="guide-icon">⌨️</div>
     <div>
       <div class="guide-title">Paso 3 de 4 — Completa el código</div>
-      <div class="guide-text">El código ya está casi listo. Tu trabajo es <b>encontrar y corregir 5 problemas</b>: algunos son espacios en blanco <code style="background:#C0DD97;padding:1px 4px;border-radius:3px">_____</code> que debes completar, y otros son <b>errores de indentación</b> (líneas mal alineadas). Usa las pistas si te atascas, pero intenta primero solo.</div>
+      <div class="guide-text">El código ya está casi listo. Tu trabajo es <b>encontrar y corregir 5 problemas</b>: algunos son espacios en blanco <code style="background:color-mix(in srgb,var(--color-secondary) 40%,transparent);padding:1px 4px;border-radius:3px">_____</code> que debes completar, y otros son <b>errores de indentación</b> (líneas mal alineadas). Usa las pistas si te atascas, pero intenta primero solo.</div>
     </div>
   </div>
 
@@ -385,10 +371,10 @@ input[type=range]{flex:1;accent-color:#639922}
     <div>
       <div class="warn-title">Los 5 problemas que debes resolver</div>
       <div class="warn-text">
-        <b>1.</b> ¿Cuántos milisegundos son 5 minutos? Completa <code style="background:#FAC775;padding:1px 4px;border-radius:3px">INTERVALO_CSV = _____</code><br>
-        <b>2.</b> El sensor seco devuelve 1023. Completa el rango en <code style="background:#FAC775;padding:1px 4px;border-radius:3px">map(lecturaHumedad, _____, 0, 0, 100)</code><br>
-        <b>3.</b> Para encender la bomba escribe: <code style="background:#FAC775;padding:1px 4px;border-radius:3px">digitalWrite(PIN_BOMBA, _____)</code><br>
-        <b>4.</b> Guarda el tiempo actual: <code style="background:#FAC775;padding:1px 4px;border-radius:3px">ultimoRegistro = _____</code><br>
+        <b>1.</b> ¿Cuántos milisegundos son 5 minutos? Completa <code style="background:color-mix(in srgb,var(--color-warning) 45%,transparent);padding:1px 4px;border-radius:3px">INTERVALO_CSV = _____</code><br>
+        <b>2.</b> El sensor seco devuelve 1023. Completa el rango en <code style="background:color-mix(in srgb,var(--color-warning) 45%,transparent);padding:1px 4px;border-radius:3px">map(lecturaHumedad, _____, 0, 0, 100)</code><br>
+        <b>3.</b> Para encender la bomba escribe: <code style="background:color-mix(in srgb,var(--color-warning) 45%,transparent);padding:1px 4px;border-radius:3px">digitalWrite(PIN_BOMBA, _____)</code><br>
+        <b>4.</b> Guarda el tiempo actual: <code style="background:color-mix(in srgb,var(--color-warning) 45%,transparent);padding:1px 4px;border-radius:3px">ultimoRegistro = _____</code><br>
         <b>5.</b> Hay 2 líneas con <b>indentación incorrecta</b> — búscalas y corrígelas con espacios.
       </div>
     </div>
@@ -523,9 +509,9 @@ void loop() {
     <div class="card-title"><i class="ti ti-adjustments" aria-hidden="true"></i> Simula el entorno — mueve los controles</div>
     <div class="sl-row"><label>Humedad del suelo</label><input type="range" min="0" max="100" value="62" step="1" id="sl-h" oninput="simUpdate()"/><span class="sl-val" id="vl-h">62%</span></div>
     <div class="sl-row"><label>Temperatura (°C)</label><input type="range" min="10" max="50" value="23" step="1" id="sl-t" oninput="simUpdate()"/><span class="sl-val" id="vl-t">23°C</span></div>
-    <div class="guide-box" style="margin:8px 0 0;padding:8px 12px;background:#E6F1FB;border-color:#85B7EB">
+    <div class="guide-box" style="margin:8px 0 0;padding:8px 12px;background:var(--color-primary-container);border-color:color-mix(in srgb,var(--color-primary) 40%,transparent)">
       <div class="guide-icon" style="font-size:15px">💡</div>
-      <div class="guide-text" style="color:#185FA5;font-size:12px">Baja la humedad <b>por debajo de 40%</b> y observa cómo se activa la bomba automáticamente.</div>
+      <div class="guide-text" style="color:var(--color-on-primary-container);font-size:12px">Baja la humedad <b>por debajo de 40%</b> y observa cómo se activa la bomba automáticamente.</div>
     </div>
   </div>
 
@@ -535,12 +521,12 @@ void loop() {
       <div class="sv-card">
         <div class="sv-label"><i class="ti ti-droplet" aria-hidden="true"></i> Humedad</div>
         <div class="sv-val" id="dh">62<span class="sv-unit">%</span></div>
-        <div class="pbar"><div class="pfill" id="bh" style="width:62%;background:#639922"></div></div>
+        <div class="pbar"><div class="pfill" id="bh" style="width:62%;background:var(--color-secondary)"></div></div>
       </div>
       <div class="sv-card">
         <div class="sv-label"><i class="ti ti-temperature" aria-hidden="true"></i> Temperatura</div>
         <div class="sv-val" id="dt">23<span class="sv-unit">°C</span></div>
-        <div class="pbar"><div class="pfill" id="bt" style="width:33%;background:#EF9F27"></div></div>
+        <div class="pbar"><div class="pfill" id="bt" style="width:33%;background:var(--color-warning)"></div></div>
       </div>
     </div>
     <div class="pump-row">
@@ -580,10 +566,10 @@ void loop() {
       </tbody>
     </table>
     <div style="margin-top:1rem;display:flex;gap:8px;flex-wrap:wrap">
-      <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:#EAF3DE;color:#27500A">90–100 Excelente 🌟</span>
-      <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:#E6F1FB;color:#0C447C">70–89 Aprobado ✅</span>
-      <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:#FAEEDA;color:#633806">50–69 En proceso ⚠️</span>
-      <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:#FCEBEB;color:#791F1F">0–49 Revisar ❌</span>
+      <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:var(--color-secondary-container);color:var(--color-on-secondary-container)">90–100 Excelente 🌟</span>
+      <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:var(--color-primary-container);color:var(--color-on-primary-container)">70–89 Aprobado ✅</span>
+      <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:var(--color-warning-container);color:var(--color-on-warning-container)">50–69 En proceso ⚠️</span>
+      <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:var(--color-error-container);color:var(--color-on-error-container)">0–49 Revisar ❌</span>
     </div>
   </div>
 
@@ -638,7 +624,7 @@ function updateProgress(){
 function showHint(n,txt){
   const box=document.getElementById('hint-reveal');
   box.style.display='block';
-  box.innerHTML='<span style="color:#854F0B;font-weight:500">Pista '+n+':</span> '+txt;
+  box.innerHTML='<span style="color:var(--color-on-warning-container);font-weight:500">Pista '+n+':</span> '+txt;
   const pill=document.getElementById('h'+n);
   if(!hintsUsed.includes(n)){hintsUsed.push(n);pill.classList.add('used');}
 }
@@ -724,8 +710,9 @@ function renderScore(pct,items,pen){
     updateProgress();
     
     // Automatically report success to MetaPathFinder
-    window.parent.postMessage({ type: 'EVAL_SUCCESS' }, '*');
+    window.parent.postMessage({ type: 'EVAL_SUCCESS', attempt: true }, '*');
   } else {
+    window.parent.postMessage({ type: 'EVAL_FAIL', attempt: true }, '*');
     na.style.display='flex';
     na.innerHTML='<i class="ti ti-bulb" style="font-size:16px" aria-hidden="true"></i> Revisa los errores marcados con ❌ arriba y vuelve a intentarlo para superar la puntuación mínima de 70.';
   }
@@ -741,7 +728,7 @@ function simUpdate(){
   document.getElementById('dt').innerHTML=t+'<span class="sv-unit">°C</span>';
   const bh=document.getElementById('bh');
   bh.style.width=h+'%';
-  bh.style.background=h<40?'#E24B4A':h<60?'#EF9F27':'#639922';
+  bh.style.background=h<40?'var(--color-error)':h<60?'var(--color-warning)':'var(--color-secondary)';
   document.getElementById('bt').style.width=Math.round((t-10)/40*100)+'%';
   const on=h<40;
   const dot=document.getElementById('pdot');
@@ -763,14 +750,18 @@ function csvAdd(){
 
 csvAdd();simUpdate();
 </script>
+${IFRAME_ACTIVITY_SCRIPT}
 </body>
 </html>
   `;
 
+  const { ref, srcDoc } = useThemedSrcDoc(htmlContent);
+
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: '620px', borderRadius: '0 0 2rem 2rem', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div className="flex h-full min-h-[620px] w-full flex-1 flex-col overflow-hidden rounded-b-2xl bg-surface">
       <iframe 
-        srcDoc={htmlContent} 
+        ref={ref}
+        srcDoc={srcDoc} 
         style={{ width: '100%', height: '100%', flex: 1, border: 'none' }} 
         title="Diagnóstico Huerta Escolar Arduino"
       />

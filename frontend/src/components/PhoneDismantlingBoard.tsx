@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import './PhoneDismantlingBoard.css';
+import { type OnValidation, partialAttempt } from '../lib/boardValidation';
 
 interface Component {
   id: string;
@@ -291,7 +292,7 @@ const quizData: QuizQuestion[] = [
 
 interface Props {
   challengeId: string;
-  onValidation: (success: boolean) => void;
+  onValidation: OnValidation;
 }
 
 export function PhoneDismantlingBoard({ challengeId, onValidation }: Props) {
@@ -322,7 +323,8 @@ export function PhoneDismantlingBoard({ challengeId, onValidation }: Props) {
     if (answered[qIdx]) return;
     setAnswers(prev => ({ ...prev, [qIdx]: optIdx }));
     setAnswered(prev => ({ ...prev, [qIdx]: true }));
-  }, [answered]);
+    onValidation(quizData[qIdx].correct === optIdx, partialAttempt(optIdx, qIdx));
+  }, [answered, onValidation]);
 
   const nextQuestion = useCallback(() => {
     if (currentQ < quizData.length - 1) {

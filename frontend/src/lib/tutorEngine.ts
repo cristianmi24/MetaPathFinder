@@ -96,13 +96,9 @@ export function isImpulsive(latencySeconds: number, samples: number[]): boolean 
 }
 
 /* ---------------------------------------------------------------------------
- * Pausa larga relativa al propio ritmo (en lugar de 30 s fijos)
+ * Pausa larga relativa al propio ritmo (en lugar de 30 s fijos): ver lib/pauseModel.ts
  * ------------------------------------------------------------------------- */
-export function longPauseThreshold(pauseSamples: number[], fallbackSeconds = 30): number {
-  if (pauseSamples.length < 3) return fallbackSeconds;
-  const mean = pauseSamples.reduce((a, b) => a + b, 0) / pauseSamples.length;
-  return Math.max(10, mean * 2);
-}
+export { longPauseThreshold, recordFinishedPause } from './pauseModel';
 
 /* ---------------------------------------------------------------------------
  * Estilo de aprendizaje (Felder-Silverman, versión abreviada de 8 ítems)

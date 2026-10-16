@@ -6,10 +6,11 @@ import {
   ArrowRight, RefreshCw, Sparkles, AlertTriangle
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { type OnValidation, partialAttempt } from '../lib/boardValidation';
 
 interface AdvancedIcfesBoardProps {
   challengeId: string;
-  onValidation: (correct: boolean) => void;
+  onValidation: OnValidation;
 }
 
 interface Question {
@@ -382,6 +383,7 @@ export function AdvancedIcfesBoard({ challengeId, onValidation }: AdvancedIcfesB
     if (isQuestionConfirmed || !selectedLetter) return;
 
     const isCorrect = selectedLetter === content.answers[activeQuestion.id];
+    onValidation(isCorrect, partialAttempt(selectedLetter, activeQuestion.id));
     if (isCorrect) {
       setScores(prev => prev + 1);
     }
@@ -426,11 +428,11 @@ export function AdvancedIcfesBoard({ challengeId, onValidation }: AdvancedIcfesB
 
   const getMedalDetails = (scoreVal: number) => {
     const medals = [
-      { cls: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', icon: AlertTriangle, text: 'Sigue practicando' },
-      { cls: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', icon: AlertTriangle, text: 'Sigue practicando' },
-      { cls: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: Medal, text: 'Buen intento' },
-      { cls: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: Medal, text: 'Muy bien - Aprobado' },
-      { cls: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20', icon: Trophy, text: 'Dominio sobresaliente - Aprobado' }
+      { cls: 'bg-error/10 text-error border-error/20', icon: AlertTriangle, text: 'Sigue practicando' },
+      { cls: 'bg-error/10 text-error border-error/20', icon: AlertTriangle, text: 'Sigue practicando' },
+      { cls: 'bg-warning/10 text-warning border-warning/20', icon: Medal, text: 'Buen intento' },
+      { cls: 'bg-primary/10 text-primary border-primary/20', icon: Medal, text: 'Muy bien - Aprobado' },
+      { cls: 'bg-secondary/10 text-secondary border-secondary/20', icon: Trophy, text: 'Dominio sobresaliente - Aprobado' }
     ];
     return medals[scoreVal] || medals[0];
   };
@@ -496,8 +498,8 @@ export function AdvancedIcfesBoard({ challengeId, onValidation }: AdvancedIcfesB
                           "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider",
                           pill.type === 'purple' && 'bg-primary/10 text-primary border border-primary/25',
                           pill.type === 'teal' && 'bg-secondary/10 text-secondary border border-secondary/25',
-                          pill.type === 'amber' && 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25',
-                          pill.type === 'pink' && 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25'
+                          pill.type === 'amber' && 'bg-warning/10 text-warning border border-warning/25',
+                          pill.type === 'pink' && 'bg-error/10 text-error border border-error/25'
                         )}
                       >
                         {pill.text}
@@ -558,7 +560,7 @@ export function AdvancedIcfesBoard({ challengeId, onValidation }: AdvancedIcfesB
                   <span className="px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-primary-container text-on-primary-container">
                     {activeQuestion.numLabel}
                   </span>
-                  <span className="text-[10px] font-mono text-on-surface-variant font-bold">
+                  <span className="text-[10px] tabular-nums text-on-surface-variant font-bold">
                     {activeQuestion.eyebrow}
                   </span>
                 </div>
@@ -583,9 +585,9 @@ export function AdvancedIcfesBoard({ challengeId, onValidation }: AdvancedIcfesB
                         "w-full text-left flex items-start gap-3.5 p-3.5 rounded-2xl border transition-all duration-200",
                         !isQuestionConfirmed && "hover:border-primary/50 hover:bg-primary/5 active:scale-[0.995]",
                         isSelected && !isQuestionConfirmed && "border-primary bg-primary/5 ring-2 ring-primary/10 shadow-sm",
-                        isQuestionConfirmed && isSelected && isCorrectAnswer && "bg-green-500/10 border-green-500/40 text-on-surface",
-                        isQuestionConfirmed && isSelected && !isCorrectAnswer && "bg-rose-500/10 border-rose-500/40 text-on-surface",
-                        isQuestionConfirmed && !isSelected && isCorrectAnswer && "bg-green-500/10 border-green-500/30 text-on-surface opacity-90",
+                        isQuestionConfirmed && isSelected && isCorrectAnswer && "bg-secondary/10 border-secondary/40 text-on-surface",
+                        isQuestionConfirmed && isSelected && !isCorrectAnswer && "bg-error/10 border-error/40 text-on-surface",
+                        isQuestionConfirmed && !isSelected && isCorrectAnswer && "bg-secondary/10 border-secondary/30 text-on-surface opacity-90",
                         isQuestionConfirmed && !isSelected && !isCorrectAnswer && "bg-surface-container border-outline-variant/20 opacity-40",
                         !isSelected && !isQuestionConfirmed && "bg-surface-container border-outline-variant/30"
                       )}
@@ -595,8 +597,8 @@ export function AdvancedIcfesBoard({ challengeId, onValidation }: AdvancedIcfesB
                         "w-6 h-6 rounded-full text-xs font-black flex items-center justify-center flex-shrink-0 transition-all border",
                         !isQuestionConfirmed && !isSelected && "bg-surface-container text-on-surface-variant border-outline-variant/40",
                         isSelected && !isQuestionConfirmed && "bg-primary text-on-primary border-primary",
-                        isQuestionConfirmed && isCorrectAnswer && "bg-green-600 text-white border-green-600",
-                        isQuestionConfirmed && isSelected && !isCorrectAnswer && "bg-rose-600 text-white border-rose-600",
+                        isQuestionConfirmed && isCorrectAnswer && "bg-secondary text-on-secondary border-secondary",
+                        isQuestionConfirmed && isSelected && !isCorrectAnswer && "bg-error text-on-error border-error",
                         isQuestionConfirmed && !isSelected && !isCorrectAnswer && "bg-surface-container text-on-surface-variant/40 border-outline-variant/20"
                       )}>
                         {option.letter}
@@ -615,14 +617,14 @@ export function AdvancedIcfesBoard({ challengeId, onValidation }: AdvancedIcfesB
                   className={cn(
                     "p-4 rounded-2xl border text-xs md:text-sm leading-relaxed flex items-start gap-2.5 transition-all shadow-sm",
                     selectedLetter === content.answers[activeQuestion.id] 
-                      ? 'bg-green-500/10 border-green-500/30 text-on-surface' 
-                      : 'bg-rose-500/10 border-rose-500/30 text-on-surface'
+                      ? 'bg-secondary/10 border-secondary/30 text-on-surface' 
+                      : 'bg-error/10 border-error/30 text-on-surface'
                   )}
                 >
                   {selectedLetter === content.answers[activeQuestion.id] ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5 animate-bounce" />
+                    <CheckCircle2 className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5 animate-bounce" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+                    <XCircle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
                   )}
                   <span 
                     className="font-medium"
@@ -697,17 +699,17 @@ export function AdvancedIcfesBoard({ challengeId, onValidation }: AdvancedIcfesB
           <div className={cn(
             "p-4 rounded-2xl border text-xs md:text-sm font-semibold leading-relaxed flex items-center justify-center gap-2",
             isApproved 
-              ? 'bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400' 
-              : 'bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-400'
+              ? 'bg-secondary/10 border-secondary/20 text-secondary' 
+              : 'bg-error/10 border-error/20 text-error'
           )}>
             {isApproved ? (
               <>
-                <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <Sparkles className="w-5 h-5 text-secondary" />
                 <span>¡Felicidades! Aprobaste este reto con {scores} de {content.questions.length} correctas.</span>
               </>
             ) : (
               <>
-                <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                <AlertTriangle className="w-5 h-5 text-error" />
                 <span>No alcanzaste el mínimo para aprobar (mínimo 3 de {content.questions.length}). ¡Inténtalo de nuevo!</span>
               </>
             )}

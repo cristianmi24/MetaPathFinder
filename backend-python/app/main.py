@@ -1,6 +1,7 @@
 import secrets
 from contextlib import asynccontextmanager
 from sqlalchemy import select, text
+from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
 
 from fastapi import Depends, FastAPI
@@ -19,6 +20,10 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
+        # Con varios workers (WEB_CONCURRENCY) todos arrancan a la vez: sin este candado, en una
+        # base vacía dos create_all chocan ("pg_type_typname_nsp_index") y un worker se cae.
+        if conn.dialect.name == "postgresql":
+            await conn.execute(text("SELECT pg_advisory_xact_lock(727274001)"))
         await conn.run_sync(Base.metadata.create_all)
         # No hay migraciones de Alembic en uso todavía (el esquema se crea via create_all,
         # que no altera tablas ya existentes) — se agregan columnas nuevas de forma idempotente
@@ -39,7 +44,10 @@ async def lifespan(app: FastAPI):
         await conn.execute(text("UPDATE users SET role = 'admin' WHERE role = 'teacher'"))
 
     async with async_session_factory() as session:
-        await _seed_admin(session)
+        try:
+            await _seed_admin(session)
+        except IntegrityError:
+            await session.rollback()  # otro worker creó la cuenta al mismo tiempo
 
     yield
     await engine.dispose()

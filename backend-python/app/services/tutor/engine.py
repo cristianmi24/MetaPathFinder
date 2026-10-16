@@ -7,6 +7,7 @@ El estado del estudiante es un diccionario JSON (persistido en `student_tutor_st
   "tech":       {"C1": {"RB-N1": [a, b], ...}},  # Beta-Bernoulli por escalón técnico y componente
   "strategies": {"over": {"est2": [a, b], ...}}, # brazos de Thompson por perfil de calibración
   "last_bias": float | None, "last_strategy": str | None, "last_profile": str | None,
+  "last_bias_adj": float | None, "last_step": str | None,      # sesgo ajustado por dificultad y su escalón
   "profile":    {...},                           # perfil dinámico (ver profile.py)
   "challenges_done": [...], "history": [...]
 }
@@ -22,7 +23,7 @@ from .bayes import (
     beta_credible_interval, beta_mean, beta_observations, beta_update, blocking_probability,
     indicator_contributions, is_mastered, naive_bayes_bernoulli, thompson_choose,
 )
-from .indicators import behavior_indicators, criterion_observations, text_indicators
+from .indicators import attempt_summary, behavior_indicators, criterion_observations, text_indicators
 from . import profile as learner
 
 
@@ -367,6 +368,7 @@ def process_phase_c(state: Dict[str, Any], obs: Dict[str, Any], calibration: Dic
     txt = text_indicators(obs.get("reflection_text") or "", obs.get("jg_m3_text") or "",
                           obs.get("jg_a3_text") or "", challenge.get("criterios") or [], challenge.get("titulo") or "")
     ind = behavior_indicators(obs)
+    attempts = attempt_summary(obs)
     nb_obs: Dict[str, Optional[bool]] = {**ind, "f1": txt["f1"], "f2": txt["f2"], "f3": txt["f3"],
                                          "f4": txt["f4"] if obs.get("jg_m3_text") is not None else None}
     reading = read_challenge(nb_obs, reading_prior(state.get("history") or []))
@@ -386,38 +388,51 @@ def process_phase_c(state: Dict[str, Any], obs: Dict[str, Any], calibration: Dic
         if not was and is_mastered(a, b, domain.MASTERY_THRESHOLD, domain.MIN_OBSERVATIONS):
             newly_mastered.append(cid)
 
-    # 2) Escalón técnico
+    # 2) Escalón técnico. El desempeño esperado (P(dominio) antes del reto) mide qué tan difícil
+    # era este escalón para el estudiante y sirve para ajustar el sesgo por dificultad.
     comp, step = domain.challenge_component(challenge["id"]), domain.challenge_step(challenge["id"])
     passed = bool(obs.get("passed"))
+    expected_perf = None
     if comp in state["tech"] and step:
         a, b = state["tech"][comp][step]
+        expected_perf = round(10 * beta_mean(a, b), 2)
         state["tech"][comp][step] = list(beta_update(a, b, passed))
     if challenge["id"] not in state["challenges_done"]:
         state["challenges_done"].append(challenge["id"])
 
-    # 3) Thompson: la estrategia usada "tuvo éxito" si redujo el |sesgo| frente al reto anterior.
-    # Se evalúa en el brazo del perfil con que se eligió (el del perfil dinámico antes de este reto).
+    # Sesgo ajustado por dificultad: lo que se compara entre retos (Thompson y Kalman). Al estudiante
+    # se le sigue mostrando el sesgo crudo de este reto (calibration), que es el honesto para él.
+    offset = learner.difficulty_offset(expected_perf)
+    bias_adj = round(bias - offset, 3) if bias is not None else None
+
+    # 3) Thompson: la estrategia usada "tuvo éxito" si redujo el |sesgo ajustado| frente al reto
+    # anterior, así un cambio de escalón (N1 tras fallar, N3 tras dominar) no se confunde con
+    # una mejora del monitoreo. Se evalúa en el brazo del perfil con que se eligió.
     strategy_used = obs.get("strategy_id") or state.get("last_strategy")
     strategy_outcome = None
     prev_bias = state.get("last_bias")
+    prev_adj = state.get("last_bias_adj", prev_bias)   # estados anteriores al ajuste: sesgo crudo
     prev_profile = strategy_profile(state) if prev_bias is not None else state.get("last_profile")
-    if strategy_used in domain.STRATEGIES and prev_bias is not None and bias is not None and prev_profile in state["strategies"] and group != "control":
-        success = abs(bias) < abs(prev_bias) - 0.25 or (abs(bias) <= domain.CALIBRATED_BIAS and abs(prev_bias) <= domain.CALIBRATED_BIAS)
+    if strategy_used in domain.STRATEGIES and prev_adj is not None and bias_adj is not None and prev_profile in state["strategies"] and group != "control":
+        success = abs(bias_adj) < abs(prev_adj) - 0.25 or (abs(bias_adj) <= domain.CALIBRATED_BIAS and abs(prev_adj) <= domain.CALIBRATED_BIAS)
         a, b = state["strategies"][prev_profile][strategy_used]
         state["strategies"][prev_profile][strategy_used] = list(beta_update(a, b, success))
         strategy_outcome = {"strategy_id": strategy_used, "profile": prev_profile, "success": success,
-                            "prev_bias": prev_bias, "bias": bias}
+                            "prev_bias": prev_bias, "bias": bias, "prev_bias_adj": prev_adj, "bias_adj": bias_adj,
+                            "prev_step": state.get("last_step"), "step": step, "same_step": state.get("last_step") == step}
     profile = calibration.get("cluster") or "cal"
     state["last_bias"], state["last_strategy"], state["last_profile"] = bias, strategy_used, profile
+    state["last_bias_adj"], state["last_step"] = bias_adj, step
 
-    # 4) Perfil dinámico: calibración (Kalman), rasgos (Beta con olvido), propensión a bloquearse y ritmo
-    state["profile"] = learner.update_profile(state.get("profile"), ind, obs, bias)
+    # 4) Perfil dinámico: calibración (Kalman sobre el sesgo ajustado), rasgos, bloqueo y ritmo
+    state["profile"] = learner.update_profile(state.get("profile"), ind, obs, bias, attempts, offset)
 
     after = locate_zdp(state)
     feedback = development_feedback(before, after, crit, reading, newly_mastered)
     state["history"] = (state.get("history") or [])[-19:] + [{
         "session_id": session_id, "challenge_id": challenge["id"], "level": reading["level"],
         "posterior": reading["posterior"], "bias": bias, "score": obs.get("score"), "passed": passed,
+        "step": step, "component": comp, "expected_perf": expected_perf, "difficulty_offset": round(offset, 3), "bias_adj": bias_adj,
         "zdp": after["zdp"], "criteria": {k: v for k, v in crit.items() if v is not None},
     }]
     return {
@@ -431,6 +446,8 @@ def process_phase_c(state: Dict[str, Any], obs: Dict[str, Any], calibration: Dic
         "zdp_after": {k: v for k, v in after.items() if k != "criteria"},
         "criteria": after["criteria"],
         "strategy_outcome": strategy_outcome,
+        "attempts": attempts,
+        "difficulty": {"step": step, "expected_perf": expected_perf, "offset": round(offset, 3), "bias": bias, "bias_adj": bias_adj},
         "profile": learner.summary(state["profile"]),
         "feedback": feedback,
         "overlay": tech_overlay(state),

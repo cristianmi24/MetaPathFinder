@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './SandwichAlgorithm.css';
+import { type OnValidation, stateReport } from '../lib/boardValidation';
 
 interface Block {
   id: string;
@@ -27,7 +28,7 @@ const WRONG_BLOCKS: Block[] = [
 
 const ALL_BLOCKS = [...CORRECT_ORDER, ...WRONG_BLOCKS];
 
-export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?: string, onValidation?: (success: boolean) => void }) {
+export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?: string, onValidation?: OnValidation }) {
   const [poolOrder, setPoolOrder] = useState<Block[]>([]);
   const [slotContents, setSlotContents] = useState<(Block | null)[]>(Array(7).fill(null));
   const [dragItem, setDragItem] = useState<{ block: Block, from: { type: 'pool' } | { type: 'slot', index: number } } | null>(null);
@@ -142,7 +143,7 @@ export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?:
         type: 'fail',
         text: <><i className="ti ti-alert-circle" style={{fontSize:'18px',flexShrink:0}}></i> Colocados: {filled} de 7 bloques. ¡Completa los 7 pasos!</>
       });
-      if (onValidation) onValidation(false);
+      if (onValidation) onValidation(false, stateReport(slots.map(b => b?.id ?? null)));
     } else if (correct === 7) {
       setFeedback({
         show: true,
@@ -150,14 +151,14 @@ export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?:
         text: <><i className="ti ti-trophy" style={{fontSize:'18px',flexShrink:0}}></i> ¡Perfecto! Armaste el sándwich en el orden correcto.</>
       });
       throwConfetti();
-      if (onValidation) onValidation(true);
+      if (onValidation) onValidation(true, stateReport(slots.map(b => b?.id ?? null)));
     } else {
       setFeedback({
         show: true,
         type: 'partial',
         text: <><i className="ti ti-star-half" style={{fontSize:'18px',flexShrink:0}}></i> Tienes {correct} de 7 correctos.</>
       });
-      if (onValidation) onValidation(false);
+      if (onValidation) onValidation(false, stateReport(slots.map(b => b?.id ?? null)));
     }
   };
 
@@ -180,7 +181,7 @@ export function SandwichAlgorithm({ challengeId, onValidation }: { challengeId?:
   };
 
   return (
-    <div className="sandwich-app w-full h-full p-4 overflow-auto relative bg-white dark:bg-[#1a1b1e] rounded-xl border border-gray-200 dark:border-gray-800">
+    <div className="sandwich-app w-full h-full p-4 overflow-auto relative rounded-2xl border border-outline-variant bg-surface-container-lowest">
       <div className="top-bar">
         <h1>Arma el sándwich</h1>
         <div className="score-badge">{getCorrectCount()} / 7 correctos</div>

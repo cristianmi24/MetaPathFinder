@@ -1,21 +1,21 @@
 .pdb-root {
-  /* Light mode defaults */
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --surface2: #f1f5f9;
-  --surface3: #e2e8f0;
-  --accent: #0ea5e9;
-  --accent2: #f97316;
-  --accent3: #7c3aed;
-  --green: #16a34a;
-  --red: #ef4444;
-  --yellow: #f59e0b;
-  --text: #0f172a;
-  --text-muted: #64748b;
-  --text-dim: #94a3b8;
-  --border: #e2e8f0;
-  --border-active: rgba(14, 165, 233, 0.3);
-  font-family: 'Sora', sans-serif;
+  /* Tokens del tema de la app (claro/oscuro vía .dark en <html>) */
+  --bg: var(--color-surface-container-low);
+  --surface: var(--color-surface-container-lowest);
+  --surface2: var(--color-surface-container);
+  --surface3: var(--color-surface-container-high);
+  --accent: var(--color-primary);
+  --accent2: var(--color-tertiary);
+  --accent3: var(--color-primary);
+  --green: var(--color-secondary);
+  --red: var(--color-error);
+  --yellow: var(--color-warning);
+  --text: var(--color-on-surface);
+  --text-muted: var(--color-on-surface-variant);
+  --text-dim: color-mix(in srgb, var(--color-on-surface-variant) 80%, var(--color-surface));
+  --border: var(--color-outline-variant);
+  --border-active: color-mix(in srgb, var(--color-primary) 35%, transparent);
+  font-family: var(--font-sans);
   background: var(--bg);
   color: var(--text);
   width: 100%;
@@ -31,10 +31,10 @@
   position: relative;
 }
 .pdb-header h1 {
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sans);
   font-size: clamp(1.4rem, 2.5vw, 1.8rem);
   font-weight: 800;
-  background: linear-gradient(135deg, #00e5ff, #7c3aed);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -60,7 +60,7 @@
 }
 .pdb-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #00e5ff, #7c3aed);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
   border-radius: 2px;
   transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
 }
@@ -91,10 +91,10 @@
   border-radius: 12px;
   transition: all 0.6s cubic-bezier(0.4,0,0.2,1);
   cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 .pdb-layer.selected {
-  box-shadow: 0 0 0 2px var(--accent), 0 0 20px rgba(0,229,255,0.2);
+  box-shadow: 0 0 0 2px var(--accent), 0 0 20px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 .pdb-layer.exploded {
   opacity: 0.12;
@@ -169,7 +169,7 @@
   flex-shrink: 0;
 }
 .pdb-panel-title h3 {
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.1rem;
   font-weight: 700;
   margin-bottom: 2px;
@@ -195,10 +195,10 @@
   font-size: 0.65rem;
   font-weight: 600;
 }
-.pdb-badge-toxic   { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.18); }
-.pdb-badge-partial { background: rgba(245,158,11,0.1); color: #fbbf24; border: 1px solid rgba(245,158,11,0.18); }
-.pdb-badge-safe    { background: rgba(34,197,94,0.1); color: #4ade80; border: 1px solid rgba(34,197,94,0.18); }
-.pdb-badge-maker   { background: rgba(124,58,237,0.08); color: #a78bfa; border: 1px solid rgba(124,58,237,0.18); }
+.pdb-badge-toxic   { background: color-mix(in srgb, var(--red) 10%, transparent); color: var(--red); border: 1px solid color-mix(in srgb, var(--red) 18%, transparent); }
+.pdb-badge-partial { background: color-mix(in srgb, var(--yellow) 10%, transparent); color: var(--yellow); border: 1px solid color-mix(in srgb, var(--yellow) 18%, transparent); }
+.pdb-badge-safe    { background: color-mix(in srgb, var(--green) 10%, transparent); color: var(--green); border: 1px solid color-mix(in srgb, var(--green) 18%, transparent); }
+.pdb-badge-maker   { background: color-mix(in srgb, var(--accent3) 8%, transparent); color: var(--accent3); border: 1px solid color-mix(in srgb, var(--accent3) 18%, transparent); }
 
 .pdb-info-grid {
   display: grid;
@@ -260,7 +260,7 @@
   color: var(--text);
   padding: 8px 18px;
   border-radius: 8px;
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 500;
   cursor: pointer;
@@ -269,7 +269,7 @@
 .pdb-nav-btn:hover:not(:disabled) { background: var(--surface3); border-color: var(--border-active); color: var(--accent); }
 .pdb-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .pdb-nav-btn.primary {
-  background: linear-gradient(135deg, rgba(0,229,255,0.12), rgba(124,58,237,0.12));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, transparent), color-mix(in srgb, var(--accent3) 12%, transparent));
   border-color: var(--border-active);
   color: var(--accent);
 }
@@ -286,8 +286,8 @@
   padding: 1.5rem;
   margin-bottom: 1rem;
 }
-.pdb-quiz-card.answered-correct { border-color: rgba(34,197,94,0.35); }
-.pdb-quiz-card.answered-wrong   { border-color: rgba(239,68,68,0.35); }
+.pdb-quiz-card.answered-correct { border-color: color-mix(in srgb, var(--green) 35%, transparent); }
+.pdb-quiz-card.answered-wrong   { border-color: color-mix(in srgb, var(--red) 35%, transparent); }
 .pdb-qnum {
   font-size: 0.6rem;
   text-transform: uppercase;
@@ -297,9 +297,9 @@
 }
 .pdb-qdiff {
   display: inline-block;
-  background: rgba(245,158,11,0.08);
-  color: #fbbf24;
-  border: 1px solid rgba(245,158,11,0.18);
+  background: color-mix(in srgb, var(--yellow) 8%, transparent);
+  color: var(--yellow);
+  border: 1px solid color-mix(in srgb, var(--yellow) 18%, transparent);
   padding: 2px 7px;
   border-radius: 4px;
   font-size: 0.6rem;
@@ -324,7 +324,7 @@
   border-radius: 8px;
   padding: 10px 14px;
   text-align: left;
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.8rem;
   color: var(--text-dim);
   cursor: pointer;
@@ -333,10 +333,10 @@
   align-items: flex-start;
   gap: 8px;
 }
-.pdb-opt-btn:hover:not(:disabled) { background: var(--surface3); border-color: rgba(124,58,237,0.25); color: var(--text); }
+.pdb-opt-btn:hover:not(:disabled) { background: var(--surface3); border-color: color-mix(in srgb, var(--accent3) 25%, transparent); color: var(--text); }
 .pdb-opt-btn:disabled { cursor: default; }
-.pdb-opt-btn.correct { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.35); color: #4ade80; }
-.pdb-opt-btn.wrong   { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.35); color: #f87171; }
+.pdb-opt-btn.correct { background: color-mix(in srgb, var(--green) 8%, transparent); border-color: color-mix(in srgb, var(--green) 35%, transparent); color: var(--green); }
+.pdb-opt-btn.wrong   { background: color-mix(in srgb, var(--red) 8%, transparent); border-color: color-mix(in srgb, var(--red) 35%, transparent); color: var(--red); }
 .pdb-opt-letter {
   display: inline-flex;
   align-items: center;
@@ -350,8 +350,8 @@
   color: var(--text-muted);
   flex-shrink: 0;
 }
-.pdb-opt-btn.correct .pdb-opt-letter { background: rgba(34,197,94,0.18); color: #4ade80; }
-.pdb-opt-btn.wrong .pdb-opt-letter { background: rgba(239,68,68,0.18); color: #f87171; }
+.pdb-opt-btn.correct .pdb-opt-letter { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); }
+.pdb-opt-btn.wrong .pdb-opt-letter { background: color-mix(in srgb, var(--red) 18%, transparent); color: var(--red); }
 
 .pdb-feedback {
   margin-top: 10px;
@@ -362,8 +362,8 @@
   display: none;
 }
 .pdb-feedback.show { display: block; }
-.pdb-feedback.correct { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.18); color: #86efac; }
-.pdb-feedback.wrong   { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.18); color: #fca5a5; }
+.pdb-feedback.correct { background: color-mix(in srgb, var(--green) 6%, transparent); border: 1px solid color-mix(in srgb, var(--green) 18%, transparent); color: var(--color-on-secondary-container); }
+.pdb-feedback.wrong   { background: color-mix(in srgb, var(--red) 6%, transparent); border: 1px solid color-mix(in srgb, var(--red) 18%, transparent); color: var(--color-on-error-container); }
 
 .pdb-quiz-nav {
   display: flex;
@@ -380,10 +380,10 @@
   margin-bottom: 2rem;
 }
 .pdb-score-num {
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sans);
   font-size: 3rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #00e5ff, #7c3aed);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -396,21 +396,3 @@
   .pdb-info-cell:nth-child(odd) { border-right: none; }
 }
 
-/* Dark mode overrides for PhoneDismantlingBoard */
-.dark .pdb-root {
-  --bg: #0a0e1a;
-  --surface: #111827;
-  --surface2: #1a2235;
-  --surface3: #1e2a3a;
-  --accent: #00e5ff;
-  --accent2: #ff6b35;
-  --accent3: #7c3aed;
-  --green: #22c55e;
-  --red: #ef4444;
-  --yellow: #f59e0b;
-  --text: #e2e8f0;
-  --text-muted: #64748b;
-  --text-dim: #94a3b8;
-  --border: rgba(255,255,255,0.08);
-  --border-active: rgba(0,229,255,0.3);
-}

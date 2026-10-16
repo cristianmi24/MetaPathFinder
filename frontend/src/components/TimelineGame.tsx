@@ -5,7 +5,10 @@ import {
   type DragEndEvent, type DragStartEvent,
 } from '@dnd-kit/core';
 import { motion, LayoutGroup } from 'motion/react';
-import { Check, X, RotateCcw, Sparkles, Hourglass, Hand } from 'lucide-react';
+import { Check, X, RotateCcw, Sparkles, Hourglass, Hand, Gauge } from 'lucide-react';
+import { useTutorStore } from '../stores/useTutorStore';
+import { LEVEL_SHORT, PROFILE_LABEL } from '../lib/tutorEngine';
+import { type OnValidation, attempt } from '../lib/boardValidation';
 
 type Item = { id: number; name: string; year: string; order: number; img: string; credit: string };
 
@@ -69,8 +72,8 @@ function CardFace({ item, verdict, lifted }: { item: Item; verdict?: boolean; li
       </div>
       <div className="px-2.5 py-2">
         <div className="text-[13px] font-semibold leading-tight text-on-surface">{item.name}</div>
-        <div className="mt-0.5 h-4 text-[11px] text-on-surface-variant">
-          {verdict === true ? item.year : verdict === false ? '¿Antes o después?' : ' '}
+        <div className="mt-0.5 text-[12px] font-medium tabular-nums text-primary">
+          {item.year}
         </div>
       </div>
       {verdict !== undefined && (
@@ -149,8 +152,46 @@ function Tray({ children, empty }: { children: React.ReactNode; empty: boolean }
   );
 }
 
+// ---------- Nivel asignado ----------
+const PROFILE_HINT: Record<string, string> = {
+  over: 'Tiendes a confiar más de lo que aciertas: verifica antes de dar por terminado.',
+  sub: 'Aciertas más de lo que crees: confía un poco más en tu razonamiento.',
+  cal: 'Tu confianza coincide con tus resultados. ¡Sigue así!',
+};
+
+/** Nivel en que el tutor ubica al estudiante (ZDP) y su último perfil de calibración. */
+function LevelBanner() {
+  const tutor = useTutorStore(s => s.state);
+  const zdp = tutor?.zdp?.zdp;
+  const profile = tutor?.last_profile ?? null;
+  const bias = tutor?.last_bias ?? null;
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-primary/20 bg-primary-container/40 px-4 py-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary"><Gauge size={18} /></span>
+      <div className="min-w-0 flex-1">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-on-primary-container/70">Tu nivel según tu calibración</div>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-on-primary-container">
+          <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-on-primary">
+            {zdp ? (LEVEL_SHORT[zdp] ?? zdp) : 'Básico'}
+          </span>
+          {profile ? (
+            <span>
+              Calibración: <b>{PROFILE_LABEL[profile] ?? profile}</b>
+              {bias !== null && <span className="text-on-primary-container/70"> (sesgo {bias > 0 ? '+' : ''}{bias.toFixed(2)})</span>}
+            </span>
+          ) : (
+            <span className="text-on-primary-container/80">Aún sin calibración: empiezas en el nivel Básico.</span>
+          )}
+        </div>
+        {profile && PROFILE_HINT[profile] && <div className="mt-0.5 text-xs text-on-primary-container/80">{PROFILE_HINT[profile]}</div>}
+      </div>
+      <div className="text-xs text-on-primary-container/80">Este reto: <b>Básico · N1</b></div>
+    </div>
+  );
+}
+
 // ---------- Juego ----------
-export default function TimelineGame({ onValidation }: { onValidation?: (success: boolean) => void } = {}) {
+export default function TimelineGame({ onValidation }: { onValidation?: OnValidation } = {}) {
   const [tray, setTray] = useState<number[]>(shuffled);
   const [line, setLine] = useState<(number | null)[]>(() => new Array(N).fill(null));
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -207,7 +248,7 @@ export default function TimelineGame({ onValidation }: { onValidation?: (success
     line.forEach((id, i) => { if (id !== null) v[id] = byId(id).order === i + 1; });
     setVerdict(v);
     setAttempts(a => a + 1);
-    onValidation?.(Object.values(v).every(Boolean));
+    onValidation?.(Object.values(v).every(Boolean), attempt(line));
   };
 
   const reset = () => {
@@ -227,7 +268,7 @@ export default function TimelineGame({ onValidation }: { onValidation?: (success
             </div>
             <h2 className="text-xl font-semibold text-on-surface md:text-2xl">Ordena la historia</h2>
             <p className="mt-1 flex items-center gap-1.5 text-sm text-on-surface-variant">
-              <Hand size={14} /> Toca una tarjeta para ponerla en la línea, o arrástrala al lugar exacto. Del más antiguo al más reciente.
+              <Hand size={14} /> Toca una tarjeta para ponerla en la línea, o arrástrala al lugar exacto. Fíjate en el año: del más antiguo al más reciente.
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -248,6 +289,8 @@ export default function TimelineGame({ onValidation }: { onValidation?: (success
             </div>
           </div>
         </header>
+
+        <LevelBanner />
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
           <LayoutGroup>

@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import './CodeBlockBoard.css';
+import { type OnValidation, attempt } from '../lib/boardValidation';
 
 interface CodeToken {
   t: string;
@@ -108,7 +109,7 @@ const EXERCISES: Record<string, Exercise> = {
 interface Props {
   id?: string;
   challengeId?: string;
-  onValidation?: (success: boolean) => void;
+  onValidation?: OnValidation;
   readOnly?: boolean;
 }
 
@@ -185,7 +186,7 @@ export function CodeBlockBoard({ id, challengeId, onValidation, readOnly }: Prop
       setConsoleLines([
         { t: 'warn', v: 'Faltan espacios por completar. Arrastra todos los bloques antes de ejecutar.' }
       ]);
-      if (onValidation) onValidation(false); // Intento incompleto
+      if (onValidation) onValidation(false, attempt(blanks.map(b => b.answer))); // Intento incompleto
       return;
     }
 
@@ -212,7 +213,7 @@ export function CodeBlockBoard({ id, challengeId, onValidation, readOnly }: Prop
         setSuccess(true);
         setError(null);
         if (onValidation) {
-          setTimeout(() => onValidation(true), 1500);
+          setTimeout(() => onValidation(true, attempt(blanks.map(b => b.answer))), 1500);
         }
       }, 400);
     } else {
@@ -224,7 +225,7 @@ export function CodeBlockBoard({ id, challengeId, onValidation, readOnly }: Prop
       setTimeout(() => {
         setConsoleLines(newConsole);
         setError(msg);
-        if (onValidation) onValidation(false); // Intento fallido
+        if (onValidation) onValidation(false, attempt(blanks.map(b => b.answer))); // Intento fallido
       }, 400);
     }
   }, [blanks, allBlanksFilled, exercise, onValidation]);
@@ -391,7 +392,7 @@ export function CodeBlockBoard({ id, challengeId, onValidation, readOnly }: Prop
                   draggable={!used && !readOnly}
                   onDragStart={(e) => !used && handleDragStart(e, block)}
                 >
-                  <i className="ti ti-grip-vertical" style={{ fontSize: 12, color: '#555' }}></i>
+                  <i className="ti ti-grip-vertical" style={{ fontSize: 12, color: 'var(--color-outline)' }}></i>
                   {block}
                 </div>
               );

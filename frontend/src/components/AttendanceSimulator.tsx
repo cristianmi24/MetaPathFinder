@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { type OnValidation, attempt } from '../lib/boardValidation';
 
 const NAMES = [
   "Ana García","Luis Martínez","Sofía López","Carlos Pérez",
@@ -17,7 +18,7 @@ const INITIAL_BLOCKS = [
   { id: 'b7', correct: 7, typeClass: 'blk-end', icon: 'ti-flag', text: 'Fin del programa' }
 ];
 
-export function AttendanceSimulator({ challengeId, onValidation }: { challengeId?: string, onValidation?: (success: boolean) => void }) {
+export function AttendanceSimulator({ challengeId, onValidation }: { challengeId?: string, onValidation?: OnValidation }) {
   const [blocks, setBlocks] = useState(INITIAL_BLOCKS);
   const [running, setRunning] = useState(false);
   const [usedAttempt, setUsedAttempt] = useState(false);
@@ -84,7 +85,7 @@ export function AttendanceSimulator({ challengeId, onValidation }: { challengeId
     if (running) return;
     if (usedAttempt) {
       addLog("cb-err", "BLOQUEADO", "Ya usaste tu único intento. Presiona <b>Reiniciar</b>.");
-      setBubble({ html: "<span style='color:#791F1F'>Ya usaste tu intento.</span>", cls: "err" });
+      setBubble({ html: "<span style='color:color-mix(in srgb, var(--color-error) 50%, var(--color-on-surface))'>Ya usaste tu intento.</span>", cls: "err" });
       return;
     }
     setUsedAttempt(true);
@@ -95,12 +96,12 @@ export function AttendanceSimulator({ challengeId, onValidation }: { challengeId
     if (mal > 0) {
       const txt = mal === 1 ? "Solo te equivocaste en <b>1</b> posición." : `Los bloques no están en orden (<b>${mal}</b> mal).`;
       addLog("cb-err", "ERROR", txt + " Has perdido tu único intento.");
-      setBubble({ html: `<span style='color:#791F1F'>${txt}<br>Presiona <b>Reiniciar</b>.</span>`, cls: "err" });
-      if (onValidation) onValidation(false);
+      setBubble({ html: `<span style='color:color-mix(in srgb, var(--color-error) 50%, var(--color-on-surface))'>${txt}<br>Presiona <b>Reiniciar</b>.</span>`, cls: "err" });
+      if (onValidation) onValidation(false, attempt(blocks.map(b => b.correct)));
       return;
     }
 
-    if (onValidation) onValidation(true);
+    if (onValidation) onValidation(true, attempt(blocks.map(b => b.correct)));
     
     setRunning(true);
     setPresentes(0);
@@ -187,78 +188,78 @@ export function AttendanceSimulator({ challengeId, onValidation }: { challengeId
   return (
     <div className="sim-app-wrapper" style={{ width: '100%', fontFamily: 'var(--font-sans, sans-serif)' }}>
       <style>{`
-        .sim-app { border-radius: 0 0 2rem 2rem; overflow: hidden; background: #fff; text-align: left; }
-        .sim-topbar { background: #534AB7; padding: 10px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .sim-topbar-title { color: #fff; font-size: 15px; font-weight: 500; flex: 1; display: flex; align-items: center; gap: 6px; margin: 0; }
-        .sim-run-btn { display: flex; align-items: center; gap: 5px; padding: 7px 16px; border-radius: 20px; background: #FAC775; color: #412402; font-size: 13px; font-weight: 500; cursor: pointer; border: none; font-family: inherit; transition: background .15s; }
-        .sim-run-btn:hover { background: #EF9F27; }
-        .sim-run-btn:disabled { background: #D3D1C7; color: #888; cursor: not-allowed; }
-        .sim-reset-btn { display: flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 20px; background: transparent; color: #CECBF6; border: 1.5px solid #7F77DD; font-size: 13px; cursor: pointer; font-family: inherit; }
-        .sim-reset-btn:hover { background: #3C3489; color: #fff; }
+        .sim-app { border-radius: 0 0 1.25rem 1.25rem; overflow: hidden; background: var(--color-surface-container-lowest); color: var(--color-on-surface); text-align: left; }
+        .sim-topbar { background: var(--color-primary); padding: 10px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .sim-topbar-title { color: var(--color-on-primary); font-size: 15px; font-weight: 500; flex: 1; display: flex; align-items: center; gap: 6px; margin: 0; }
+        .sim-run-btn { display: flex; align-items: center; gap: 5px; padding: 7px 16px; border-radius: 20px; background: color-mix(in srgb, #d18a1c 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, #d18a1c 40%, var(--color-on-surface)); font-size: 13px; font-weight: 500; cursor: pointer; border: none; font-family: inherit; transition: background .15s; }
+        .sim-run-btn:hover { background: color-mix(in srgb, #d18a1c 50%, var(--color-surface-container-lowest)); }
+        .sim-run-btn:disabled { background: var(--color-surface-container-highest); color: var(--color-on-surface-variant); cursor: not-allowed; }
+        .sim-reset-btn { display: flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 20px; background: transparent; color: var(--color-on-primary); border: 1.5px solid color-mix(in srgb, var(--color-on-primary) 45%, transparent); font-size: 13px; cursor: pointer; font-family: inherit; }
+        .sim-reset-btn:hover { background: color-mix(in srgb, var(--color-on-primary) 16%, transparent); }
         
         .sim-body { display: grid; grid-template-columns: 260px 1fr; min-height: 450px; }
         @media (max-width: 600px) { .sim-body { grid-template-columns: 1fr; } }
         
-        .sim-blocks { background: #F0EDFF; border-right: 0.5px solid #AFA9EC; padding: 10px 8px; display: flex; flex-direction: column; gap: 5px; }
-        .sim-blocks-head { font-size: 10px; font-weight: 500; letter-spacing: .07em; color: #534AB7; text-transform: uppercase; padding: 2px 6px; margin-bottom: 2px; }
+        .sim-blocks { background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface-container-lowest)); border-right: 0.5px solid color-mix(in srgb, var(--color-primary) 50%, var(--color-surface-container-lowest)); padding: 10px 8px; display: flex; flex-direction: column; gap: 5px; }
+        .sim-blocks-head { font-size: 10px; font-weight: 500; letter-spacing: .07em; color: color-mix(in srgb, var(--color-primary) 72%, var(--color-on-surface)); text-transform: uppercase; padding: 2px 6px; margin-bottom: 2px; }
         .sim-blk { border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 500; display: flex; align-items: flex-start; gap: 7px; line-height: 1.4; transition: transform .12s; cursor: grab; user-select: none; }
         .sim-blk:active { cursor: grabbing; }
         .sim-blk i { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
-        .sim-blk.active { outline: 3px solid #185FA5; outline-offset: 1px; transform: scale(1.03); z-index: 10; }
+        .sim-blk.active { outline: 3px solid color-mix(in srgb, #378ADD 72%, var(--color-on-surface)); outline-offset: 1px; transform: scale(1.03); z-index: 10; }
         
-        .blk-start { background: #FAC775; color: #412402; }
-        .blk-list { background: #B5D4F4; color: #042C53; }
-        .blk-loop { background: #9FE1CB; color: #04342C; }
-        .blk-ask { background: #CECBF6; color: #26215C; }
-        .blk-val { background: #F5C4B3; color: #4A1B0C; }
-        .blk-cnt { background: #C0DD97; color: #173404; }
-        .blk-show { background: #FAC775; color: #412402; }
-        .blk-end { background: #D3D1C7; color: #2C2C2A; }
+        .blk-start { background: color-mix(in srgb, #d18a1c 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, #d18a1c 40%, var(--color-on-surface)); }
+        .blk-list { background: color-mix(in srgb, #378ADD 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, #378ADD 40%, var(--color-on-surface)); }
+        .blk-loop { background: color-mix(in srgb, var(--color-secondary) 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, var(--color-secondary) 40%, var(--color-on-surface)); }
+        .blk-ask { background: color-mix(in srgb, var(--color-primary) 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, var(--color-primary) 40%, var(--color-on-surface)); }
+        .blk-val { background: color-mix(in srgb, #D85A30 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, #D85A30 40%, var(--color-on-surface)); }
+        .blk-cnt { background: color-mix(in srgb, #639922 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, #639922 40%, var(--color-on-surface)); }
+        .blk-show { background: color-mix(in srgb, #d18a1c 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, #d18a1c 40%, var(--color-on-surface)); }
+        .blk-end { background: var(--color-surface-container-highest); color: var(--color-on-surface); }
         
-        .sim-blk + .sim-blk { border-top: 2px dashed #AFA9EC; margin-top: 0; }
+        .sim-blk + .sim-blk { border-top: 2px dashed color-mix(in srgb, var(--color-primary) 50%, var(--color-surface-container-lowest)); margin-top: 0; }
         .sim-blk.dragging { opacity: 0.4; }
-        .sim-blk.drag-over { border-top: 3px solid #185FA5; }
+        .sim-blk.drag-over { border-top: 3px solid color-mix(in srgb, #378ADD 72%, var(--color-on-surface)); }
         
-        .sim-stage { display: flex; flex-direction: column; background: #fff; overflow: hidden; }
-        .sim-instr { background: #FAEEDA; border-bottom: 1px solid #FAC775; padding: 8px 14px; font-size: 12px; color: #412402; line-height: 1.5; margin: 0; }
-        .sim-instr strong { color: #633806; }
+        .sim-stage { display: flex; flex-direction: column; background: var(--color-surface-container-lowest); overflow: hidden; }
+        .sim-instr { background: color-mix(in srgb, #d18a1c 14%, var(--color-surface-container-lowest)); border-bottom: 1px solid color-mix(in srgb, #d18a1c 30%, var(--color-surface-container-lowest)); padding: 8px 14px; font-size: 12px; color: color-mix(in srgb, #d18a1c 40%, var(--color-on-surface)); line-height: 1.5; margin: 0; }
+        .sim-instr strong { color: color-mix(in srgb, #d18a1c 50%, var(--color-on-surface)); }
         
-        .sim-sprite-area { background: #E6F1FB; padding: 12px 16px; display: flex; align-items: center; gap: 14px; border-bottom: 0.5px solid #B5D4F4; min-height: 90px; }
+        .sim-sprite-area { background: color-mix(in srgb, #378ADD 14%, var(--color-surface-container-lowest)); padding: 12px 16px; display: flex; align-items: center; gap: 14px; border-bottom: 0.5px solid color-mix(in srgb, #378ADD 30%, var(--color-surface-container-lowest)); min-height: 90px; }
         .sim-sprite-fig { text-align: center; }
         .sim-sprite-icon { font-size: 44px; line-height: 1; }
-        .sim-sprite-lbl { font-size: 11px; color: #0C447C; font-weight: 500; margin-top: 3px; }
-        .sim-bubble { background: #fff; border: 2px solid #378ADD; border-radius: 12px; padding: 9px 13px; font-size: 13px; color: #042C53; line-height: 1.5; flex: 1; position: relative; }
-        .sim-bubble::before { content: ''; position: absolute; left: -11px; top: 50%; transform: translateY(-50%); border: 5px solid transparent; border-right-color: #378ADD; }
-        .sim-bubble.ok { border-color: #1D9E75; color: #04342C; }
-        .sim-bubble.ok::before { border-right-color: #1D9E75; }
-        .sim-bubble.err { border-color: #E24B4A; color: #501313; }
-        .sim-bubble.err::before { border-right-color: #E24B4A; }
+        .sim-sprite-lbl { font-size: 11px; color: color-mix(in srgb, #378ADD 50%, var(--color-on-surface)); font-weight: 500; margin-top: 3px; }
+        .sim-bubble { background: var(--color-surface-container-lowest); border: 2px solid color-mix(in srgb, #378ADD 88%, var(--color-on-surface)); border-radius: 12px; padding: 9px 13px; font-size: 13px; color: color-mix(in srgb, #378ADD 40%, var(--color-on-surface)); line-height: 1.5; flex: 1; position: relative; }
+        .sim-bubble::before { content: ''; position: absolute; left: -11px; top: 50%; transform: translateY(-50%); border: 5px solid transparent; border-right-color: color-mix(in srgb, #378ADD 88%, var(--color-on-surface)); }
+        .sim-bubble.ok { border-color: var(--color-secondary); color: color-mix(in srgb, var(--color-secondary) 40%, var(--color-on-surface)); }
+        .sim-bubble.ok::before { border-right-color: var(--color-secondary); }
+        .sim-bubble.err { border-color: var(--color-error); color: color-mix(in srgb, var(--color-error) 40%, var(--color-on-surface)); }
+        .sim-bubble.err::before { border-right-color: var(--color-error); }
         
-        .sim-console { flex: 1; padding: 10px 14px; max-height: 240px; overflow-y: auto; background: #fafafa; border-bottom: 0.5px solid #D3D1C7; }
-        .sim-cline { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; border-bottom: 0.5px solid #eee; font-size: 12.5px; line-height: 1.5; }
+        .sim-console { flex: 1; padding: 10px 14px; max-height: 240px; overflow-y: auto; background: var(--color-surface-container-low); border-bottom: 0.5px solid var(--color-surface-container-highest); }
+        .sim-cline { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--color-outline-variant); font-size: 12.5px; line-height: 1.5; }
         .sim-cline:last-child { border-bottom: none; }
         .sim-cbadge { border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 500; flex-shrink: 0; margin-top: 2px; white-space: nowrap; }
-        .cb-loop { background: #9FE1CB; color: #04342C; }
-        .cb-ask { background: #CECBF6; color: #26215C; }
-        .cb-ok { background: #C0DD97; color: #173404; }
-        .cb-err { background: #F5C4B3; color: #4A1B0C; }
-        .cb-res { background: #FAC775; color: #412402; }
-        .cb-inf { background: #D3D1C7; color: #2C2C2A; }
-        .sim-ctext { color: #2C2C2A; }
-        .sim-ctext b { color: #042C53; }
+        .cb-loop { background: color-mix(in srgb, var(--color-secondary) 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, var(--color-secondary) 40%, var(--color-on-surface)); }
+        .cb-ask { background: color-mix(in srgb, var(--color-primary) 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, var(--color-primary) 40%, var(--color-on-surface)); }
+        .cb-ok { background: color-mix(in srgb, #639922 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, #639922 40%, var(--color-on-surface)); }
+        .cb-err { background: color-mix(in srgb, #D85A30 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, #D85A30 40%, var(--color-on-surface)); }
+        .cb-res { background: color-mix(in srgb, #d18a1c 30%, var(--color-surface-container-lowest)); color: color-mix(in srgb, #d18a1c 40%, var(--color-on-surface)); }
+        .cb-inf { background: var(--color-surface-container-highest); color: var(--color-on-surface); }
+        .sim-ctext { color: var(--color-on-surface); }
+        .sim-ctext b { color: color-mix(in srgb, #378ADD 40%, var(--color-on-surface)); }
         
-        .sim-res-grid { display: none; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px 14px; background: #fff; }
+        .sim-res-grid { display: none; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px 14px; background: var(--color-surface-container-lowest); }
         .sim-res-grid.show { display: grid; }
-        .sim-rc { background: #F1EFE8; border-radius: 8px; padding: 10px; text-align: center; }
-        .sim-rc .rl { font-size: 11px; color: #5F5E5A; margin-bottom: 4px; }
-        .sim-rc .rv { font-size: 22px; font-weight: 500; color: #2C2C2A; }
-        .sim-rc.rg .rv { color: #085041; }
-        .sim-rc.rr .rv { color: #791F1F; }
-        .sim-rc.rb .rv { color: #0C447C; }
+        .sim-rc { background: var(--color-surface-container); border-radius: 8px; padding: 10px; text-align: center; }
+        .sim-rc .rl { font-size: 11px; color: var(--color-on-surface-variant); margin-bottom: 4px; }
+        .sim-rc .rv { font-size: 22px; font-weight: 500; color: var(--color-on-surface); }
+        .sim-rc.rg .rv { color: color-mix(in srgb, var(--color-secondary) 50%, var(--color-on-surface)); }
+        .sim-rc.rr .rv { color: color-mix(in srgb, var(--color-error) 50%, var(--color-on-surface)); }
+        .sim-rc.rb .rv { color: color-mix(in srgb, #378ADD 50%, var(--color-on-surface)); }
         
-        .sim-bar-wrap { height: 10px; background: #D3D1C7; border-radius: 5px; margin: 0 14px 14px; overflow: hidden; display: none; }
+        .sim-bar-wrap { height: 10px; background: var(--color-surface-container-highest); border-radius: 5px; margin: 0 14px 14px; overflow: hidden; display: none; }
         .sim-bar-wrap.show { display: block; }
-        .sim-bar-fill { height: 100%; background: #1D9E75; border-radius: 5px; transition: width .7s ease; }
+        .sim-bar-fill { height: 100%; background: var(--color-secondary); border-radius: 5px; transition: width .7s ease; }
       `}</style>
       
       <div className="sim-app">

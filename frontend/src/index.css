@@ -8,7 +8,9 @@
    sistema + IBM Plex Mono para datos. Paleta sobria, un solo acento.
    ========================================================================== */
 
-@theme {
+/* `static`: emite todos los tokens aunque ninguna clase los use; los tableros en iframe
+   y los CSS propios de cada actividad los leen como var(--color-*). */
+@theme static {
   /* `font-serif` se conserva como alias para títulos: usa la misma familia que el resto */
   --font-serif: "Sora", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Sora", ui-sans-serif, system-ui, sans-serif;
@@ -105,6 +107,28 @@
   --warn: #9a6a00;
   --danger: #a63a2f;
   --tour-hl: #2f6bff;
+
+  /* Alias usados por los tableros de actividad (--color-background-*, --color-text-*):
+     apuntan a los tokens, así siguen el tema claro/oscuro sin redefinirse en .dark */
+  --color-background-primary: var(--color-surface-container-lowest);
+  --color-background-secondary: var(--color-surface-container-low);
+  --color-background-tertiary: var(--color-surface-container);
+  --color-background-info: var(--color-primary-container);
+  --color-background-success: var(--color-secondary-container);
+  --color-background-warning: var(--color-warning-container);
+  --color-background-danger: var(--color-error-container);
+  --color-border-primary: var(--color-outline);
+  --color-border-secondary: var(--color-outline-variant);
+  --color-border-tertiary: var(--color-outline-variant);
+  --color-text-primary: var(--color-on-surface);
+  --color-text-secondary: var(--color-on-surface-variant);
+  --color-text-tertiary: color-mix(in srgb, var(--color-on-surface-variant) 75%, var(--color-surface));
+  --color-text-info: var(--color-on-primary-container);
+  --color-text-success: var(--color-on-secondary-container);
+  --color-text-warning: var(--color-on-warning-container);
+  --color-text-danger: var(--color-on-error-container);
+  --border-radius-md: 0.625rem;
+  --border-radius-lg: 0.875rem;
 
   --fs-xs: 0.75rem;
   --fs-sm: 0.8125rem;

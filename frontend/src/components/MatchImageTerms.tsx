@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { type OnValidation, partialAttempt } from '../lib/boardValidation';
 
 interface MatchItem {
   id: string;
@@ -18,8 +19,8 @@ const ITEMS: MatchItem[] = [
     icon: 'ti-bolt',
     benefitIcon: 'ti-bulb',
     cat: 'Eléctrica',
-    catBg: '#FAEEDA',
-    catTxt: '#633806',
+    catBg: 'color-mix(in srgb, #c27a1a 16%, var(--color-surface-container-lowest))',
+    catTxt: 'color-mix(in srgb, #c27a1a 70%, var(--color-on-surface))',
     imgLabel: 'Torres de transmisión',
     termName: 'Red eléctrica',
     benefit: 'Lleva luz a hogares, hospitales y escuelas',
@@ -29,8 +30,8 @@ const ITEMS: MatchItem[] = [
     icon: 'ti-sun',
     benefitIcon: 'ti-leaf',
     cat: 'Eléctrica',
-    catBg: '#FAEEDA',
-    catTxt: '#633806',
+    catBg: 'color-mix(in srgb, #c27a1a 16%, var(--color-surface-container-lowest))',
+    catTxt: 'color-mix(in srgb, #c27a1a 70%, var(--color-on-surface))',
     imgLabel: 'Paneles solares',
     termName: 'Energía solar',
     benefit: 'Genera electricidad limpia y reduce la contaminación',
@@ -40,8 +41,8 @@ const ITEMS: MatchItem[] = [
     icon: 'ti-train',
     benefitIcon: 'ti-users',
     cat: 'Transporte',
-    catBg: '#E6F1FB',
-    catTxt: '#0C447C',
+    catBg: 'color-mix(in srgb, #3b6fd8 16%, var(--color-surface-container-lowest))',
+    catTxt: 'color-mix(in srgb, #3b6fd8 70%, var(--color-on-surface))',
     imgLabel: 'Metro urbano',
     termName: 'Metro / tren urbano',
     benefit: 'Mueve miles de personas rápido y sin contaminar',
@@ -51,8 +52,8 @@ const ITEMS: MatchItem[] = [
     icon: 'ti-bridge',
     benefitIcon: 'ti-route',
     cat: 'Transporte',
-    catBg: '#E6F1FB',
-    catTxt: '#0C447C',
+    catBg: 'color-mix(in srgb, #3b6fd8 16%, var(--color-surface-container-lowest))',
+    catTxt: 'color-mix(in srgb, #3b6fd8 70%, var(--color-on-surface))',
     imgLabel: 'Puente vial',
     termName: 'Puente y viaducto',
     benefit: 'Conecta comunidades y acorta tiempos de viaje',
@@ -62,8 +63,8 @@ const ITEMS: MatchItem[] = [
     icon: 'ti-building-hospital',
     benefitIcon: 'ti-heartbeat',
     cat: 'Construcción',
-    catBg: '#EEEDFE',
-    catTxt: '#3C3489',
+    catBg: 'color-mix(in srgb, #6f5fc7 16%, var(--color-surface-container-lowest))',
+    catTxt: 'color-mix(in srgb, #6f5fc7 70%, var(--color-on-surface))',
     imgLabel: 'Hospital público',
     termName: 'Edificio de salud',
     benefit: 'Brinda atención médica a toda la comunidad',
@@ -73,8 +74,8 @@ const ITEMS: MatchItem[] = [
     icon: 'ti-school',
     benefitIcon: 'ti-book',
     cat: 'Construcción',
-    catBg: '#EEEDFE',
-    catTxt: '#3C3489',
+    catBg: 'color-mix(in srgb, #6f5fc7 16%, var(--color-surface-container-lowest))',
+    catTxt: 'color-mix(in srgb, #6f5fc7 70%, var(--color-on-surface))',
     imgLabel: 'Escuela pública',
     termName: 'Infraestructura educativa',
     benefit: 'Garantiza educación de calidad para niños y jóvenes',
@@ -84,8 +85,8 @@ const ITEMS: MatchItem[] = [
     icon: 'ti-droplet',
     benefitIcon: 'ti-glass',
     cat: 'Agua',
-    catBg: '#E1F5EE',
-    catTxt: '#085041',
+    catBg: 'color-mix(in srgb, #2f8a6a 16%, var(--color-surface-container-lowest))',
+    catTxt: 'color-mix(in srgb, #2f8a6a 70%, var(--color-on-surface))',
     imgLabel: 'Planta potabilizadora',
     termName: 'Acueducto',
     benefit: 'Provee agua potable limpia y segura a los hogares',
@@ -95,8 +96,8 @@ const ITEMS: MatchItem[] = [
     icon: 'ti-pipe',
     benefitIcon: 'ti-shield-check',
     cat: 'Agua',
-    catBg: '#E1F5EE',
-    catTxt: '#085041',
+    catBg: 'color-mix(in srgb, #2f8a6a 16%, var(--color-surface-container-lowest))',
+    catTxt: 'color-mix(in srgb, #2f8a6a 70%, var(--color-on-surface))',
     imgLabel: 'Red de alcantarillado',
     termName: 'Alcantarillado',
     benefit: 'Evita inundaciones y enfermedades al drenar aguas residuales',
@@ -112,7 +113,7 @@ function shuffle<T>(array: T[]) {
   return copy;
 }
 
-export default function MatchImageTerms({ onValidation }: { onValidation?: (success: boolean) => void } = {}) {
+export default function MatchImageTerms({ onValidation }: { onValidation?: OnValidation } = {}) {
   const [imgOrder, setImgOrder] = useState<MatchItem[]>(() => shuffle(ITEMS));
   const [termOrder, setTermOrder] = useState<MatchItem[]>(() => shuffle(ITEMS));
   const [selectedImgId, setSelectedImgId] = useState<string | null>(null);
@@ -160,6 +161,7 @@ export default function MatchImageTerms({ onValidation }: { onValidation?: (succ
 
     const nextTries = tries + 1;
     setTries(nextTries);
+    onValidation?.(selectedImgId === id, partialAttempt(id, selectedImgId));
 
     if (selectedImgId === id) {
       setMatchedIds(prev => {
@@ -213,21 +215,21 @@ export default function MatchImageTerms({ onValidation }: { onValidation?: (succ
 .match-image-scoped .score-box .val{font-size:15px;font-weight:700}
 .match-image-scoped .result-banner{display:none;text-align:center;font-size:13px;font-weight:600;padding:10px 14px;border-radius:12px;margin-bottom:.8rem}
 .match-image-scoped .result-banner.show{display:block}
-.match-image-scoped .result-banner.win{background:rgba(29,158,117,.14);color:#0f7a5a}
-.match-image-scoped .result-banner.lose{background:rgba(220,38,38,.12);color:#b91c1c}
+.match-image-scoped .result-banner.win{background:var(--color-secondary-container);color:var(--color-on-secondary-container)}
+.match-image-scoped .result-banner.lose{background:var(--color-error-container);color:var(--color-on-error-container)}
 .match-image-scoped .hint{text-align:center;font-size:13px;font-weight:600;color:var(--color-primary);margin:0 0 .9rem;min-height:20px}
 .match-image-scoped .game-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.match-image-scoped .col-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-on-surface-variant);margin:0 0 8px 4px}
+.match-image-scoped .col-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--color-on-surface-variant);margin:0 0 8px 4px}
 .match-image-scoped .img-col,.match-image-scoped .term-col{display:flex;flex-direction:column;gap:8px}
 .match-image-scoped .img-card,.match-image-scoped .term-card{position:relative;display:flex;align-items:center;gap:12px;min-height:58px;padding:8px 12px;border-radius:14px;background:var(--color-surface);border:1.5px solid var(--color-outline-variant);cursor:pointer;user-select:none;transition:transform .15s,border-color .15s,box-shadow .15s,background .15s}
 .match-image-scoped .img-card:hover,.match-image-scoped .term-card:hover{border-color:var(--color-primary);transform:translateY(-1px)}
 .match-image-scoped .img-card.selected{border-color:var(--color-primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--color-primary) 22%,transparent);background:color-mix(in srgb,var(--color-primary) 8%,var(--color-surface))}
-.match-image-scoped .img-card.matched,.match-image-scoped .term-card.matched{opacity:.55;cursor:default;transform:none;background:rgba(29,158,117,.08)}
+.match-image-scoped .img-card.matched,.match-image-scoped .term-card.matched{opacity:.55;cursor:default;transform:none;background:color-mix(in srgb,var(--color-secondary) 8%,transparent)}
 .match-image-scoped .ico{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
 .match-image-scoped .img-info{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
 .match-image-scoped .img-label{font-size:13px;font-weight:600;line-height:1.25}
 .match-image-scoped .cat-tag{align-self:flex-start;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 8px;border-radius:999px}
-.match-image-scoped .matched-badge{width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.match-image-scoped .matched-badge{width:22px;height:22px;border-radius:50%;background:var(--color-secondary);color:var(--color-on-secondary);font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .match-image-scoped .term-name{font-size:13px;font-weight:700}
 .match-image-scoped .term-benefit{font-size:11.5px;color:var(--color-on-surface-variant);line-height:1.35;margin-top:2px}
 .match-image-scoped .actions{display:flex;justify-content:center;margin-top:1rem}

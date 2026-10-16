@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FileText, CheckCircle2, AlertCircle, Lightbulb } from 'lucide-react';
+import { type OnValidation } from '../lib/boardValidation';
 
 interface ValidationResult {
   nota: number;
@@ -92,7 +93,7 @@ function evaluarEstructura(texto: string): ValidationResult {
 
 interface ProspectiveTechEssayProps {
   challengeId: string;
-  onValidation: (success: boolean) => void;
+  onValidation: OnValidation;
 }
 
 export function ProspectiveTechEssay({ challengeId, onValidation }: ProspectiveTechEssayProps) {
@@ -112,9 +113,9 @@ export function ProspectiveTechEssay({ challengeId, onValidation }: ProspectiveT
   }, [isSuccess, onValidation]);
 
   const getNivelColor = () => {
-    if (result.nota >= 8) return 'text-emerald-400';
-    if (result.nota >= 5) return 'text-amber-400';
-    return 'text-red-400';
+    if (result.nota >= 8) return 'text-secondary';
+    if (result.nota >= 5) return 'text-warning';
+    return 'text-error';
   };
 
   return (
@@ -147,48 +148,48 @@ export function ProspectiveTechEssay({ challengeId, onValidation }: ProspectiveT
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.tieneIntro ? 'bg-emerald-400/10 text-emerald-400' : 'bg-surface-container-highest text-on-surface-variant'}`}>
+            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.tieneIntro ? 'bg-secondary/10 text-secondary' : 'bg-surface-container-highest text-on-surface-variant'}`}>
               {result.tieneIntro ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
               Introducción
             </div>
-            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.conectoresEncontrados >= 2 ? 'bg-emerald-400/10 text-emerald-400' : 'bg-surface-container-highest text-on-surface-variant'}`}>
+            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.conectoresEncontrados >= 2 ? 'bg-secondary/10 text-secondary' : 'bg-surface-container-highest text-on-surface-variant'}`}>
               {result.conectoresEncontrados >= 2 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
               Conectores ({result.conectoresEncontrados})
             </div>
-            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.tieneConclusion ? 'bg-emerald-400/10 text-emerald-400' : 'bg-surface-container-highest text-on-surface-variant'}`}>
+            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.tieneConclusion ? 'bg-secondary/10 text-secondary' : 'bg-surface-container-highest text-on-surface-variant'}`}>
               {result.tieneConclusion ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
               Conclusión
             </div>
-            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.tieneTecnologias ? 'bg-emerald-400/10 text-emerald-400' : 'bg-surface-container-highest text-on-surface-variant'}`}>
+            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.tieneTecnologias ? 'bg-secondary/10 text-secondary' : 'bg-surface-container-highest text-on-surface-variant'}`}>
               {result.tieneTecnologias ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
               Tecnologías
             </div>
-            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.mencionaColombia ? 'bg-emerald-400/10 text-emerald-400' : 'bg-surface-container-highest text-on-surface-variant'}`}>
+            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.mencionaColombia ? 'bg-secondary/10 text-secondary' : 'bg-surface-container-highest text-on-surface-variant'}`}>
               {result.mencionaColombia ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
               Contexto Colombia
             </div>
-            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.tieneProyeccionFuturo ? 'bg-emerald-400/10 text-emerald-400' : 'bg-surface-container-highest text-on-surface-variant'}`}>
+            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.tieneProyeccionFuturo ? 'bg-secondary/10 text-secondary' : 'bg-surface-container-highest text-on-surface-variant'}`}>
               {result.tieneProyeccionFuturo ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
               Proyección futura
             </div>
-            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.tieneArgumentos ? 'bg-emerald-400/10 text-emerald-400' : 'bg-surface-container-highest text-on-surface-variant'}`}>
+            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.tieneArgumentos ? 'bg-secondary/10 text-secondary' : 'bg-surface-container-highest text-on-surface-variant'}`}>
               {result.tieneArgumentos ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
               Argumentos/impacto
             </div>
-            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.palabras >= 50 ? 'bg-emerald-400/10 text-emerald-400' : 'bg-surface-container-highest text-on-surface-variant'}`}>
+            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.palabras >= 50 ? 'bg-secondary/10 text-secondary' : 'bg-surface-container-highest text-on-surface-variant'}`}>
               {result.palabras >= 50 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
               {result.palabras} palabras
             </div>
-            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.nota >= 5 ? 'bg-emerald-400/10 text-emerald-400' : 'bg-surface-container-highest text-on-surface-variant'}`}>
+            <div className={`flex items-center gap-1.5 p-2 rounded-lg ${result.nota >= 5 ? 'bg-secondary/10 text-secondary' : 'bg-surface-container-highest text-on-surface-variant'}`}>
               {result.nota >= 5 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
               {result.nota >= 5 ? 'Aprobado' : 'No aprueba'}
             </div>
           </div>
 
           {result.nota < 5 && (
-            <div className="mt-3 p-3 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-start gap-2">
-              <Lightbulb className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-              <div className="text-xs text-amber-400/90">
+            <div className="mt-3 p-3 rounded-xl bg-warning/10 border border-warning/20 flex items-start gap-2">
+              <Lightbulb className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-warning/90">
                 <strong>Sugerencia:</strong> Para aprobar necesitas: introducción, al menos 2 conectores, conclusión,
                 mención de tecnologías (IA, RA, blockchain), contexto colombiano, proyección a futuro (2040),
                 y argumentos de impacto/inequidad. Mínimo 50 palabras.
@@ -200,7 +201,7 @@ export function ProspectiveTechEssay({ challengeId, onValidation }: ProspectiveT
 
       <div className="flex-1 p-6">
         <textarea
-          className="w-full h-full p-6 text-slate-900 bg-white border-2 border-outline-variant/30 rounded-2xl shadow-inner resize-none focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-slate-400 text-lg leading-relaxed font-medium"
+          className="w-full h-full p-6 text-on-surface bg-surface-container-lowest border-2 border-outline-variant/30 rounded-2xl shadow-inner resize-none focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-on-surface-variant/60 text-lg leading-relaxed font-medium"
           placeholder="Escribe tu artículo prospectivo sobre cómo será la educación en 2040 en Colombia. Incluye introducción, desarrollo con conectores y una conclusión. Menciona al menos 4 tecnologías (IA, realidad aumentada, nube, blockchain, etc.) y analiza su impacto."
           value={text}
           onChange={(e) => setText(e.target.value)}

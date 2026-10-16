@@ -8,7 +8,9 @@ tutor busca provocar).
 1. Calibración — filtro de Kalman de una dimensión sobre el sesgo de confianza
    (confianza − desempeño, escala 0-10). Da media, incertidumbre y la
    probabilidad de cada perfil (sobreconfianza / calibrado / subestimación),
-   en lugar de fiarse del sesgo de un solo reto.
+   en lugar de fiarse del sesgo de un solo reto. Además del sesgo del reto, se
+   corrige con cada par (confianza, acierto) de los intentos con confianza, y se
+   lleva un Brier por intento con olvido.
 2. Rasgos de autorregulación — Beta-Bernoulli con olvido alimentada por los
    indicadores de conducta e1–e9 de cada reto (planificar, estimar el tiempo,
    pedir ayuda a tiempo, autonomía, control de la impulsividad, monitoreo,
@@ -38,6 +40,20 @@ BIAS_PRIOR_MEAN: float = 0.0
 BIAS_PRIOR_SD: float = 2.0       # antes de observar nada, el sesgo puede estar en ±4
 BIAS_PROCESS_SD: float = 0.6     # cuánto puede cambiar el sesgo real entre un reto y otro
 BIAS_OBS_SD: float = 1.5         # ruido de medir el sesgo con un solo reto
+# Un par (confianza 1-10, acierto 0/1) de un intento da el sesgo c − 10·acierto: insesgado pero
+# muy ruidoso (un acierto con confianza 8 vale −2; un fallo, +8). σ≈4 ≈ desviación de un Bernoulli
+# en escala 0-10 más el ruido del deslizador; así 4 pares pesan como ~0,6 retos.
+ATTEMPT_OBS_SD: float = 4.0
+
+# Ajuste por dificultad (efecto difícil-fácil; Lichtenstein & Fischhoff, 1977; Juslin, 1994):
+# la confianza se mueve menos que el desempeño (pendiente ≈ 0,5), así que en un escalón difícil
+# el sesgo sube y en uno fácil baja aunque el monitoreo no cambie. Antes de mezclar sesgos de
+# escalones distintos se descuenta lo que predice la dificultad:
+#   desplazamiento = HARD_EASY_K · (EXPECTED_REF − desempeño esperado), escala 0-10
+# donde el desempeño esperado es 10 · P(dominio) del escalón (Beta técnica, antes del reto).
+# HARD_EASY_K = 1 − pendiente; con los datos del piloto se estima por regresión sesgo ~ esperado.
+HARD_EASY_K: float = 0.5
+EXPECTED_REF: float = 5.0
 BIAS_BAND: float = domain.CALIBRATED_BIAS   # |sesgo| ≤ 1,5 = calibrado
 
 # Propensión a bloquearse: prior Beta(2, 8) → media 0,20 (el prior de experto).
@@ -71,6 +87,8 @@ def new_profile() -> Dict[str, Any]:
         "traits": {t["id"]: [1.0, 1.0] for t in TRAITS},
         "blocking": list(BLOCK_PRIOR),
         "pace": {"log_ratio": 0.0, "w": 0.0},
+        "attempt_brier": {"mean": None, "w": 0.0},
+        "help": {"abuse": 0.0, "avoidance": 0.0, "w": 0.0},
     }
 
 
@@ -91,12 +109,32 @@ def ensure_profile(p: Optional[Dict[str, Any]]) -> Dict[str, Any]:
 # --------------------------------------------------------------------------- #
 # Piezas bayesianas
 # --------------------------------------------------------------------------- #
+def kalman_predict(bias: Dict[str, float]) -> Dict[str, float]:
+    """El sesgo real deriva entre un reto y otro (una vez por reto, no por intento)."""
+    return {**bias, "var": float(bias["var"]) + BIAS_PROCESS_SD ** 2}
+
+
+def kalman_correct(bias: Dict[str, float], observed: float, obs_sd: float = BIAS_OBS_SD) -> Dict[str, float]:
+    mean, var = float(bias["mean"]), float(bias["var"])
+    k = var / (var + obs_sd ** 2)
+    return {"mean": mean + k * (observed - mean), "var": (1 - k) * var, "n": int(bias.get("n", 0)) + 1}
+
+
 def kalman_bias(bias: Dict[str, float], observed: float) -> Dict[str, float]:
     """Predicción (el sesgo real deriva) + corrección con el sesgo observado en el reto."""
-    mean, var = float(bias["mean"]), float(bias["var"]) + BIAS_PROCESS_SD ** 2
-    r = BIAS_OBS_SD ** 2
-    k = var / (var + r)
-    return {"mean": mean + k * (observed - mean), "var": (1 - k) * var, "n": int(bias.get("n", 0)) + 1}
+    return kalman_correct(kalman_predict(bias), observed)
+
+
+def difficulty_offset(expected_perf: Optional[float]) -> float:
+    """Sesgo que se espera solo por la dificultad del escalón (positivo si es difícil para el estudiante)."""
+    if expected_perf is None:
+        return 0.0
+    return HARD_EASY_K * (EXPECTED_REF - float(expected_perf))
+
+
+def attempt_pair_bias(confidence: float, correct: bool) -> float:
+    """Sesgo de un intento en la escala 0-10: confianza − desempeño (10 si acertó, 0 si no)."""
+    return float(confidence) - (10.0 if correct else 0.0)
 
 
 def _norm_cdf(x: float) -> float:
@@ -130,17 +168,50 @@ def was_blocked(obs: Dict[str, Any]) -> bool:
 # --------------------------------------------------------------------------- #
 # Actualización por reto
 # --------------------------------------------------------------------------- #
+def help_seeking_observation(e2: Optional[bool], attempts: Optional[Dict[str, Any]]) -> Optional[bool]:
+    """Rasgo busqueda_ayuda: abuso o evitación de la ayuda lo niegan; si no, decide e2."""
+    if attempts and (attempts.get("help_abuse") or attempts.get("help_avoidance")):
+        return False
+    return e2
+
+
 def update_profile(profile: Dict[str, Any], indicators: Dict[str, Optional[bool]], obs: Dict[str, Any],
-                   bias: Optional[float]) -> Dict[str, Any]:
+                   bias: Optional[float], attempts: Optional[Dict[str, Any]] = None,
+                   offset: float = 0.0) -> Dict[str, Any]:
+    """attempts: salida de indicators.attempt_summary (pares de confianza, Brier, abuso/evitación).
+    offset: difficulty_offset del escalón; el Kalman observa sesgos ajustados por dificultad, así
+    un N1 tras un fallo y un N3 tras dominar son comparables."""
     p = ensure_profile(profile)
     p["n"] = int(p.get("n", 0)) + 1
+    attempts = attempts or {}
+    pairs = attempts.get("confidence_pairs") or []
 
-    if bias is not None:
-        p["bias"] = kalman_bias(p["bias"], float(bias))
+    if bias is not None or pairs:
+        b = kalman_predict(p["bias"])
+        if bias is not None:
+            b = kalman_correct(b, float(bias) - offset)
+        for conf, ok in pairs:
+            b = kalman_correct(b, attempt_pair_bias(conf, ok) - offset, ATTEMPT_OBS_SD)
+        p["bias"] = b
+
+    if attempts.get("brier_attempts") is not None:
+        ab = p["attempt_brier"]
+        w = FORGET * float(ab["w"]) + 1
+        prev = float(ab["mean"]) if ab["mean"] is not None else 0.0
+        ab["mean"] = round((FORGET * float(ab["w"]) * prev + float(attempts["brier_attempts"])) / w, 4)
+        ab["w"] = round(w, 4)
+
+    if attempts.get("help_abuse") is not None or attempts.get("help_avoidance") is not None:
+        h = p["help"]
+        h["abuse"] = round(FORGET * float(h["abuse"]) + (1 if attempts.get("help_abuse") else 0), 4)
+        h["avoidance"] = round(FORGET * float(h["avoidance"]) + (1 if attempts.get("help_avoidance") else 0), 4)
+        h["w"] = round(FORGET * float(h["w"]) + 1, 4)
 
     for t in TRAITS:
         a, b = forget_beta(*p["traits"][t["id"]])
         val = indicators.get(t["indicator"])
+        if t["id"] == "busqueda_ayuda":
+            val = help_seeking_observation(val, attempts)
         if val is not None:
             a, b = (a + 1, b) if val else (a, b + 1)
         p["traits"][t["id"]] = [round(a, 4), round(b, 4)]
@@ -212,4 +283,8 @@ def summary(profile: Dict[str, Any]) -> Dict[str, Any]:
         "weakest_trait": weakest_trait(p),
         "blocking_prior": round(blocking_prior(p), 3),
         "pace_ratio": round(ratio, 2) if ratio else None,
+        "attempt_brier": p["attempt_brier"]["mean"],
+        # Proporción (con olvido) de retos con abuso / evitación de la ayuda.
+        "help_patterns": {k: round(p["help"][k] / p["help"]["w"], 3) if p["help"]["w"] > 0 else None
+                          for k in ("abuse", "avoidance")},
     }

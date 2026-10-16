@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { type OnValidation, partialAttempt, stateReport } from '../lib/boardValidation';
 
 const CORRECTAS = ["C", "A", "B"];
 
-export function DigitalAccessQuiz({ challengeId, onValidation }: { challengeId?: string; onValidation?: (success: boolean) => void }) {
+export function DigitalAccessQuiz({ challengeId, onValidation }: { challengeId?: string; onValidation?: OnValidation }) {
   const [paso, setPaso] = useState(0);
   const [respuestas, setRespuestas] = useState<string[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -17,17 +18,14 @@ export function DigitalAccessQuiz({ challengeId, onValidation }: { challengeId?:
 
   const handleNext = () => {
     if (!respuestas[paso]) return;
+    onValidation?.(respuestas[paso] === CORRECTAS[paso], partialAttempt(respuestas[paso], paso));
     if (paso + 1 >= total) {
       setShowResults(true);
       const aciertos = respuestas.reduce((acc, r, i) => acc + (r === CORRECTAS[i] ? 1 : 0), 0);
       if (onValidation) {
-        onValidation(aciertos === total);
+        onValidation(aciertos === total, stateReport(respuestas));
       }
     } else {
-      // Report partial mistake if they chose wrong
-      if (respuestas[paso] !== CORRECTAS[paso] && onValidation) {
-        onValidation(false);
-      }
       setPaso(paso + 1);
     }
   };
@@ -43,37 +41,37 @@ export function DigitalAccessQuiz({ challengeId, onValidation }: { challengeId?:
   return (
     <div className="digital-quiz-wrapper" style={{ width: '100%', fontFamily: '"Sora", sans-serif', color: 'var(--fb-text)', display: 'flex', flexDirection: 'column', flex: 1 }}>
       <style>{`
-        .dq-container { background: var(--fb-bg); padding: 24px; border-radius: 0 0 2rem 2rem; border-top: 0.5px solid var(--fb-border); text-align: left; width: 100%; height: 100%; flex: 1; overflow-y: auto; }
-        .dq-title { color: var(--fb-accent); text-align: center; font-size: 1.6rem; margin-top: 0; margin-bottom: 24px; font-weight: 700; font-family: 'Sora', sans-serif; }
+        .dq-container { background: var(--color-surface-container-low); padding: 24px; border-radius: 0 0 2rem 2rem; border-top: 1px solid var(--color-outline-variant); text-align: left; width: 100%; height: 100%; flex: 1; overflow-y: auto; }
+        .dq-title { color: var(--color-primary); text-align: center; font-size: 1.6rem; margin-top: 0; margin-bottom: 24px; font-weight: 700; font-family: var(--font-sans); }
         .dq-articles { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
         @media(max-width: 768px) { .dq-articles { grid-template-columns: 1fr; } }
-        .dq-article { background: var(--fb-card); padding: 20px; border-radius: 12px; border: 0.5px solid var(--fb-border); border-left: 4px solid var(--fb-accent); }
-        .dq-article h2 { margin-top: 0; color: var(--fb-text); font-size: 1.1rem; margin-bottom: 8px; font-weight: 600; }
-        .dq-article p { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--fb-text-muted); }
-        .dq-quiz-section { border-top: 1px solid var(--fb-border); padding-top: 24px; }
-        .dq-quiz-section h2 { color: var(--fb-accent); margin-top: 0; margin-bottom: 20px; font-size: 1.3rem; font-weight: 600; }
-        .dq-progress { text-align: center; font-size: 0.85rem; color: var(--fb-text-muted); margin-bottom: 8px; font-family: 'IBM Plex Mono', monospace; }
-        .dq-progress-bar { height: 6px; background: var(--fb-border); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
-        .dq-progress-fill { height: 100%; background: var(--fb-accent); border-radius: 3px; transition: width 0.3s; }
-        .dq-card { display: none; margin-bottom: 20px; background: var(--fb-card); padding: 20px; border-radius: 12px; border: 0.5px solid var(--fb-border); }
+        .dq-article { background: var(--color-surface-container-lowest); padding: 20px; border-radius: 12px; border: 1px solid var(--color-outline-variant); border-left: 4px solid var(--color-primary); }
+        .dq-article h2 { margin-top: 0; color: var(--color-on-surface); font-size: 1.1rem; margin-bottom: 8px; font-weight: 600; }
+        .dq-article p { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--color-on-surface-variant); }
+        .dq-quiz-section { border-top: 1px solid var(--color-outline-variant); padding-top: 24px; }
+        .dq-quiz-section h2 { color: var(--color-primary); margin-top: 0; margin-bottom: 20px; font-size: 1.3rem; font-weight: 600; }
+        .dq-progress { text-align: center; font-size: 0.85rem; color: var(--color-on-surface-variant); margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+        .dq-progress-bar { height: 6px; background: var(--color-outline-variant); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+        .dq-progress-fill { height: 100%; background: var(--color-primary); border-radius: 3px; transition: width 0.3s; }
+        .dq-card { display: none; margin-bottom: 20px; background: var(--color-surface-container-lowest); padding: 20px; border-radius: 12px; border: 1px solid var(--color-outline-variant); }
         .dq-card.active { display: block; }
         .dq-card.show-results { display: block; opacity: 0.9; }
-        .dq-qtitle { font-weight: 600; margin-bottom: 16px; color: var(--fb-text); font-size: 1rem; }
+        .dq-qtitle { font-weight: 600; margin-bottom: 16px; color: var(--color-on-surface); font-size: 1rem; }
         .dq-opts { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
         .dq-opts li { margin: 0; }
-        .dq-opt-label { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border: 1.5px solid var(--fb-border); border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; color: var(--fb-text-muted); }
-        .dq-opt-label:hover { background: rgba(56, 139, 253, 0.06); border-color: #9090ff; color: var(--fb-text); }
+        .dq-opt-label { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border: 1.5px solid var(--color-outline-variant); border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; color: var(--color-on-surface-variant); }
+        .dq-opt-label:hover { background: color-mix(in srgb, var(--color-primary) 6%, transparent); border-color: var(--color-primary); color: var(--color-on-surface); }
         .dq-opt-label input { margin-top: 4px; }
-        .dq-opt-label.correct { border-color: var(--fb-accent); background: rgba(35, 134, 54, 0.08); color: var(--fb-text); font-weight: 500; }
-        .dq-opt-label.incorrect { border-color: var(--fb-error); background: rgba(248, 81, 73, 0.08); color: var(--fb-error); }
-        .dq-btn-next { display: block; width: 100%; background: var(--fb-accent); color: white; border: none; padding: 12px; font-size: 0.95rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin-top: 16px; font-family: 'Sora', sans-serif; }
-        .dq-btn-next:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(35, 134, 54, 0.2); }
-        .dq-btn-next:disabled { background: var(--fb-border); color: var(--fb-text-muted); cursor: not-allowed; }
-        .dq-btn-restart { display: block; width: 100%; background: transparent; color: var(--fb-accent); border: 1.5px solid var(--fb-accent); padding: 12px; font-size: 0.95rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin-top: 12px; font-family: 'Sora', sans-serif; }
-        .dq-btn-restart:hover { background: rgba(35, 134, 54, 0.08); }
+        .dq-opt-label.correct { border-color: var(--color-secondary); background: var(--color-secondary-container); color: var(--color-on-secondary-container); font-weight: 500; }
+        .dq-opt-label.incorrect { border-color: var(--color-error); background: var(--color-error-container); color: var(--color-on-error-container); }
+        .dq-btn-next { display: block; width: 100%; background: var(--color-primary); color: var(--color-on-primary); border: none; padding: 12px; font-size: 0.95rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin-top: 16px; font-family: var(--font-sans); }
+        .dq-btn-next:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 20%, transparent); }
+        .dq-btn-next:disabled { background: var(--color-outline-variant); color: var(--color-on-surface-variant); cursor: not-allowed; }
+        .dq-btn-restart { display: block; width: 100%; background: transparent; color: var(--color-primary); border: 1.5px solid var(--color-primary); padding: 12px; font-size: 0.95rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin-top: 12px; font-family: var(--font-sans); }
+        .dq-btn-restart:hover { background: color-mix(in srgb, var(--color-primary) 8%, transparent); }
         .dq-msg { margin-top: 20px; padding: 16px; border-radius: 12px; text-align: center; font-weight: 600; font-size: 0.95rem; }
-        .dq-msg.success { color: var(--fb-accent); background: rgba(35, 134, 54, 0.08); border: 0.5px solid rgba(35, 134, 54, 0.25); }
-        .dq-msg.error { color: var(--fb-error); background: rgba(248, 81, 73, 0.08); border: 0.5px solid rgba(248, 81, 73, 0.25); }
+        .dq-msg.success { color: var(--color-on-secondary-container); background: var(--color-secondary-container); border: 1px solid color-mix(in srgb, var(--color-secondary) 30%, transparent); }
+        .dq-msg.error { color: var(--color-error); background: color-mix(in srgb, var(--color-error) 8%, transparent); border: 1px solid color-mix(in srgb, var(--color-error) 25%, transparent); }
       `}</style>
 
       <div className="dq-container">

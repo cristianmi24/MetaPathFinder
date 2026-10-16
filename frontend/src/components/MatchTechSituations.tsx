@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { type OnValidation, attempt, partialAttempt } from '../lib/boardValidation';
 
 interface SituationCard {
   id: string;
@@ -60,7 +61,7 @@ function shuffle<T>(array: T[]) {
   return copy;
 }
 
-export default function MatchTechSituations({ onValidation }: { onValidation?: (success: boolean) => void } = {}) {
+export default function MatchTechSituations({ onValidation }: { onValidation?: OnValidation } = {}) {
   const [cardOrder, setCardOrder] = useState<MatchCard[]>(() => shuffle(CARDS));
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<{ situationId: string; type: 'old' | 'modern' } | null>(null);
@@ -121,6 +122,7 @@ export default function MatchTechSituations({ onValidation }: { onValidation?: (
     }
 
     if (selectedCard.target !== situationId) {
+      onValidation?.(false, partialAttempt(selectedCard.id, `${situationId}:${slotType}`));
       if (nextTries >= maxTries) {
         setMessage('Intento fallido y no quedan más intentos.');
         setCompleted(true);
@@ -147,9 +149,10 @@ export default function MatchTechSituations({ onValidation }: { onValidation?: (
     if (correctCount === SITUATIONS.length) {
       setCompleted(true);
       setMessage('🎉 ¡Perfecto! Asociaste correctamente las 4 situaciones.');
-      if (onValidation) onValidation(true);
+      onValidation?.(true, attempt(Object.fromEntries(Object.entries(updatedPlacements).map(([k, v]) => [k, [v.old ?? null, v.modern ?? null]]))));
     } else {
-      if (onValidation) onValidation(false);
+      // Colocación correcta, pero el tablero aún no está completo.
+      onValidation?.(true, partialAttempt(selectedCard.id, `${situationId}:${slotType}`));
       if (nextTries >= maxTries) {
         setCompleted(true);
         setMessage('Has usado los intentos disponibles.');

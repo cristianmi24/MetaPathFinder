@@ -1,17 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useThemedSrcDoc } from '../lib/iframeTheme';
+import { type OnValidation, useIframeValidation, IFRAME_ACTIVITY_SCRIPT } from '../lib/boardValidation';
 
-export function ComputingEvolutionQuiz({ challengeId, onValidation }: { challengeId?: string; onValidation?: (success: boolean) => void }) {
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'QUIZ_SUCCESS') {
-        onValidation?.(true);
-      } else if (event.data?.type === 'QUIZ_FAIL') {
-        onValidation?.(false);
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [onValidation]);
+export function ComputingEvolutionQuiz({ challengeId, onValidation }: { challengeId?: string; onValidation?: OnValidation }) {
+  useIframeValidation(onValidation);
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -20,22 +12,20 @@ export function ComputingEvolutionQuiz({ challengeId, onValidation }: { challeng
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Evolución del Cómputo — Diagnóstico</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #080b10;
-  --surface: #0e1320;
-  --card: #111827;
-  --border: #1e2a3a;
-  --text: #c8d4e8;
-  --muted: #4a5878;
-  --bright: #e8f0ff;
-  --accent: #38bdf8;
-  --accent2: #0ea5e9;
-  --green: #34d399;
-  --red: #f87171;
-  --yellow: #fbbf24;
-  --purple: #a78bfa;
+  --bg: var(--color-surface);
+  --card: var(--color-surface-container-lowest);
+  --border: var(--color-outline-variant);
+  --text: var(--color-on-surface);
+  --muted: var(--color-on-surface-variant);
+  --bright: var(--color-on-surface);
+  --accent: var(--color-primary);
+  --green: var(--color-secondary);
+  --red: var(--color-error);
+  --yellow: var(--color-warning);
+  --purple: var(--color-tertiary);
+  --ink: var(--color-on-surface);
   --r: 16px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -43,7 +33,7 @@ export function ComputingEvolutionQuiz({ challengeId, onValidation }: { challeng
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   min-height: 100vh;
   display: flex;
   align-items: flex-start;
@@ -57,15 +47,15 @@ body::before {
   position:fixed;
   inset:0;
   background:
-    radial-gradient(1px 1px at 15% 22%, rgba(200,212,232,.4) 0%, transparent 100%),
-    radial-gradient(1px 1px at 72% 8%,  rgba(200,212,232,.3) 0%, transparent 100%),
-    radial-gradient(1px 1px at 40% 55%, rgba(200,212,232,.3) 0%, transparent 100%),
-    radial-gradient(1px 1px at 88% 44%, rgba(200,212,232,.2) 0%, transparent 100%),
-    radial-gradient(1px 1px at 5%  80%, rgba(200,212,232,.2) 0%, transparent 100%),
-    radial-gradient(1px 1px at 60% 90%, rgba(200,212,232,.3) 0%, transparent 100%),
-    radial-gradient(1px 1px at 30% 70%, rgba(200,212,232,.2) 0%, transparent 100%),
-    radial-gradient(200px 200px at 80% 10%, rgba(56,189,248,.04) 0%, transparent 100%),
-    radial-gradient(300px 300px at 20% 90%, rgba(167,139,250,.04) 0%, transparent 100%);
+    radial-gradient(1px 1px at 15% 22%, color-mix(in srgb, var(--muted) 40%, transparent) 0%, transparent 100%),
+    radial-gradient(1px 1px at 72% 8%,  color-mix(in srgb, var(--muted) 30%, transparent) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 55%, color-mix(in srgb, var(--muted) 30%, transparent) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 44%, color-mix(in srgb, var(--muted) 20%, transparent) 0%, transparent 100%),
+    radial-gradient(1px 1px at 5%  80%, color-mix(in srgb, var(--muted) 20%, transparent) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 90%, color-mix(in srgb, var(--muted) 30%, transparent) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 70%, color-mix(in srgb, var(--muted) 20%, transparent) 0%, transparent 100%),
+    radial-gradient(200px 200px at 80% 10%, color-mix(in srgb, var(--accent) 4%, transparent) 0%, transparent 100%),
+    radial-gradient(300px 300px at 20% 90%, color-mix(in srgb, var(--purple) 4%, transparent) 0%, transparent 100%);
   pointer-events:none;
   z-index:0;
 }
@@ -86,7 +76,7 @@ body::before {
 }
 
 .site-tag {
-  font-family:'DM Mono', monospace;
+  font-family:var(--font-sans);
   font-size:10px;
   letter-spacing:3px;
   text-transform:uppercase;
@@ -94,11 +84,11 @@ body::before {
 }
 
 .step-pill {
-  font-family:'DM Mono', monospace;
+  font-family:var(--font-sans);
   font-size:11px;
   color:var(--accent);
-  background:rgba(56,189,248,.1);
-  border:1px solid rgba(56,189,248,.2);
+  background:color-mix(in srgb, var(--accent) 10%, transparent);
+  border:1px solid color-mix(in srgb, var(--accent) 20%, transparent);
   border-radius:99px;
   padding:4px 14px;
 }
@@ -119,7 +109,7 @@ body::before {
   transition:width .6s cubic-bezier(.4,0,.2,1);
 }
 .progress-label {
-  font-family:'DM Mono', monospace;
+  font-family:var(--font-sans);
   font-size:10px;
   color:var(--muted);
   text-align:right;
@@ -134,6 +124,7 @@ body::before {
   background:var(--card);
   border:1px solid var(--border);
   border-radius:var(--r);
+  box-shadow:0 4px 28px color-mix(in srgb, var(--ink) 7%, transparent);
   padding:36px 32px;
   position:absolute;
   inset:0;
@@ -167,7 +158,7 @@ body::before {
 
 /* ── INTRO ── */
 .intro-eyebrow {
-  font-family:'DM Mono', monospace;
+  font-family:var(--font-sans);
   font-size:10px;
   letter-spacing:3px;
   text-transform:uppercase;
@@ -185,20 +176,22 @@ body::before {
 }
 
 .intro-title {
-  font-family:'Sora', sans-serif;
-  font-size:clamp(2.8rem,8vw,4.5rem);
-  line-height:.95;
+  font-family:var(--font-sans);
+  font-size:clamp(2.1rem,6vw,3rem);
+  font-weight:700;
+  line-height:1.05;
   color:var(--bright);
-  margin-bottom:6px;
-  letter-spacing:1px;
+  margin-bottom:8px;
+  letter-spacing:-0.02em;
 }
 .intro-title .hl { color:var(--accent); }
 
 .intro-year {
-  font-family:'Sora', sans-serif;
-  font-size:clamp(1.2rem,4vw,1.8rem);
+  font-family:var(--font-sans);
+  font-size:clamp(1rem,3vw,1.3rem);
+  font-weight:600;
   color:var(--muted);
-  letter-spacing:4px;
+  letter-spacing:3px;
   margin-bottom:24px;
 }
 
@@ -216,7 +209,7 @@ body::before {
   margin-bottom:32px;
 }
 .chip {
-  background:rgba(255,255,255,.04);
+  background:color-mix(in srgb, var(--ink) 4%, transparent);
   border:1px solid var(--border);
   border-radius:8px;
   padding:6px 14px;
@@ -234,20 +227,21 @@ body::before {
 }
 .hito-year-box {
   flex-shrink:0;
-  background:rgba(56,189,248,.08);
-  border:1px solid rgba(56,189,248,.2);
+  background:color-mix(in srgb, var(--accent) 8%, transparent);
+  border:1px solid color-mix(in srgb, var(--accent) 20%, transparent);
   border-radius:12px;
   padding:10px 16px;
   text-align:center;
 }
 .hito-year-num {
-  font-family:'Sora', sans-serif;
-  font-size:1.8rem;
+  font-family:var(--font-sans);
+  font-size:1.45rem;
+  font-weight:700;
   color:var(--accent);
-  line-height:1;
+  line-height:1.1;
 }
 .hito-year-label {
-  font-family:'DM Mono', monospace;
+  font-family:var(--font-sans);
   font-size:8px;
   letter-spacing:2px;
   text-transform:uppercase;
@@ -255,7 +249,7 @@ body::before {
 }
 .hito-meta { flex:1; }
 .hito-num {
-  font-family:'DM Mono', monospace;
+  font-family:var(--font-sans);
   font-size:9px;
   letter-spacing:2px;
   text-transform:uppercase;
@@ -263,11 +257,12 @@ body::before {
   margin-bottom:4px;
 }
 .hito-title {
-  font-family:'Sora', sans-serif;
-  font-size:1.9rem;
+  font-family:var(--font-sans);
+  font-size:1.45rem;
+  font-weight:700;
   color:var(--bright);
-  letter-spacing:.5px;
-  line-height:1.05;
+  letter-spacing:-0.01em;
+  line-height:1.2;
 }
 
 .hito-icon {
@@ -285,13 +280,13 @@ body::before {
 @media(max-width:480px){.triple{grid-template-columns:1fr;}}
 
 .col-box {
-  background:rgba(255,255,255,.03);
+  background:color-mix(in srgb, var(--ink) 3%, transparent);
   border:1px solid var(--border);
   border-radius:10px;
   padding:14px;
 }
 .col-label {
-  font-family:'DM Mono', monospace;
+  font-family:var(--font-sans);
   font-size:8px;
   letter-spacing:2px;
   text-transform:uppercase;
@@ -320,8 +315,8 @@ body::before {
   font-size:.84rem;
   line-height:1.65;
   color:var(--text);
-  background:rgba(52,211,153,.05);
-  border:1px solid rgba(52,211,153,.15);
+  background:color-mix(in srgb, var(--green) 5%, transparent);
+  border:1px solid color-mix(in srgb, var(--green) 15%, transparent);
   border-radius:10px;
   padding:12px 14px;
   margin-bottom:10px;
@@ -335,8 +330,8 @@ body::before {
   font-size:.84rem;
   line-height:1.65;
   color:var(--text);
-  background:rgba(248,113,113,.05);
-  border:1px solid rgba(248,113,113,.15);
+  background:color-mix(in srgb, var(--red) 5%, transparent);
+  border:1px solid color-mix(in srgb, var(--red) 15%, transparent);
   border-radius:10px;
   padding:12px 14px;
 }
@@ -344,11 +339,12 @@ body::before {
 
 /* ── REFLEXION ── */
 .reflexion-title {
-  font-family:'Sora', sans-serif;
-  font-size:2rem;
+  font-family:var(--font-sans);
+  font-size:1.55rem;
+  font-weight:700;
   color:var(--bright);
   margin-bottom:8px;
-  letter-spacing:.5px;
+  letter-spacing:-0.01em;
 }
 .reflexion-body {
   font-size:.92rem;
@@ -359,7 +355,7 @@ body::before {
 .quote-box {
   border-left:3px solid var(--accent);
   padding:14px 18px;
-  background:rgba(56,189,248,.06);
+  background:color-mix(in srgb, var(--accent) 6%, transparent);
   border-radius:0 10px 10px 0;
   font-style:italic;
   font-size:.9rem;
@@ -370,7 +366,7 @@ body::before {
 
 /* ── QUESTION CARD ── */
 .q-eyebrow {
-  font-family:'DM Mono', monospace;
+  font-family:var(--font-sans);
   font-size:9px;
   letter-spacing:3px;
   text-transform:uppercase;
@@ -388,18 +384,18 @@ body::before {
 }
 
 .q-title {
-  font-family:'Sora', sans-serif;
-  font-size:1.6rem;
+  font-family:var(--font-sans);
+  font-size:1.25rem;
+  font-weight:600;
   color:var(--bright);
-  line-height:1.2;
+  line-height:1.35;
   margin-bottom:8px;
-  letter-spacing:.5px;
 }
 
 .q-type {
   font-size:.78rem;
   color:var(--muted);
-  font-family:'DM Mono', monospace;
+  font-family:var(--font-sans);
   letter-spacing:1px;
   text-transform:uppercase;
   margin-bottom:20px;
@@ -417,19 +413,19 @@ body::before {
   cursor:pointer;
   font-size:.88rem;
   line-height:1.5;
-  background:rgba(255,255,255,.02);
+  background:color-mix(in srgb, var(--ink) 2%, transparent);
   transition:border-color .2s, background .2s, transform .15s;
   user-select:none;
   color:var(--text);
 }
 .opt:hover:not(.disabled) {
   border-color:var(--accent);
-  background:rgba(56,189,248,.07);
+  background:color-mix(in srgb, var(--accent) 7%, transparent);
   transform:translateX(4px);
 }
-.opt.sel  { border-color:var(--accent); background:rgba(56,189,248,.1); }
-.opt.ok   { border-color:var(--green);  background:rgba(52,211,153,.08); color:#a7f3d0; }
-.opt.bad  { border-color:var(--red);    background:rgba(248,113,113,.08); color:#fca5a5; }
+.opt.sel  { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, transparent); }
+.opt.ok   { border-color:var(--green);  background:var(--color-secondary-container); color:var(--color-on-secondary-container); }
+.opt.bad  { border-color:var(--red);    background:var(--color-error-container); color:var(--color-on-error-container); }
 .opt.disabled { cursor:default; }
 
 .opt-key {
@@ -437,14 +433,14 @@ body::before {
   border-radius:6px;
   background:var(--border);
   display:flex;align-items:center;justify-content:center;
-  font-family:'DM Mono', monospace;
+  font-family:var(--font-sans);
   font-size:10px; font-weight:500;
   color:var(--muted);
   transition:background .2s, color .2s;
 }
-.opt.sel .opt-key  { background:var(--accent);  color:#000; }
-.opt.ok  .opt-key  { background:var(--green);   color:#000; }
-.opt.bad .opt-key  { background:var(--red);     color:#000; }
+.opt.sel .opt-key  { background:var(--accent);  color:var(--color-on-primary); }
+.opt.ok  .opt-key  { background:var(--green);   color:var(--color-on-secondary); }
+.opt.bad .opt-key  { background:var(--red);     color:var(--color-on-error); }
 
 .fb {
   margin-top:12px;
@@ -456,8 +452,8 @@ body::before {
   animation:upFade .3s ease;
 }
 .fb.show { display:block; }
-.fb.ok   { background:rgba(52,211,153,.08); border-left:3px solid var(--green); color:#a7f3d0; }
-.fb.bad  { background:rgba(248,113,113,.08); border-left:3px solid var(--red);  color:#fca5a5; }
+.fb.ok   { background:var(--color-secondary-container); border-left:3px solid var(--green); color:var(--color-on-secondary-container); }
+.fb.bad  { background:var(--color-error-container); border-left:3px solid var(--red);  color:var(--color-on-error-container); }
 
 /* ── RESULT ── */
 .result-hero {
@@ -485,18 +481,19 @@ body::before {
   background:var(--card);
 }
 .result-score {
-  font-family:'Sora', sans-serif;
-  font-size:2rem;
+  font-family:var(--font-sans);
+  font-size:1.6rem;
+  font-weight:700;
   color:var(--bright);
   position:relative;
   z-index:1;
-  letter-spacing:1px;
 }
 .result-title {
-  font-family:'Sora', sans-serif;
-  font-size:2rem;
+  font-family:var(--font-sans);
+  font-size:1.55rem;
+  font-weight:700;
   color:var(--bright);
-  letter-spacing:.5px;
+  letter-spacing:-0.01em;
   margin-bottom:8px;
 }
 .result-msg {
@@ -506,7 +503,7 @@ body::before {
   margin-bottom:24px;
 }
 .result-list {
-  background:rgba(255,255,255,.02);
+  background:color-mix(in srgb, var(--ink) 2%, transparent);
   border:1px solid var(--border);
   border-radius:10px;
   padding:14px;
@@ -527,13 +524,14 @@ body::before {
 .btn {
   display:flex;align-items:center;justify-content:center;gap:8px;
   width:100%;padding:15px;border:none;border-radius:10px;
-  font-family:'DM Sans', sans-serif;font-size:.9rem;font-weight:600;
+  font-family:var(--font-sans);font-size:.9rem;font-weight:600;
   cursor:pointer;transition:transform .15s, box-shadow .15s;
 }
-.btn:hover { transform:translateY(-2px); box-shadow:0 6px 24px rgba(0,0,0,.3); }
+.btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px color-mix(in srgb, var(--accent) 25%, transparent); }
+.btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 .btn:active { transform:translateY(0); }
-.btn-main { background:var(--accent); color:#000; }
-.btn-dim  { background:rgba(255,255,255,.06); color:var(--text); border:1px solid var(--border); }
+.btn-main { background:var(--accent); color:var(--color-on-primary); }
+.btn-dim  { background:color-mix(in srgb, var(--ink) 6%, transparent); color:var(--text); border:1px solid var(--border); }
 .btn-dim:hover { border-color:var(--accent); color:var(--bright); box-shadow:none; }
 .btn-row  { display:flex; gap:10px; }
 .mt20 { margin-top:20px; }
@@ -887,9 +885,9 @@ function renderResult() {
 
   // Notificar al entorno de React
   if (score === QUESTIONS.length) {
-    window.parent.postMessage({ type: 'QUIZ_SUCCESS' }, '*');
+    window.parent.postMessage({ type: 'QUIZ_SUCCESS', attempt: true, answer: userAns.slice() }, '*');
   } else {
-    window.parent.postMessage({ type: 'QUIZ_FAIL' }, '*');
+    window.parent.postMessage({ type: 'QUIZ_FAIL', attempt: true, answer: userAns.slice() }, '*');
   }
 }
 
@@ -907,14 +905,18 @@ window.retryQ = function() {
 updateProgress();
 renderIntro();
 </script>
+${IFRAME_ACTIVITY_SCRIPT}
 </body>
 </html>
   `;
 
+  const { ref, srcDoc } = useThemedSrcDoc(htmlContent);
+
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: '620px', borderRadius: '0 0 2rem 2rem', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div className="flex h-full min-h-[620px] w-full flex-1 flex-col overflow-hidden rounded-b-2xl bg-surface">
       <iframe 
-        srcDoc={htmlContent} 
+        ref={ref}
+        srcDoc={srcDoc} 
         style={{ width: '100%', height: '100%', flex: 1, border: 'none' }} 
         title="Evolución del Cómputo"
       />

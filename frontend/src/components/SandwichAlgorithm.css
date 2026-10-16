@@ -2,39 +2,29 @@
   padding: 1.5rem 1rem 3rem;
   max-width: 680px;
   margin: 0 auto;
-  font-family: var(--font-sans, system-ui, sans-serif);
-  /* Reset some basic variables if not present */
-  --color-text-primary: #333;
-  --color-text-secondary: #555;
-  --color-text-tertiary: #888;
-  --color-background-primary: #fff;
-  --color-background-secondary: #f9f9f9;
-  --color-border-secondary: #ddd;
-  --color-border-tertiary: #eee;
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  /* Alias locales sobre los tokens del tema de la app */
+  --color-text-primary: var(--color-on-surface);
+  --color-text-secondary: var(--color-on-surface-variant);
+  --color-text-tertiary: color-mix(in srgb, var(--color-on-surface-variant) 75%, var(--color-surface));
+  --color-background-primary: var(--color-surface-container-lowest);
+  --color-background-secondary: var(--color-surface-container-low);
+  --color-border-secondary: var(--color-outline-variant);
+  --color-border-tertiary: var(--color-outline-variant);
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
 }
 
-/* For dark mode adaptation, we can add a simple dark theme support */
-.dark .sandwich-app {
-  --color-text-primary: #f0f0f0;
-  --color-text-secondary: #ccc;
-  --color-text-tertiary: #999;
-  --color-background-primary: #1e1e1e;
-  --color-background-secondary: #2a2a2a;
-  --color-border-secondary: #444;
-  --color-border-tertiary: #333;
-}
-
 .sandwich-app .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
 .sandwich-app .top-bar h1 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); margin: 0; }
-.sandwich-app .score-badge { font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 50px; background: #f3e5f5; color: #6a1b9a; border: 0.5px solid #ce93d8; }
+.sandwich-app .score-badge { font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 50px; background: var(--color-primary-container); color: var(--color-on-primary-container); border: 1px solid color-mix(in srgb, var(--color-primary) 35%, transparent); }
 
-.sandwich-app .instructions { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 1.25rem; padding: 10px 14px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); display: flex; align-items: center; gap: 8px; }
+.sandwich-app .instructions { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 1.25rem; padding: 10px 14px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); border: 1px solid var(--color-border-tertiary); display: flex; align-items: center; gap: 8px; }
 
 .sandwich-app .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
-.sandwich-app .panel { border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); padding: 1rem; }
+.sandwich-app .panel { border-radius: var(--border-radius-lg); border: 1px solid var(--color-border-tertiary); background: var(--color-background-primary); padding: 1rem; }
 .sandwich-app .panel-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.7px; color: var(--color-text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
 
 .sandwich-app .blocks-pool { display: flex; flex-direction: column; gap: 8px; min-height: 320px; }
@@ -62,18 +52,27 @@
 .sandwich-app .block .block-icon { font-size: 18px; flex-shrink: 0; }
 .sandwich-app .block .block-text { flex: 1; line-height: 1.3; }
 
-.sandwich-app .block-bread   { background: #fff3e0; border-color: #ffcc80; color: #8d5524; }
-.sandwich-app .block-butter  { background: #fff9c4; border-color: #f9a825; color: #827717; }
-.sandwich-app .block-veggie  { background: #e8f5e9; border-color: #81c784; color: #2e7d32; }
-.sandwich-app .block-protein { background: #fce4ec; border-color: #f48fb1; color: #880e4f; }
-.sandwich-app .block-cheese  { background: #fff8e1; border-color: #ffd54f; color: #f57f17; }
-.sandwich-app .block-sauce   { background: #e3f2fd; border-color: #90caf9; color: #0d47a1; }
-.sandwich-app .block-tools   { background: #f3e5f5; border-color: #ce93d8; color: #6a1b9a; }
-.sandwich-app .block-wrong   { background: #f1efe8; border-color: #d3d1c7; color: #5f5e5a; }
+/* Cada categoría tiene un tono propio; se mezcla con la superficie para funcionar en claro y oscuro */
+.sandwich-app .block-bread   { --hue: #d4892b; }
+.sandwich-app .block-butter  { --hue: #b59a1a; }
+.sandwich-app .block-veggie  { --hue: #3f8a4c; }
+.sandwich-app .block-protein { --hue: #c2457a; }
+.sandwich-app .block-cheese  { --hue: #d79a12; }
+.sandwich-app .block-sauce   { --hue: #3b6fd8; }
+.sandwich-app .block-tools   { --hue: #8a5cc4; }
+.sandwich-app .block-wrong   { --hue: #8a867c; }
+.sandwich-app .block-bread,
+.sandwich-app .block-butter,
+.sandwich-app .block-veggie,
+.sandwich-app .block-protein,
+.sandwich-app .block-cheese,
+.sandwich-app .block-sauce,
+.sandwich-app .block-tools,
+.sandwich-app .block-wrong { background: color-mix(in srgb, var(--hue) 14%, var(--color-background-primary)); border-color: color-mix(in srgb, var(--hue) 45%, transparent); color: color-mix(in srgb, var(--hue) 60%, var(--color-text-primary)); }
 
 .sandwich-app .drop-zone {
   border-radius: var(--border-radius-lg);
-  border: 0.5px solid var(--color-border-tertiary);
+  border: 1px solid var(--color-border-tertiary);
   background: var(--color-background-secondary);
   padding: 1rem;
   min-height: 320px;
@@ -105,20 +104,20 @@
 }
 
 .sandwich-app .slot.over {
-  border-color: #ce93d8;
-  background: #f3e5f5;
+  border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+  background: var(--color-primary-container);
 }
 
 .sandwich-app .slot.correct {
   border-style: solid;
-  border-color: #81c784;
-  background: #e8f5e9;
+  border-color: color-mix(in srgb, var(--color-secondary) 50%, transparent);
+  background: var(--color-secondary-container);
 }
 
 .sandwich-app .slot.wrong-anim {
   animation: shake 0.4s ease;
-  border-color: #f48fb1;
-  background: #fce4ec;
+  border-color: color-mix(in srgb, var(--color-error) 45%, transparent);
+  background: var(--color-error-container);
 }
 
 .sandwich-app .slot-label { font-size: 12px; color: var(--color-text-tertiary); }
@@ -142,7 +141,7 @@
   z-index: 2;
 }
 
-.sandwich-app .slot .remove-btn:hover { color: #d32f2f; background: rgba(211,47,47,0.1); }
+.sandwich-app .slot .remove-btn:hover { color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, transparent); }
 
 @keyframes shake {
   0%,100% { transform: translateX(0); }
@@ -158,9 +157,9 @@
   flex: 1;
   padding: 11px;
   border-radius: 50px;
-  border: 0.5px solid #ce93d8;
-  background: #f3e5f5;
-  color: #6a1b9a;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -174,7 +173,7 @@
 .sandwich-app .btn-reset {
   padding: 11px 18px;
   border-radius: 50px;
-  border: 0.5px solid var(--color-border-secondary);
+  border: 1px solid var(--color-border-secondary);
   background: var(--color-background-primary);
   color: var(--color-text-secondary);
   font-size: 14px;
@@ -197,12 +196,12 @@
 }
 
 .sandwich-app .feedback-bar.show { display: flex; }
-.sandwich-app .feedback-bar.success { background: #e8f5e9; color: #2e7d32; border: 0.5px solid #81c784; }
-.sandwich-app .feedback-bar.partial { background: #fff9c4; color: #827717; border: 0.5px solid #f9a825; }
-.sandwich-app .feedback-bar.fail    { background: #fce4ec; color: #880e4f; border: 0.5px solid #f48fb1; }
+.sandwich-app .feedback-bar.success { background: var(--color-secondary-container); color: var(--color-on-secondary-container); border: 1px solid color-mix(in srgb, var(--color-secondary) 50%, transparent); }
+.sandwich-app .feedback-bar.partial { background: var(--color-warning-container); color: var(--color-on-warning-container); border: 1px solid color-mix(in srgb, var(--color-warning) 50%, transparent); }
+.sandwich-app .feedback-bar.fail    { background: var(--color-error-container); color: var(--color-on-error-container); border: 1px solid color-mix(in srgb, var(--color-error) 45%, transparent); }
 
-.sandwich-app .slot.checking.wrong { animation: shake 0.4s ease; border-color: #f48fb1 !important; background: #fce4ec !important; }
-.sandwich-app .slot.checking.correct-mark { border-color: #81c784 !important; background: #e8f5e9 !important; }
+.sandwich-app .slot.checking.wrong { animation: shake 0.4s ease; border-color: color-mix(in srgb, var(--color-error) 45%, transparent) !important; background: var(--color-error-container) !important; }
+.sandwich-app .slot.checking.correct-mark { border-color: color-mix(in srgb, var(--color-secondary) 50%, transparent) !important; background: var(--color-secondary-container) !important; }
 
 /* Confetti animation */
 @keyframes fall {

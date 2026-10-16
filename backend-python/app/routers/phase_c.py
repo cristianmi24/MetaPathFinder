@@ -86,6 +86,7 @@ async def complete_phase_c(
         db.add(TutorDecision(user_id=session.user_id, session_id=session.id, kind="phase_c", payload={
             "reading": result["reading"], "indicators": result["indicators"], "criteria_observed": result["criteria_observed"],
             "feedback": result["feedback"], "strategy_outcome": result["strategy_outcome"], "zdp_after": result["zdp_after"],
+            "attempts": result["attempts"], "difficulty": result["difficulty"],
             "challenge_id": challenge.get("id"), "reflection_text": payload.reflection_text,
             "calibration": {k: cal_result.get(k) for k in ("bias_index", "banda", "cluster", "brier", "time_calibration")},
         }))
