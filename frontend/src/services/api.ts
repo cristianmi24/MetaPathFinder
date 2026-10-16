@@ -310,7 +310,7 @@ export interface TutorState {
   user_id: string; group: string; zdp: TutorZdp; criteria: Record<string, CriterionSummary>; overlay: TechOverlay;
   learning_style: LearningStyle | null; last_profile: string | null; last_bias: number | null; last_strategy: string | null;
   strategies: Record<string, Record<string, [number, number]>>; challenges_done: string[];
-  history: { session_id: string; challenge_id: string; level: TutorLevel; posterior: Record<TutorLevel, number>; bias: number | null; score?: number; passed: boolean; zdp: TutorLevel; criteria: Record<string, boolean> }[];
+  history: { session_id: string; challenge_id: string; level: TutorLevel; posterior: Record<TutorLevel, number>; bias: number | null; score?: number; passed: boolean; zdp: TutorLevel; criteria: Record<string, boolean>; at?: string; attempts?: number | null; trial_and_error?: number | null }[];
   scaffold: TutorScaffold;
   profile?: LearnerProfile;
 }
@@ -377,6 +377,13 @@ export interface TutorAdminOverview {
   feed: (TutorIntervention & { student_id: string; student: string })[];
 }
 
+export type TutorAdminAnswer = string | number | boolean | null | (string | number | boolean | null)[] | Record<string, unknown>;
+export interface TutorAdminAttempt {
+  t_seconds: number | null; correct: boolean; partial: boolean; item: string | number | null; answer: TutorAdminAnswer;
+  delta: number | null; confidence: number | null; secs_since_feedback: number | null; trial_and_error: boolean;
+  hints_before: number[]; latency_s: number | null;
+}
+
 export interface TutorAdminActivity {
   session_id: string; challenge_id: string; started_at: string | null; completed_at: string | null; strategy_id: string | null;
   result: { score: number | null; passed: boolean; time_spent_seconds: number; attempts: number; hints_used: number; clicks: number } | null;
@@ -387,6 +394,9 @@ export interface TutorAdminActivity {
   plan: { strategy: TutorPlan['strategy'] | null; challenge_reason: string | null; group: string | null } | null;
   overrides: { kind: string; chosen: string | null; suggested: string | null; reason: string | null; at: string | null }[];
   interventions: TutorIntervention[];
+  /** Qué respondió y cómo (eventos ATTEMPT de la Fase B). */
+  attempts?: TutorAdminAttempt[];
+  affect?: { t_seconds: number | null; affect: string; p_block: number | null; scaffold: string | null }[];
   counts: Record<InterventionKind, number>;
   total_interventions: number;
   ladder: Record<string, number>;

@@ -14,6 +14,8 @@ El estado del estudiante es un diccionario JSON (persistido en `student_tutor_st
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import random
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple
@@ -433,6 +435,8 @@ def process_phase_c(state: Dict[str, Any], obs: Dict[str, Any], calibration: Dic
         "session_id": session_id, "challenge_id": challenge["id"], "level": reading["level"],
         "posterior": reading["posterior"], "bias": bias, "score": obs.get("score"), "passed": passed,
         "step": step, "component": comp, "expected_perf": expected_perf, "difficulty_offset": round(offset, 3), "bias_adj": bias_adj,
+        "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "attempts": attempts.get("attempts"), "trial_and_error": attempts.get("trial_and_error"),
         "zdp": after["zdp"], "criteria": {k: v for k, v in crit.items() if v is not None},
     }]
     return {

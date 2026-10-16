@@ -43,7 +43,7 @@ import { normalizeJolAverage } from '../lib/jolNormalization';
 import { ActivitySetupTour } from '../components/ActivitySetupTour';
 import { TutorAdvisor, type HintLevel } from '../components/tutor/TutorAdvisor';
 import { ReplanModal, type ReplanChoice } from '../components/tutor/ReplanModal';
-import { CertaintyPrompt, certaintyContrast } from '../components/tutor/CertaintyPrompt';
+import { certaintyContrast } from '../components/tutor/CertaintyPrompt';
 import { getTutorHint3 } from '../data/tutorHints';
 import { useTutorStore } from '../stores/useTutorStore';
 import { blockingProbability, scaffoldLevel, longPauseThreshold, recordFinishedPause, SCAFFOLD_INFO, type BlockingSignals } from '../lib/tutorEngine';
@@ -163,8 +163,12 @@ export function CognitiveChallenge() {
   const [peerRecommendation, setPeerRecommendation] = useState<{ level: HintLevel; ratio: number; neighbours: number } | null>(null);
   const [checkpoints, setCheckpoints] = useState<number[]>([]);
   const [checkpointDue, setCheckpointDue] = useState(false);
+  // Juicio de certeza para el contraste del resultado: la última confianza declarada por intento.
   const [certainty, setCertainty] = useState<{ value: number; label: string } | null>(null);
-  const [certaintyOpen, setCertaintyOpen] = useState(false);
+  // Un solo botón: al acertar con «Verificar» del tablero se abre el resultado sin otro botón.
+  const [finishRequested, setFinishRequested] = useState(false);
+  // Celular: el reto y el tutor son paneles flotantes; la actividad ocupa la pantalla.
+  const [mobilePanel, setMobilePanel] = useState<null | 'reto' | 'tutor'>(null);
   const [tabChanges, setTabChanges] = useState(0);
   const [lastTabChangeAt, setLastTabChangeAt] = useState<number | null>(null);
   const [editsSinceRun, setEditsSinceRun] = useState(0);
@@ -182,7 +186,6 @@ export function CognitiveChallenge() {
   type TutorLogEvent = { event_type: 'TUTOR_INTERVENTION' | 'TUTOR_RESPONSE'; timestamp: string; metadata: Record<string, unknown>; sent: boolean };
   const tutorLog = useRef<TutorLogEvent[]>([]);
   const lastCheckpointRef = useRef<string | null>(null);
-  const lastCertaintyRef = useRef<string | null>(null);
   const lastReplanRef = useRef<string | null>(null);
   const secondsNowRef = useRef(0);
   const sendTutorEvent = (ev: TutorLogEvent) => {
@@ -265,7 +268,13 @@ export function CognitiveChallenge() {
       if (lastStateReportRef.current === success) return;
       lastStateReportRef.current = success;
       setBoardSuccess(success);
-      if (success) showDone();
+      if (success) {
+        showDone();
+        // Cuestionarios: la última respuesta (intento parcial) cierra el tablero con este reporte.
+        // Si hubo intentos, el resultado se abre solo; en ensayos y arrastres sin intentos no se
+        // interrumpe al estudiante y queda el botón «Terminar».
+        if (attemptStatsRef.current.runs > 0) setFinishRequested(true);
+      }
       return;
     }
 
@@ -307,6 +316,7 @@ export function CognitiveChallenge() {
 
     attemptLogRef.current.push({ t: secondsRef.current, correct: success, partial: Boolean(opts.partial), confidence,
       delta, secs_since_feedback: secsSinceFeedback, trial_and_error: trialAndError });
+    if (confidence !== null) setCertainty({ value: confidence, label: `confianza ${confidence}` });
     if (tutorMeta.current.hintAfterError !== null || tutorMeta.current.autoHintShown) tutorMeta.current.attemptsAfterHint += 1;
 
     if (success) {
@@ -348,7 +358,7 @@ export function CognitiveChallenge() {
     if (!opts.partial) {
       lastStateReportRef.current = success;
       setBoardSuccess(success);
-      if (success) showDone();
+      if (success) { showDone(); setFinishRequested(true); }
     }
   }, [addEvent, challenge.id, pushLatency]);
 
@@ -663,14 +673,6 @@ export function CognitiveChallenge() {
     }
   };
 
-  const handleVerify = () => {
-    if (!certainty) {
-      setCertaintyOpen(true);
-      lastCertaintyRef.current = logIntervention('punto_control', { level: 'certeza', tactic: 'Juicio de certeza', detail: '¿Qué tan seguro/a estás antes de verificar?' });
-      return;
-    }
-    runVerify();
-  };
 
   function runVerify() {
     let score = 0;
@@ -758,7 +760,9 @@ export function CognitiveChallenge() {
         hint_requested_before_third_attempt: tutorMeta.current.hintBeforeThird,
         attempts_after_hint: tutorMeta.current.attemptsAfterHint,
         reflexive_brake_triggered: useCognitiveStore.getState().events.some(e => e.metadata?.is_reflexive_brake && e.timestamp > Date.now() - seconds * 1000 - 5000),
-        checkpoints: [...checkpoints, ...(strategyEvidence.checkpointsConfianza ?? []), ...(certainty ? [certainty.value] : [])],
+        // Confianzas durante el reto (puntos de control, estrategia y por intento), en orden.
+        checkpoints: [...checkpoints, ...(strategyEvidence.checkpointsConfianza ?? []),
+          ...attemptLogRef.current.filter(a => a.confidence !== null).map(a => a.confidence as number)],
         checkpoints_requested: mandatoryCheckpoints || activeStrategyId === 'est2' || Boolean(certainty),
         certainty_prompted: Boolean(certainty),
         certainty_answered: Boolean(certainty),
@@ -793,6 +797,15 @@ export function CognitiveChallenge() {
   };
 
   const isChallengeDone = boardSuccess || consoleMessages.some(m => m.type === 'ok');
+
+  // Tras acertar con el «Verificar» del tablero, el resultado aparece solo (deja ver antes la
+  // retroalimentación del tablero un momento). Es el único botón: el resultado lleva a la Fase C.
+  useEffect(() => {
+    if (!finishRequested) return;
+    if (!isChallengeDone) { setFinishRequested(false); return; }
+    const id = setTimeout(() => { setFinishRequested(false); setMobilePanel(null); runVerify(); }, 1300);
+    return () => clearTimeout(id);
+  }, [finishRequested, isChallengeDone]);
 
   // --- Probabilidad de bloqueo (Naive Bayes de dos clases) y escalera de andamiaje ---
   const pauseThreshold = longPauseThreshold(pauseSamples);
@@ -891,7 +904,11 @@ export function CognitiveChallenge() {
 
       <div className="fb-layout">
         {/* Lateral Izquierdo: Reto y Criterios */}
-        <div className="fb-sidebar-l" id="tour-activity-criteria">
+        <div className={`fb-sidebar-l ${mobilePanel === 'reto' ? 'fb-sheet-open' : ''}`} id="tour-activity-criteria">
+          <div className="fb-sheet-head">
+            <span>Reto y criterios</span>
+            <button type="button" onClick={() => setMobilePanel(null)} aria-label="Cerrar panel"><i className="ti ti-x" aria-hidden="true" /></button>
+          </div>
           <div className="fb-panel-title">
             <i className="ti ti-target" aria-hidden="true" style={{ fontSize: '13px' }}></i>
             Reto activo
@@ -1105,7 +1122,11 @@ export function CognitiveChallenge() {
         </div>
 
         {/* Lateral Derecho: Métricas y Progreso */}
-        <div className="fb-sidebar-r">
+        <div className={`fb-sidebar-r ${mobilePanel === 'tutor' ? 'fb-sheet-open' : ''}`}>
+          <div className="fb-sheet-head">
+            <span>Tu tutor y progreso</span>
+            <button type="button" onClick={() => setMobilePanel(null)} aria-label="Cerrar panel"><i className="ti ti-x" aria-hidden="true" /></button>
+          </div>
           <div className="fb-panel-title">
             <i className="ti ti-chart-bar" aria-hidden="true" style={{ fontSize: '13px' }}></i>
             Métricas de proceso
@@ -1215,7 +1236,7 @@ export function CognitiveChallenge() {
             isDone={isChallengeDone}
             pendingCriteriaTexts={pendingCriteriaTexts}
             peerRecommendation={peerRecommendation}
-            alertsBlocked={replanOpen || certaintyOpen || showResultModal || activeHint !== null || isActivityTourOpen}
+            alertsBlocked={replanOpen || showResultModal || activeHint !== null || isActivityTourOpen}
             onAlertDismissed={(info) => addEvent('ALERT_DISMISSED', { challengeId: challenge.id, ...info, t_seconds: secondsRef.current })}
             onAffect={(affect) => addEvent('AFFECT_REPORT', {
               // Autoinforme con el estado del modelo de bloqueo en ese instante: permite validar p_block después.
@@ -1244,34 +1265,41 @@ export function CognitiveChallenge() {
           </div>
 
           <div className="fb-submit-zone" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <button 
-              className="fb-btn-verify" 
-              onClick={handleVerify}
-              style={{
-                width: '100%', padding: '12px', borderRadius: '12px',
-                background: 'var(--primary, #4f378b)', color: '#fff',
-                border: 'none', fontWeight: 800, fontSize: '13px',
-                cursor: 'pointer', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', gap: '8px'
-              }}
-            >
-              <i className="ti ti-check" aria-hidden="true"></i>
-              Verificar Respuesta
-            </button>
-            <button 
-              className={`fb-btn-submit ${isChallengeDone ? 'ready' : ''}`} 
-              id="submitBtn" 
-              onClick={handleSubmit}
-            >
-              <i className="ti ti-send" aria-hidden="true" style={{ fontSize: '13px' }}></i>
-              Enviar y ver mi análisis
-            </button>
-            <div style={{ fontSize: '10px', fontFamily: 'IBM Plex Mono, monospace', color: 'var(--fb-text-secondary)', textAlign: 'center', marginTop: '6px' }}>
-              {isChallengeDone ? "¡Reto superado con éxito!" : "Completa la actividad para activar"}
-            </div>
+            {isChallengeDone ? (
+              <button className="fb-btn-submit ready" id="submitBtn" onClick={runVerify}>
+                <i className="ti ti-flag" aria-hidden="true" style={{ fontSize: '13px' }}></i>
+                Terminar y ver mi resultado
+              </button>
+            ) : (
+              <>
+                <div style={{ fontSize: '11px', color: 'var(--fb-text-secondary)', textAlign: 'center', lineHeight: 1.45 }}>
+                  Usa el botón de la actividad para comprobar tu trabajo. Cuando esté bien, verás tu resultado.
+                </div>
+                <button type="button" className="fb-giveup" onClick={runVerify}>No puedo terminarlo: entregar así</button>
+              </>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Celular: el reto y el tutor se abren como paneles flotantes; la actividad ocupa la pantalla */}
+      {mobilePanel && <div className="fb-sheet-backdrop" onClick={() => setMobilePanel(null)} aria-hidden="true" />}
+      <nav className="fb-mobile-dock" aria-label="Paneles del reto">
+        <button type="button" onClick={() => setMobilePanel(p => (p === 'reto' ? null : 'reto'))} aria-pressed={mobilePanel === 'reto'}>
+          <i className="ti ti-target" aria-hidden="true" /> Reto
+        </button>
+        <button type="button" onClick={() => setMobilePanel(p => (p === 'tutor' ? null : 'tutor'))} aria-pressed={mobilePanel === 'tutor'}>
+          <i className="ti ti-robot" aria-hidden="true" /> Tutor
+          {scaffold && !isChallengeDone && <span className="fb-dock-dot" aria-label="El tutor tiene una sugerencia" />}
+        </button>
+        {isChallengeDone ? (
+          <button type="button" className="fb-dock-primary" onClick={() => { setMobilePanel(null); runVerify(); }}>
+            <i className="ti ti-flag" aria-hidden="true" /> Terminar
+          </button>
+        ) : (
+          <span className="fb-dock-hint">Comprueba con el botón de la actividad</span>
+        )}
+      </nav>
 
       {/* Result Modal */}
       <AnimatePresence>
@@ -1405,16 +1433,6 @@ export function CognitiveChallenge() {
         )}
       </AnimatePresence>
 
-      <CertaintyPrompt
-        open={certaintyOpen}
-        onAnswer={(value, label) => {
-          setCertainty({ value, label });
-          setCertaintyOpen(false);
-          addEvent('CERTAINTY_JUDGMENT', { challengeId: challenge.id, value, label, seconds });
-          logResponse(lastCertaintyRef.current, `${label} (${value}/10)`);
-          setTimeout(runVerify, 0);
-        }}
-      />
       <ReplanModal
         open={replanOpen}
         challengeId={challenge.id}

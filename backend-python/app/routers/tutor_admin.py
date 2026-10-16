@@ -252,7 +252,7 @@ async def student_detail(user_id: UUID, db: AsyncSession = Depends(get_db)):
             "session_id": sid, "challenge_id": cid, "started_at": _iso(s.started_at) if s else None,
             "completed_at": None, "strategy_id": s.assigned_strategy_id if s else None,
             "result": None, "calibration": None, "reading": None, "feedback": None, "reflection_text": None,
-            "plan": None, "overrides": [], "interventions": [],
+            "plan": None, "overrides": [], "interventions": [], "attempts": [], "affect": [],
         })
 
     for r in results:
@@ -267,6 +267,36 @@ async def student_detail(user_id: UUID, db: AsyncSession = Depends(get_db)):
         a["reflection_text"] = c.reflection_text
     for it in interventions:
         act(it["session_id"], it["challenge_id"])["interventions"].append(it)
+
+    # Qué respondió y cómo: cada intento (respuesta compacta, acierto, confianza, cambio, ensayo y
+    # error, pistas previas) y los autoinformes de estado, por actividad.
+    evs = (await db.execute(
+        select(CognitiveEvent).where(CognitiveEvent.session_id.in_(sids),
+                                     CognitiveEvent.event_type.in_(("ATTEMPT", "AFFECT_REPORT")))
+        .order_by(CognitiveEvent.timestamp)
+    )).scalars().all()
+    seen_ev = set()
+    for ev in evs:
+        m = ev.metadata_ or {}
+        cid = m.get("challengeId")
+        if not cid:
+            continue
+        k = (ev.session_id, ev.event_type, _iso(ev.timestamp))
+        if k in seen_ev:  # eventos guardados dos veces antes de la deduplicación
+            continue
+        seen_ev.add(k)
+        a = act(ev.session_id, cid)
+        if ev.event_type == "ATTEMPT":
+            a["attempts"].append({
+                "t_seconds": m.get("t_seconds"), "correct": bool(m.get("correct")), "partial": bool(m.get("partial")),
+                "item": m.get("item"), "answer": m.get("answer"), "delta": m.get("delta"),
+                "confidence": m.get("confidence"), "secs_since_feedback": m.get("secs_since_feedback"),
+                "trial_and_error": bool(m.get("trial_and_error")), "hints_before": m.get("hints_before") or [],
+                "latency_s": m.get("latency_s"),
+            })
+        else:
+            a["affect"].append({"t_seconds": m.get("t_seconds"), "affect": m.get("affect"), "p_block": m.get("p_block"),
+                                "scaffold": m.get("scaffold")})
     for d in decisions:
         p = d.payload or {}
         if d.kind == "plan" and d.session_id:

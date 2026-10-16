@@ -83,8 +83,10 @@ export function EvaluationStart() {
     // 1. Si viene con forcedChallengeId (desde el modal de reto fallido), usar ese reto directamente
     if (location.state?.forcedChallengeId) {
       const forced = dynamicChallengeBank.find(c => c.id === location.state.forcedChallengeId);
-      if (forced && currentChallengeId !== forced.id) {
-        setCurrentChallengeId(forced.id);
+      if (forced) {
+        // El reto forzado manda: si además se aplicara el respaldo a N1 de abajo (retryVariation),
+        // los dos se pisarían en cada render (bucle infinito, React error #185).
+        if (currentChallengeId !== forced.id) setCurrentChallengeId(forced.id);
         return;
       }
     }

@@ -10,6 +10,7 @@ from app.services.tutor import engine as tutor_engine
 from app.routers.tutor import load_state, resolve_group, _persist_summary
 from app.models import User
 from app.routers.auth import get_current_user, ensure_self_or_staff
+from app.services.events import add_events_dedup
 
 router = APIRouter(prefix="/api/phase-c", tags=["phase-c"], dependencies=[Depends(get_current_user)])
 
@@ -60,13 +61,7 @@ async def complete_phase_c(
     )
     db.add(calibration)
 
-    for ev in payload.cognitive_events:
-        db.add(CognitiveEvent(
-            session_id=session.id,
-            event_type=ev.event_type,
-            timestamp=ev.timestamp,
-            metadata_=ev.metadata,
-        ))
+    await add_events_dedup(db, session.id, payload.cognitive_events)
 
     # --- Sistema tutor: lectura del reto, actualización bayesiana y retroalimentación ---
     tutor_payload = None

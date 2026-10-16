@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useTheme } from '../ThemeContext';
+import { IFRAME_TOUCH_DRAG_SCRIPT } from './touchDrag';
 
 /**
  * Tema para los tableros que viven en un <iframe srcDoc>.
@@ -75,7 +76,7 @@ export function useThemedSrcDoc(html: string) {
   const srcDoc = useMemo(
     () => html
       .replace(/<link[^>]+fonts\.googleapis\.com[^>]*>/g, '')
-      .replace(/<head>/i, `<head>${headFor(initialTheme)}`)
+      .replace(/<head>/i, `<head>${headFor(initialTheme)}${IFRAME_TOUCH_DRAG_SCRIPT}`)
       .replace(/<html([^>]*)>/i, `<html$1 class="${initialTheme === 'dark' ? 'dark' : ''}">`),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [html],

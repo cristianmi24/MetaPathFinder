@@ -634,3 +634,151 @@
 .fb-btn-submit.ready:active {
   transform: translateY(0);
 }
+
+/* ── Un solo botón: entrega sin terminar (enlace discreto) ───────────────── */
+.fb-giveup {
+  background: none;
+  border: none;
+  color: var(--fb-text-secondary);
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 6px;
+}
+
+/* ── Celular y tableta: paneles flotantes y barra inferior ──────────────── */
+.fb-sheet-head, .fb-mobile-dock, .fb-sheet-backdrop { display: none; }
+
+@media (max-width: 992px) {
+  /* La actividad ocupa toda la pantalla; deja sitio a la barra inferior. */
+  .fb-layout { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .fb-editor-zone { min-height: calc(100vh - 150px); margin: 8px 4px; }
+
+  .fb-sidebar-l, .fb-sidebar-r {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 900;
+    max-height: 80vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: none;
+    border-radius: 20px 20px 0 0;
+    background: var(--fb-bg);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.28);
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    transform: translateY(105%);
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0s linear 0.25s;
+  }
+  .fb-sidebar-l.fb-sheet-open, .fb-sidebar-r.fb-sheet-open {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.25s ease;
+  }
+  .fb-sidebar-l { max-height: 80vh; }
+
+  .fb-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 12px 12px 8px 16px;
+    background: var(--fb-bg);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--fb-text);
+  }
+  .fb-sheet-head::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    width: 40px;
+    height: 4px;
+    margin-left: -20px;
+    border-radius: 2px;
+    background: var(--fb-border);
+  }
+  .fb-sheet-head button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--fb-bar-bg);
+    color: var(--fb-text);
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .fb-sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 890;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  /* La entrega va en la barra inferior. */
+  .fb-sidebar-r .fb-submit-zone { display: none; }
+
+  .fb-mobile-dock {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 880;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    background: var(--fb-bg);
+    border-top: 1px solid var(--fb-border-light);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+  }
+  .fb-mobile-dock > button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid var(--fb-border);
+    background: var(--fb-card, var(--surface));
+    color: var(--fb-text);
+    font-weight: 700;
+    font-size: 13px;
+    font-family: var(--font-sans);
+  }
+  .fb-mobile-dock > button[aria-pressed='true'] {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .fb-mobile-dock .fb-dock-primary {
+    flex: 1;
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--color-on-primary, #fff);
+  }
+  .fb-dock-hint {
+    flex: 1;
+    text-align: right;
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--fb-text-secondary);
+  }
+  .fb-dock-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--warn);
+  }
+}

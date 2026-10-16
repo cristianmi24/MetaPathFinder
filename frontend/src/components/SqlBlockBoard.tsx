@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import './SqlBlockBoard.css';
-import { type OnValidation, ATTEMPT, PARTIAL_ATTEMPT, attempt } from '../lib/boardValidation';
+import { type OnValidation, ATTEMPT, attempt } from '../lib/boardValidation';
 
 interface FieldTagProps {
   val: string;
@@ -249,13 +249,12 @@ export function SqlBlockBoard({ challengeId, onValidation }: SqlBlockBoardProps)
   const handleRun = useCallback(() => {
     if (phase === 0) {
       setResult({ type:'ok', msg:'✓ Tablas creadas exitosamente: Proveedores, Productos, Ventas.' });
+      // Fases 1 y 2: solo se revisa un script ya escrito; no hay respuesta del estudiante que calificar.
       setPhaseDone(prev => { const next = [...prev]; next[0] = true; return next; });
-      onValidation(true, PARTIAL_ATTEMPT);
       setTimeout(() => { setPhase(1); setBlocks([]); setResult(null); }, 1500);
     } else if (phase === 1) {
       setResult({ type:'ok', msg:'✓ 10 registros insertados en cada tabla.' });
       setPhaseDone(prev => { const next = [...prev]; next[1] = true; return next; });
-      onValidation(true, PARTIAL_ATTEMPT);
       setTimeout(() => { setPhase(2); setBlocks([]); setResult(null); }, 1500);
     } else {
       const sql = genSQL(blocks);
@@ -266,14 +265,20 @@ export function SqlBlockBoard({ challengeId, onValidation }: SqlBlockBoardProps)
       }
       const res = execSQL(sql);
       setResult(res);
-      if (res.type !== 'err') {
+      // Correcto solo si devuelve lo mismo que la consulta esperada del reto (antes bastaba con que no diera error).
+      const expected = execSQL(CHALLENGES[activeChallenge].hint);
+      const solved = res.type === 'table' && (expected.type !== 'table' || JSON.stringify(res.rows) === JSON.stringify(expected.rows));
+      if (!solved && res.type !== 'err') {
+        setResult({ type: 'err', msg: 'La consulta se ejecutó, pero no responde lo que pide el reto. Revisa qué columnas sumas y cuentas, y el filtro por fecha.' });
+      }
+      if (solved) {
         setPhaseDone(prev => { const next = [...prev]; next[2] = true; return next; });
         setTimeout(() => { setCompleted(true); onValidation(true, attempt(blocks.map(b => b.type))); }, 1500); // Éxito final
       } else {
         onValidation(false, attempt(blocks.map(b => b.type))); // Intento fallido
       }
     }
-  }, [phase, blocks, genSQL, execSQL, onValidation]);
+  }, [phase, blocks, genSQL, execSQL, onValidation, activeChallenge]);
 
   const handlePhaseChange = useCallback((n: number) => {
     setPhase(n);

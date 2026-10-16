@@ -126,7 +126,24 @@ K = 1 − pendiente de la confianza frente al desempeño (≈ 0,5 en la literatu
 
 **Trazabilidad para el piloto.** Cada entrada del historial guarda `step`, `component`, `expected_perf`, `difficulty_offset` y `bias_adj`, y la decisión de Fase C guarda `difficulty`. Con esos datos se estima K por regresión (sesgo ~ E) y se valida el ajuste: el sesgo ajustado del reto t debe predecir el del reto t+1 mejor que el crudo.
 
-## 10. Pruebas automatizadas
+## 10. Auditoría de actividades, guardado y vistas (octubre de 2026)
+
+**Validación real de cada tablero.** Se revisaron los 25 tableros. Tres daban «correcto» sin comprobar la respuesta y se corrigieron:
+- *Identidad digital (RM-C2-N2):* la pestaña «Resultado» se abría siempre y «Finalizar y enviar» mandaba éxito con 0/2. Ahora solo si los dos ejercicios están bien.
+- *SQL (RM-C2-N3):* las fases 1 y 2 (solo revisar un script) contaban como intentos correctos; ya no cuentan. En la fase 3 bastaba cualquier consulta sin error; ahora el resultado debe coincidir con el de la consulta esperada.
+- *Huerta Arduino:* «Finalizar» está tras el paso que exige ≥ 70 puntos (correcto). *CanvasBoard* acepta cualquier trazo, pero ningún reto del banco lo usa.
+
+**Guardado sin duplicados.** Los eventos llegaban dos veces (en vivo y al cerrar la fase). `services/events.add_events_dedup` los identifica por tipo y marca de tiempo dentro de la sesión, en `/api/tracking/events`, Fase B y Fase C.
+
+**Perfil del estudiante.** «Mi mapa» muestra «Cómo me fue en cada reto» desde el servidor (historial del tutor: fecha, intentos, logrado, puntaje, calibración y lectura de autorregulación), no desde el navegador.
+
+**Vista del administrador.** En el Panel del tutor, cada actividad del estudiante muestra «Qué respondió y cómo»: cada intento con su respuesta compacta, acierto, cambio, confianza, espera tras el resultado, ensayo y error y pistas previas; los autoinformes de estado con el bloqueo estimado; y «Ver actividad», una vista previa del tablero tal como lo ve el estudiante.
+
+**Un solo botón y celular.** El «Verificar» de cada tablero es el único botón: al acertar se abre el resultado y de ahí la Fase C. Los tableros sin botón propio (arrastrar, escribir) muestran «Terminar» al quedar completos. En el celular el reto y el tutor son paneles flotantes y la actividad ocupa la pantalla. El arrastre nativo de HTML5 no funciona con el dedo; `lib/touchDrag.ts` instala `mobile-drag-drop` (también dentro de los iframes) con dos correcciones: buscar el arrastrable desde `event.target` (con holdToDrag, `composedPath()` llega vacío) y aceptar `dragenter` para que `dragover` decida el destino.
+
+**Actividad de apoyo.** Tras fallar, «Ir a la actividad de apoyo» caía en un bucle infinito (React #185): el reto forzado y el respaldo a N1 se pisaban. Ahora manda el reto forzado.
+
+## 11. Pruebas automatizadas
 
 `backend-python/tests/test_profile.py` (8 pruebas), `test_attempts.py` (8), `test_difficulty.py` (4) y las 9 del tutor: 29 en verde. Del perfil:
 - el Kalman no etiqueta con un solo reto y gana certeza con más;

@@ -343,7 +343,7 @@ body{font-family:var(--font-sans);background:var(--color-surface);color:var(--co
     <div style="margin-top:1.5rem" id="reviewArea"></div>
     <div class="nav-btns">
       <button class="btn-back" onclick="goPhase(3)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Revisar práctica</button>
-      <button class="btn-next" onclick="window.parent.postMessage({ type: 'EVAL_SUCCESS' }, '*')">Finalizar y enviar <i class="ti ti-check"></i></button>
+      <button class="btn-next" onclick="finishPractice()">Finalizar y enviar <i class="ti ti-check"></i></button>
     </div>
   </div>
 </div>
@@ -445,6 +445,12 @@ function checkOrder(dropId, correct, resultId, isA) {
 }
 
 window.checkA = function() { checkOrder('dropA', correctA, 'resultA', true); }
+// "Finalizar" solo da el reto por logrado si los dos ejercicios quedaron bien (antes enviaba éxito con 0/2).
+window.finishPractice = function() {
+  if (scoreA && scoreB) { window.parent.postMessage({ type: 'EVAL_SUCCESS' }, '*'); return; }
+  const msg = document.getElementById('scoreMsg');
+  if (msg) msg.textContent = 'Aún te falta completar bien ' + ((scoreA ? 0 : 1) + (scoreB ? 0 : 1)) + ' ejercicio(s). Vuelve a «Revisar práctica».';
+};
 window.checkB = function() { checkOrder('dropB', correctB, 'resultB', false); }
 
 function resetBlocks(srcId, dropId, steps) {

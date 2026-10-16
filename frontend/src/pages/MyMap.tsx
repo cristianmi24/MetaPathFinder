@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Map as MapIcon } from 'lucide-react';
 import { ChallengeMap } from '../components/tutor/ChallengeMap';
 import { LearnerProfileCard } from '../components/tutor/LearnerProfileCard';
+import { ChallengeHistory } from '../components/tutor/ChallengeHistory';
 import { LearningStyleQuiz } from '../components/tutor/LearningStyleQuiz';
 import { useCognitiveStore } from '../stores/useCognitiveStore';
 import { useTutorStore } from '../stores/useTutorStore';
@@ -28,6 +29,7 @@ export function MyMap() {
         <div className="bento-card p-5"><ChallengeMap /></div>
         <LearnerProfileCard onEditStyle={() => setQuiz(true)} />
       </div>
+      <ChallengeHistory />
       <LearningStyleQuiz open={quiz} userId={dbUserId} onClose={() => setQuiz(false)} />
     </div>
   );

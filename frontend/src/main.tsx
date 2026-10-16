@@ -4,6 +4,9 @@ import App from './App.tsx';
 import './index.css';
 import { ThemeProvider } from './ThemeContext.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
+import { installTouchDrag } from './lib/touchDrag';
+
+installTouchDrag();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

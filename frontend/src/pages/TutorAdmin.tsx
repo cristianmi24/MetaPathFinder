@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Activity, ArrowDownUp, ArrowLeft, Bot, CheckCircle2, ChevronDown, ChevronRight, Clock, Gauge, Hand,
-  LifeBuoy, Lightbulb, RefreshCw, Route, Search, ShieldAlert, Sparkles, Target, Users, XCircle,
+  Eye, LifeBuoy, Lightbulb, RefreshCw, Route, Search, ShieldAlert, Sparkles, Target, Users, X, XCircle,
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, LabelList, CartesianGrid } from 'recharts';
 import {
-  api, type InterventionKind, type TutorAdminActivity, type TutorAdminOverview, type TutorAdminStudent,
+  api, type InterventionKind, type TutorAdminActivity, type TutorAdminAnswer, type TutorAdminOverview, type TutorAdminStudent,
   type TutorAdminStudentRow, type TutorIntervention,
 } from '../services/api';
+import { getLiveComponent } from './Activities';
 import { useTheme } from '../ThemeContext';
 import { cn } from '../lib/utils';
 import { dynamicChallengeBank } from '../data/dynamicChallengeBank';
@@ -209,6 +210,105 @@ function Timeline({ activity }: { activity: TutorAdminActivity }) {
   );
 }
 
+/* ── Qué respondió y cómo (intentos de la Fase B) ─────────────────────────── */
+const AFFECT_EMOJI: Record<string, string> = { bien: '🙂', confundido: '😕', frustrado: '😣', aburrido: '😴' };
+
+function formatAnswer(ans: TutorAdminAnswer): string {
+  if (ans === null || ans === undefined) return '—';
+  if (Array.isArray(ans)) return ans.map((v) => (v === null ? '·' : v === true ? '✓' : v === false ? '✗' : String(v))).join(' · ');
+  if (typeof ans === 'object') {
+    return Object.entries(ans).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.map((x) => x ?? '·').join('/') : v === true ? '✓' : v === false ? '✗' : String(v ?? '·')}`).join(' · ');
+  }
+  return ans === true ? '✓' : ans === false ? '✗' : String(ans);
+}
+
+function ActivityPreview({ challengeId, onClose }: { challengeId: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/50 p-2 md:p-6" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-label="Vista previa de la actividad" onClick={(e) => e.stopPropagation()}
+        className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl">
+        <div className="flex items-center gap-2 border-b border-outline-variant/50 px-4 py-3">
+          <Eye className="h-4 w-4 text-primary" />
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-semibold">{challengeTitle(challengeId)}</div>
+            <div className="text-xs text-on-surface-variant">Vista previa: así la ve el estudiante. Lo que hagas aquí no se guarda.</div>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Cerrar" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-surface-container"><X className="h-5 w-5" /></button>
+        </div>
+        <div className="min-h-[60vh] flex-1 overflow-auto bg-surface-container p-2 md:p-4">{getLiveComponent(challengeId, () => {})}</div>
+      </div>
+    </div>
+  );
+}
+
+function AttemptsPanel({ a }: { a: TutorAdminActivity }) {
+  const [preview, setPreview] = useState(false);
+  const attempts = a.attempts ?? [];
+  const affect = a.affect ?? [];
+  const correct = attempts.filter((t) => t.correct).length;
+  const withConf = attempts.filter((t) => t.confidence !== null);
+  const brier = withConf.length
+    ? withConf.reduce((acc, t) => acc + ((t.confidence as number) / 10 - (t.correct ? 1 : 0)) ** 2, 0) / withConf.length
+    : null;
+  const trial = attempts.filter((t) => t.trial_and_error).length;
+  return (
+    <div className="rounded-xl bg-surface-container p-4 text-sm">
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <div className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Qué respondió y cómo</div>
+        <button type="button" onClick={() => setPreview(true)}
+          className="ml-auto inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-outline-variant px-3 text-xs font-semibold hover:bg-surface-container-high">
+          <Eye className="h-3.5 w-3.5" /> Ver actividad
+        </button>
+      </div>
+      {attempts.length === 0 ? (
+        <p className="text-on-surface-variant">Sin intentos registrados en esta actividad (los tableros de arrastrar o escribir no tienen botón de verificar).</p>
+      ) : (
+        <>
+          <p className="mb-2 text-on-surface-variant">
+            {plural(attempts.length, 'intento', 'intentos')} · <b className="text-on-surface">{correct} correctos</b>
+            {withConf.length > 0 && <> · confianza declarada en {withConf.length} · Brier {brier!.toFixed(2)}</>}
+            {trial > 0 && <> · <b className="text-warning">{trial} de ensayo y error</b></>}
+          </p>
+          <div className="overflow-x-auto">
+            <table className="ta-table w-full text-xs">
+              <thead>
+                <tr><th>#</th><th>Tiempo</th><th>Pregunta</th><th>Respuesta</th><th>Resultado</th><th className="ta-num">Cambio</th><th className="ta-num">Confianza</th><th>Notas</th></tr>
+              </thead>
+              <tbody>
+                {attempts.map((t, i) => (
+                  <tr key={i}>
+                    <td>{i + 1}</td>
+                    <td className="whitespace-nowrap">{t.t_seconds !== null ? mmss(t.t_seconds) : '—'}</td>
+                    <td>{t.item !== null && t.item !== undefined ? (typeof t.item === 'number' ? `P${t.item + 1}` : String(t.item)) : t.partial ? 'paso' : 'tablero'}</td>
+                    <td className="max-w-[260px] truncate font-mono" title={formatAnswer(t.answer)}>{formatAnswer(t.answer)}</td>
+                    <td>{t.correct ? <span className="text-secondary">✓ correcto</span> : <span className="text-error">✗ incorrecto</span>}</td>
+                    <td className="ta-num">{t.delta ?? '—'}</td>
+                    <td className="ta-num">{t.confidence !== null ? `${t.confidence}/10` : '—'}</td>
+                    <td className="whitespace-nowrap text-on-surface-variant">
+                      {[t.trial_and_error && 'ensayo y error', t.hints_before.length > 0 && `tras pista ${t.hints_before.join(', ')}`,
+                        t.secs_since_feedback !== null && `${t.secs_since_feedback} s tras el resultado`].filter(Boolean).join(' · ') || '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+      {affect.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {affect.map((f, i) => (
+            <span key={i} className="ta-pill" title={`Bloqueo estimado en ese momento: ${f.p_block !== null ? Math.round(f.p_block * 100) + ' %' : '—'}`}>
+              {AFFECT_EMOJI[f.affect] ?? '•'} {f.affect} {f.t_seconds !== null ? `· ${mmss(f.t_seconds)}` : ''} {f.p_block !== null ? `· bloqueo ${Math.round(f.p_block * 100)} %` : ''}
+            </span>
+          ))}
+        </div>
+      )}
+      {preview && <ActivityPreview challengeId={a.challenge_id} onClose={() => setPreview(false)} />}
+    </div>
+  );
+}
+
 function ActivityCard({ a, defaultOpen }: { a: TutorAdminActivity; defaultOpen: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   const strategy = getEstrategia(a.plan?.strategy?.strategy_id ?? a.strategy_id);
@@ -234,6 +334,7 @@ function ActivityCard({ a, defaultOpen }: { a: TutorAdminActivity; defaultOpen: 
             ))}
           </div>
           <Timeline activity={a} />
+          <AttemptsPanel a={a} />
           <div className="grid gap-4 md:grid-cols-2 [&>*]:min-w-0">
             <div className="rounded-xl bg-surface-container p-4 text-sm">
               <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Plan del tutor (Fase A)</div>

@@ -16,6 +16,7 @@ from app.database import get_db
 from app.models import CognitiveEvent, Session, User
 from app.routers.auth import get_current_user
 from app.schemas import TrackingBatch
+from app.services.events import add_events_dedup
 
 router = APIRouter(prefix="/api/tracking", tags=["tracking"], dependencies=[Depends(get_current_user)])
 
@@ -36,10 +37,6 @@ async def track_events(payload: TrackingBatch, db: AsyncSession = Depends(get_db
         )).scalar_one_or_none()
     if session is None:
         return {"status": "no_session", "stored": 0}
-    db.add_all([
-        CognitiveEvent(session_id=session.id, event_type=ev.event_type[:50],
-                       timestamp=ev.timestamp or datetime.now(timezone.utc), metadata_=ev.metadata)
-        for ev in payload.events
-    ])
+    stored = await add_events_dedup(db, session.id, payload.events)
     await db.commit()
-    return {"status": "stored", "stored": len(payload.events), "session_id": session.id}
+    return {"status": "stored", "stored": stored, "session_id": session.id}

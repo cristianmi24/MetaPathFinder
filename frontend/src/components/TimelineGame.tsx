@@ -168,7 +168,8 @@ function LevelBanner() {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-primary/20 bg-primary-container/40 px-4 py-3">
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary"><Gauge size={18} /></span>
-      <div className="min-w-0 flex-1">
+      {/* basis: en el celular «Este reto» baja de línea en vez de aplastar el texto en una columna */}
+      <div className="min-w-0 flex-1 basis-[14rem]">
         <div className="text-[11px] font-semibold uppercase tracking-wider text-on-primary-container/70">Tu nivel según tu calibración</div>
         <div className="flex flex-wrap items-center gap-2 text-sm text-on-primary-container">
           <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-on-primary">

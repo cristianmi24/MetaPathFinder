@@ -110,7 +110,7 @@ const compMeta: Record<string, { color: string; bg: string; icon: any }> = {
 };
 
 // Generar dinámicamente la instancia del componente React real
-const getLiveComponent = (id: string, onValidation: OnValidation): React.ReactNode => {
+export const getLiveComponent = (id: string, onValidation: OnValidation): React.ReactNode => {
   switch (id) {
     // Nivel Básico (RB)
     case 'RB-C1-N1': return <TimelineGame onValidation={onValidation} />;
