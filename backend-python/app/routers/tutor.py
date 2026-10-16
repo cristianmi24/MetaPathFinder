@@ -84,7 +84,8 @@ def _state_payload(row: StudentTutorState, group: str) -> Dict[str, Any]:
         "strategies": row.state.get("strategies"),
         "challenges_done": row.state.get("challenges_done", []),
         "history": row.state.get("history", []),
-        "scaffold": engine.scaffold_plan(loc["zdp"]),
+        "scaffold": engine.scaffold_plan(loc["zdp"], row.state.get("profile")),
+        "profile": engine.learner.summary(row.state.get("profile") or {}),
     }
 
 

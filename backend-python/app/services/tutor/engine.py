@@ -7,6 +7,7 @@ El estado del estudiante es un diccionario JSON (persistido en `student_tutor_st
   "tech":       {"C1": {"RB-N1": [a, b], ...}},  # Beta-Bernoulli por escalón técnico y componente
   "strategies": {"over": {"est2": [a, b], ...}}, # brazos de Thompson por perfil de calibración
   "last_bias": float | None, "last_strategy": str | None, "last_profile": str | None,
+  "profile":    {...},                           # perfil dinámico (ver profile.py)
   "challenges_done": [...], "history": [...]
 }
 """
@@ -22,6 +23,7 @@ from .bayes import (
     indicator_contributions, is_mastered, naive_bayes_bernoulli, thompson_choose,
 )
 from .indicators import behavior_indicators, criterion_observations, text_indicators
+from . import profile as learner
 
 
 # --------------------------------------------------------------------------- #
@@ -44,6 +46,7 @@ def new_state() -> Dict[str, Any]:
         "last_strategy": None,
         "last_profile": None,
         "learning_style": None,
+        "profile": learner.new_profile(),
         "challenges_done": [],
         "history": [],
     }
@@ -59,6 +62,7 @@ def ensure_state(state: Optional[Dict[str, Any]]) -> Dict[str, Any]:
             merged[k].update(v)
         else:
             merged[k] = v
+    merged["profile"] = learner.ensure_profile(state.get("profile"))
     for comp in domain.COMPONENTS:
         merged["tech"].setdefault(comp, {})
         for step in domain.TECH_LADDER:
@@ -179,9 +183,18 @@ def choose_challenge(state: Dict[str, Any], level_name: str, available: List[Dic
     return {"challenge_id": best[1]["id"], "reason": reason, "alternatives": alternatives, "p_dominio": round(best[2], 2)}
 
 
+def strategy_profile(state: Dict[str, Any]) -> str:
+    """Perfil de calibración con el que se eligen y se evalúan las estrategias: el del perfil
+    dinámico (Kalman sobre todos los retos) en cuanto hay datos; antes, el del último reto."""
+    prof = state.get("profile") or {}
+    if (prof.get("bias") or {}).get("n", 0) > 0:
+        return learner.calibration_class(prof)
+    return state.get("last_profile") or "cal"
+
+
 def choose_strategy(state: Dict[str, Any], group: str, rng: Optional[random.Random] = None) -> Dict[str, Any]:
     rng = rng or random.Random()
-    profile = state.get("last_profile") or "cal"
+    profile = strategy_profile(state)
     if group == "control":
         sid = rng.choice(domain.STRATEGIES)
         return {"strategy_id": sid, "method": "aleatoria", "profile": profile,
@@ -189,8 +202,12 @@ def choose_strategy(state: Dict[str, Any], group: str, rng: Optional[random.Rand
     arms = {s: tuple(ab) for s, ab in state["strategies"][profile].items()}
     sid, samples = thompson_choose(arms, rng)
     a, b = arms[sid]
+    cal = learner.summary(state.get("profile") or {})["calibration"]
+    basis = (f"Tu perfil de calibración, estimado con tus {cal['n']} retos, es «{_profile_label(profile)}» "
+             f"({cal['probs'][profile]:.0%} de probabilidad)" if cal["n"] > 0
+             else f"Tu último perfil de calibración fue «{_profile_label(profile)}»")
     reason = (
-        f"Tu último perfil de calibración fue «{_profile_label(profile)}». Entre las estrategias que han reducido "
+        f"{basis}. Entre las estrategias que han reducido "
         f"el desfase en ese perfil, «{domain.STRATEGY_NAMES[sid]}» tiene la mejor estimación "
         f"({beta_mean(a, b):.0%} de éxito, {beta_observations(a, b, 2 if sid in domain.RECOMMENDED_BY_PROFILE.get(profile, []) else 1)} observaciones). "
         f"El muestreo de Thompson explora a veces otras alternativas para seguir aprendiendo."
@@ -199,7 +216,41 @@ def choose_strategy(state: Dict[str, Any], group: str, rng: Optional[random.Rand
             "samples": {k: round(v, 3) for k, v in samples.items()}}
 
 
-def scaffold_plan(zdp: str) -> Dict[str, Any]:
+TRAIT_MESSAGES: Dict[str, str] = {
+    "planificacion": "Antes de tocar nada: escribe en una línea qué vas a hacer primero.",
+    "estimacion_tiempo": "Mira el reloj del reto: ¿vas al ritmo que estimaste?",
+    "busqueda_ayuda": "Si un intento falla dos veces, pide la pista: pedir ayuda a tiempo también es estrategia.",
+    "autonomia": "Intenta un paso más por tu cuenta antes de abrir la pista.",
+    "control_impulsos": "Antes de verificar, revisa tu respuesta una vez: la prisa cuesta intentos.",
+    "monitoreo": "A mitad del reto pregúntate: ¿sigo tan seguro/a como al inicio?",
+    "uso_estrategia": "Usa tu estrategia antes de pedir ayuda: es tu primer recurso.",
+    "foco": "Quédate en esta pestaña hasta terminar: cambiar de ventana corta el hilo.",
+}
+
+
+def scaffold_plan(zdp: str, prof: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Tipo de andamiaje según la ZDP (Griffin), ajustado con el perfil dinámico."""
+    plan = _base_scaffold_plan(zdp)
+    if not prof or not prof.get("n"):
+        return {**plan, "personalized": [], "blocking_prior": domain.BLOCKING_PRIOR, "focus_trait": None}
+    s = learner.summary(prof)
+    traits, cal = s["traits"], s["calibration"]
+    reasons: List[str] = []
+    if not plan["mandatory_checkpoints"] and (cal["probs"]["over"] >= 0.6 or traits["monitoreo"]["status"] == "a_trabajar"):
+        plan["mandatory_checkpoints"] = True
+        reasons.append("puntos de control: tiendes a sobreestimar tu confianza" if cal["probs"]["over"] >= 0.6
+                       else "puntos de control: aún cuesta ajustar la confianza mientras trabajas")
+    if not plan["ask_before_hint"] and (traits["control_impulsos"]["status"] == "a_trabajar" or traits["autonomia"]["status"] == "a_trabajar"):
+        plan["ask_before_hint"] = True
+        reasons.append("te pediré nombrar el criterio antes de cada pista")
+    weak = s["weakest_trait"]
+    if weak and weak in TRAIT_MESSAGES:
+        plan["messages"] = [TRAIT_MESSAGES[weak]] + plan["messages"]
+        reasons.append(f"foco de trabajo: {learner.TRAITS_BY_ID[weak]['label'].lower()}")
+    return {**plan, "personalized": reasons, "blocking_prior": s["blocking_prior"], "focus_trait": weak}
+
+
+def _base_scaffold_plan(zdp: str) -> Dict[str, Any]:
     plans = {
         "basico": {
             "type": "conciencia",
@@ -236,7 +287,8 @@ def plan_session(state: Dict[str, Any], level_name: str, available: List[Dict[st
         "zdp": {k: v for k, v in loc.items() if k != "criteria"},
         "challenge": challenge,
         "strategy": strategy,
-        "scaffold": scaffold_plan(loc["zdp"]),
+        "scaffold": scaffold_plan(loc["zdp"], state.get("profile")),
+        "profile": learner.summary(state.get("profile") or {}),
         "overlay": tech_overlay(state),
     }
 
@@ -266,9 +318,22 @@ def _profile_label(p: str) -> str:
     return {"over": "sobreconfianza", "sub": "subestimación", "cal": "calibrado"}.get(p, p)
 
 
-def read_challenge(observations: Dict[str, Optional[bool]]) -> Dict[str, Any]:
+READING_MEMORY: float = 0.4  # peso de la lectura anterior en el prior del reto siguiente
+
+
+def reading_prior(history: List[Dict[str, Any]]) -> Optional[Dict[str, float]]:
+    """Bayes secuencial: el prior de nivel mezcla el uniforme con la última lectura, para
+    que un reto atípico no haga saltar al estudiante de nivel, sin quedar anclado al pasado."""
+    if not history or not history[-1].get("posterior"):
+        return None
+    prev = history[-1]["posterior"]
+    u = 1.0 / len(domain.LEVELS)
+    return {lvl: (1 - READING_MEMORY) * u + READING_MEMORY * float(prev.get(lvl, u)) for lvl in domain.LEVELS}
+
+
+def read_challenge(observations: Dict[str, Optional[bool]], prior: Optional[Dict[str, float]] = None) -> Dict[str, Any]:
     lik = {i["id"]: i["p"] for i in domain.INDICATORS}
-    post = naive_bayes_bernoulli(observations, lik, domain.LEVELS)
+    post = naive_bayes_bernoulli(observations, lik, domain.LEVELS, prior)
     ranked = sorted(post, key=post.get, reverse=True)
     winner, runner = ranked[0], ranked[1]
     contrib = indicator_contributions(observations, lik, winner, runner)
@@ -304,7 +369,7 @@ def process_phase_c(state: Dict[str, Any], obs: Dict[str, Any], calibration: Dic
     ind = behavior_indicators(obs)
     nb_obs: Dict[str, Optional[bool]] = {**ind, "f1": txt["f1"], "f2": txt["f2"], "f3": txt["f3"],
                                          "f4": txt["f4"] if obs.get("jg_m3_text") is not None else None}
-    reading = read_challenge(nb_obs)
+    reading = read_challenge(nb_obs, reading_prior(state.get("history") or []))
     crit = criterion_observations(ind, txt, obs, bias)
 
     # 1) Beta-Bernoulli por criterio (+ fading: éxitos consecutivos sin ayuda)
@@ -330,11 +395,12 @@ def process_phase_c(state: Dict[str, Any], obs: Dict[str, Any], calibration: Dic
     if challenge["id"] not in state["challenges_done"]:
         state["challenges_done"].append(challenge["id"])
 
-    # 3) Thompson: la estrategia usada "tuvo éxito" si redujo el |sesgo| frente al reto anterior
+    # 3) Thompson: la estrategia usada "tuvo éxito" si redujo el |sesgo| frente al reto anterior.
+    # Se evalúa en el brazo del perfil con que se eligió (el del perfil dinámico antes de este reto).
     strategy_used = obs.get("strategy_id") or state.get("last_strategy")
     strategy_outcome = None
     prev_bias = state.get("last_bias")
-    prev_profile = state.get("last_profile")
+    prev_profile = strategy_profile(state) if prev_bias is not None else state.get("last_profile")
     if strategy_used in domain.STRATEGIES and prev_bias is not None and bias is not None and prev_profile in state["strategies"] and group != "control":
         success = abs(bias) < abs(prev_bias) - 0.25 or (abs(bias) <= domain.CALIBRATED_BIAS and abs(prev_bias) <= domain.CALIBRATED_BIAS)
         a, b = state["strategies"][prev_profile][strategy_used]
@@ -343,6 +409,9 @@ def process_phase_c(state: Dict[str, Any], obs: Dict[str, Any], calibration: Dic
                             "prev_bias": prev_bias, "bias": bias}
     profile = calibration.get("cluster") or "cal"
     state["last_bias"], state["last_strategy"], state["last_profile"] = bias, strategy_used, profile
+
+    # 4) Perfil dinámico: calibración (Kalman), rasgos (Beta con olvido), propensión a bloquearse y ritmo
+    state["profile"] = learner.update_profile(state.get("profile"), ind, obs, bias)
 
     after = locate_zdp(state)
     feedback = development_feedback(before, after, crit, reading, newly_mastered)
@@ -362,6 +431,7 @@ def process_phase_c(state: Dict[str, Any], obs: Dict[str, Any], calibration: Dic
         "zdp_after": {k: v for k, v in after.items() if k != "criteria"},
         "criteria": after["criteria"],
         "strategy_outcome": strategy_outcome,
+        "profile": learner.summary(state["profile"]),
         "feedback": feedback,
         "overlay": tech_overlay(state),
     }

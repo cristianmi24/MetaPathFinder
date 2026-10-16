@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { AlertTriangle, Brain, Compass, Pencil } from 'lucide-react';
+import { Activity, AlertTriangle, Brain, Compass, Pencil } from 'lucide-react';
+import type { LearnerProfile } from '../../services/api';
 import { useTutorStore } from '../../stores/useTutorStore';
 import { useCognitiveStore } from '../../stores/useCognitiveStore';
 import { challengeProfiles } from '../../data/challengeProfiles';
@@ -8,6 +9,74 @@ import { WhyThis } from './WhyThis';
 import './tutor.css';
 
 const DIM_LABEL: Record<string, string> = { D1: 'Planificación', D2: 'Monitoreo', D3: 'Búsqueda de ayuda', D4: 'Evaluación' };
+
+const TRAIT_STATUS: Record<string, { label: string; color: string }> = {
+  fortaleza: { label: 'Fortaleza', color: 'var(--ok)' },
+  en_desarrollo: { label: 'En desarrollo', color: 'var(--warn)' },
+  a_trabajar: { label: 'A trabajar', color: 'var(--danger)' },
+  sin_datos: { label: 'Sin datos', color: 'var(--text-muted)' },
+};
+
+/** Perfil dinámico: calibración (Kalman), rasgos de autorregulación, propensión a bloquearse y ritmo. */
+function DynamicProfile({ profile, personalized }: { profile: LearnerProfile; personalized: string[] }) {
+  const cal = profile.calibration;
+  const seg = [
+    { k: 'sub', label: 'Subestimación', p: cal.probs.sub, color: 'var(--accent)' },
+    { k: 'cal', label: 'Calibrado', p: cal.probs.cal, color: 'var(--ok)' },
+    { k: 'over', label: 'Sobreconfianza', p: cal.probs.over, color: 'var(--danger)' },
+  ];
+  const pace = profile.pace_ratio;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="tut-bubble-tag"><Activity size={11} /> Perfil dinámico · {profile.challenges} {profile.challenges === 1 ? 'reto' : 'retos'} analizados</div>
+
+      <div style={{ fontSize: 12 }}>
+        <div style={{ marginBottom: 4 }}>
+          Calibración estimada: <b>{PROFILE_LABEL[cal.class]}</b>
+          <span style={{ color: 'var(--text-muted)' }}> · sesgo {cal.bias_mean > 0 ? '+' : ''}{cal.bias_mean.toFixed(1)} ± {cal.bias_sd.toFixed(1)}</span>
+        </div>
+        <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', background: 'var(--surface-2)' }} aria-label="Probabilidad de cada perfil de calibración">
+          {seg.map((s) => <div key={s.k} title={`${s.label}: ${Math.round(s.p * 100)}%`} style={{ width: `${s.p * 100}%`, background: s.color, opacity: cal.class === s.k ? 1 : 0.45 }} />)}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, color: 'var(--text-muted)', marginTop: 3 }}>
+          {seg.map((s) => <span key={s.k}>{s.label} {Math.round(s.p * 100)}%</span>)}
+        </div>
+      </div>
+
+      <div className="tut-crit">
+        {Object.entries(profile.traits).map(([id, t]) => (
+          <div key={id} className="tut-crit-row" title={`Intervalo ${Math.round(t.ci[0] * 100)}–${Math.round(t.ci[1] * 100)} %`}>
+            <span style={{ width: 8, height: 8, borderRadius: 4, background: TRAIT_STATUS[t.status].color, alignSelf: 'center' }} />
+            <div>
+              <div style={{ fontSize: 11, marginBottom: 2 }}>
+                {t.label}{id === profile.weakest_trait && <b style={{ color: 'var(--danger)' }}> · foco actual</b>}
+                <span style={{ color: 'var(--text-muted)' }}> · {TRAIT_STATUS[t.status].label}</span>
+              </div>
+              <div className="tut-crit-bar"><i className={t.status === 'fortaleza' ? 'ok' : ''} style={{ width: t.status === 'sin_datos' ? 0 : `${Math.round(t.p * 100)}%` }} /></div>
+            </div>
+            <span className="tut-crit-p">{t.status === 'sin_datos' ? '—' : `${Math.round(t.p * 100)}%`}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: 11.5 }}>
+        <span className="tut-chip" title="Punto de partida del cálculo de bloqueo en vivo">Propensión a bloquearte: <b>{Math.round(profile.blocking_prior * 100)}%</b></span>
+        {pace !== null && (
+          <span className="tut-chip" title="Tiempo real / tiempo que estimaste">
+            Ritmo: <b>{pace > 1.3 ? 'tardas más de lo que estimas' : pace < 0.7 ? 'terminas antes de lo que estimas' : 'estimas bien tu tiempo'}</b> ({pace.toFixed(1)}×)
+          </span>
+        )}
+      </div>
+
+      {personalized.length > 0 && (
+        <div className="tut-bubble" style={{ fontSize: 12 }}>
+          <div className="tut-bubble-tag">Cómo se adapta tu tutor</div>
+          <ul style={{ margin: 0, paddingLeft: 16 }}>{personalized.map((r) => <li key={r}>{r}</li>)}</ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** Tarjeta «Mi perfil de aprendizaje»: estilo, overlay, calibración, progresión metacognitiva y concepciones erróneas. */
 export function LearnerProfileCard({ onEditStyle }: { onEditStyle?: () => void }) {
@@ -49,7 +118,9 @@ export function LearnerProfileCard({ onEditStyle }: { onEditStyle?: () => void }
               <li><b>Estilo</b>: cuestionario abreviado de Felder-Soloman (8 ítems).</li>
               <li><b>Dominio</b>: probabilidad Beta-Bernoulli por escalón, actualizada con cada reto.</li>
               <li><b>Progresión</b>: 12 criterios observables (Griffin); un criterio cuenta como logrado con ≥ 70 % y 3 observaciones.</li>
-              <li><b>Calibración</b>: confianza declarada menos desempeño del último reto.</li>
+              <li><b>Calibración</b>: filtro de Kalman sobre el sesgo (confianza − desempeño) de todos tus retos; lo reciente pesa más.</li>
+              <li><b>Rasgos</b>: Beta-Bernoulli con olvido alimentada por tu conducta en cada reto (planificar, pedir ayuda, foco…).</li>
+              <li><b>Propensión a bloquearte</b>: es el punto de partida del cálculo de bloqueo en vivo; si rara vez te atascas, el tutor te interrumpe menos.</li>
             </ul>
           </WhyThis>
         </div>
@@ -74,6 +145,8 @@ export function LearnerProfileCard({ onEditStyle }: { onEditStyle?: () => void }
           {zdp && <div>Zona de desarrollo metacognitiva: <b>{LEVEL_SHORT[zdp.zdp]}</b>{zdp.consolidated ? ` · consolidado ${LEVEL_SHORT[zdp.consolidated]}` : ' · aún sin nivel consolidado'}</div>}
         </div>
       </div>
+
+      {state?.profile && state.profile.challenges > 0 && <DynamicProfile profile={state.profile} personalized={state.scaffold?.personalized ?? []} />}
 
       {criteria && (
         <div className="tut-crit">

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Bot, Lightbulb, Lock, Sparkles, ThumbsDown, ThumbsUp, Target } from 'lucide-react';
 import { WhyThis } from './WhyThis';
+import { TutorAlert } from './TutorAlert';
 import { SCAFFOLD_INFO, LEVEL_SHORT, type BlockingSignals, type ScaffoldLevel } from '../../lib/tutorEngine';
 import { getTutorHint3 } from '../../data/tutorHints';
 import type { ChallengeProfile } from '../../data/challengeProfiles';
@@ -75,6 +76,25 @@ export function TutorAdvisor(p: TutorAdvisorProps) {
   };
 
   return (
+    <>
+    <TutorAlert
+      scaffold={p.scaffold}
+      activeHint={p.activeHint}
+      checkpointDue={p.checkpointDue}
+      consecutiveErrors={p.consecutiveErrors}
+      isDone={p.isDone}
+      message={message}
+      hintTitle={(level) => `Pista ${level}: ${LEVEL_META[level].title}`}
+      hintText={hintText}
+      goal={p.profile?.metaConcreta}
+      reasons={activeSignals.map((s) => SIGNAL_LABEL[s])}
+      jolInicial={p.jolInicial}
+      ratings={p.ratings}
+      hintOpened={(level) => p.openedHints.includes(level)}
+      onOpenHint={p.onOpenHint}
+      onRateHint={p.onRateHint}
+      onCheckpoint={(n) => { setSel(n); p.onCheckpoint(n); }}
+    />
     <aside className="tut-panel" id="tour-tutor-panel" aria-label="Tu tutor">
       <div className="tut-head">
         <div className="tut-avatar"><Bot size={20} /></div>
@@ -201,5 +221,6 @@ export function TutorAdvisor(p: TutorAdvisorProps) {
         </div>
       )}
     </aside>
+    </>
   );
 }

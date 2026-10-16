@@ -8,6 +8,7 @@
  * Con 50 estudiantes simultáneos esto evita una petición por cada evento.
  */
 import type { TutorDomain } from '../services/api';
+import { useTutorStore } from '../stores/useTutorStore';
 
 /* ---------------------------------------------------------------------------
  * Parámetros por defecto (idénticos a backend-python/app/services/tutor/domain.py)
@@ -31,10 +32,20 @@ export interface BlockingSignals {
 
 const clip = (p: number) => Math.min(0.98, Math.max(0.02, p));
 
-/** P(bloqueado | señales). Las cuatro señales se consideran observadas (sí/no). */
-export function blockingProbability(signals: Partial<BlockingSignals>, domain?: TutorDomain | null): number {
+/** Prior personal de bloqueo que calcula el perfil dinámico del estudiante (null si aún no hay). */
+export function personalBlockingPrior(): number | null {
+  const p = useTutorStore.getState().state?.profile;
+  return p && p.challenges > 0 ? p.blocking_prior : null;
+}
+
+/**
+ * P(bloqueado | señales). Las cuatro señales se consideran observadas (sí/no).
+ * El prior es el del perfil dinámico del estudiante (qué tan seguido se ha bloqueado
+ * en sus retos) y, sin historial, el de experto.
+ */
+export function blockingProbability(signals: Partial<BlockingSignals>, domain?: TutorDomain | null, prior = personalBlockingPrior()): number {
   const table = domain?.blocking_signals ?? DEFAULT_BLOCKING_SIGNALS;
-  const prior = domain?.blocking_prior ?? DEFAULT_BLOCKING_PRIOR;
+  prior = prior ?? domain?.blocking_prior ?? DEFAULT_BLOCKING_PRIOR;
   let lb = Math.log(prior);
   let lf = Math.log(1 - prior);
   for (const [k, v] of Object.entries(table)) {

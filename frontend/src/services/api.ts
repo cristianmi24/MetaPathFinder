@@ -292,6 +292,18 @@ export interface TutorZdp {
 
 export interface TutorScaffold {
   zdp: TutorLevel; type: 'conciencia' | 'monitoreo' | 'transferencia'; mandatory_checkpoints: boolean; ask_before_hint: boolean; messages: string[];
+  /** Ajustes que el perfil dinámico hizo sobre el andamiaje base de la ZDP. */
+  personalized?: string[]; blocking_prior?: number; focus_trait?: string | null;
+}
+
+/** Perfil dinámico del estudiante (backend: services/tutor/profile.py). */
+export interface LearnerProfile {
+  challenges: number;
+  calibration: { bias_mean: number; bias_sd: number; n: number; probs: { over: number; cal: number; sub: number }; class: 'over' | 'cal' | 'sub' };
+  traits: Record<string, { label: string; p: number; ci: [number, number]; evidence: number; status: 'sin_datos' | 'a_trabajar' | 'en_desarrollo' | 'fortaleza' }>;
+  weakest_trait: string | null;
+  blocking_prior: number;
+  pace_ratio: number | null;
 }
 
 export interface TutorState {
@@ -300,13 +312,14 @@ export interface TutorState {
   strategies: Record<string, Record<string, [number, number]>>; challenges_done: string[];
   history: { session_id: string; challenge_id: string; level: TutorLevel; posterior: Record<TutorLevel, number>; bias: number | null; score?: number; passed: boolean; zdp: TutorLevel; criteria: Record<string, boolean> }[];
   scaffold: TutorScaffold;
+  profile?: LearnerProfile;
 }
 
 export interface TutorPlan {
   group: string; zdp: TutorZdp;
   challenge: { challenge_id: string | null; reason: string; alternatives: { id: string; p_dominio: number; unlocked: boolean }[]; p_dominio?: number };
   strategy: { strategy_id: string; method: 'thompson' | 'aleatoria'; profile: string; reason: string; samples: Record<string, number> };
-  scaffold: TutorScaffold; overlay: TechOverlay;
+  scaffold: TutorScaffold; overlay: TechOverlay; profile?: LearnerProfile;
 }
 
 export interface TutorPhaseCResult {
@@ -321,6 +334,7 @@ export interface TutorPhaseCResult {
   strategy_outcome: { strategy_id: string; profile: string; success: boolean; prev_bias: number; bias: number } | null;
   feedback: { message: string; achieved_criterion: string | null; next_criterion: string | null; newly_mastered: string[]; level_change: string | null; reading_sentence: string };
   overlay: TechOverlay;
+  profile?: LearnerProfile;
 }
 
 export interface ClassMap {
