@@ -52,6 +52,8 @@ Cuatro dimensiones × tres niveles. Cada criterio describe una conducta observab
 
 **Fase B (cliente, `tutorEngine.ts`)** → con cada evento: P(bloqueo) = NB de dos clases con las cuatro señales → escalera N0 (pregunta) · N1 (orientación) · N2 (estrategia) · N3 (paso parcial, si P ≥ 0,70 dos veces seguidas) · N4 (solución, solo a petición = pista 3/3). Al tercer error seguido: replanificación (modo guiado paso a paso, versión N1 o seguir por cuenta propia). Juicio de certeza antes de «Verificar» y contraste inmediato con el resultado. Puntos de control obligatorios si la ZDP es Básico. Freno personalizado.
 
+**Ayuda antes del primer fallo:** la pantalla muestra el primer paso y permite abrir la pista 1 desde el inicio. Además, una pausa prolongada respecto al ritmo propio o muchos cambios sin verificar activan una pregunta N0 de bajo nivel, sin esperar a dos errores. Es una invitación contextual, no un diagnóstico ni una penalización; los priors del modelo siguen siendo hipótesis iniciales pendientes de validación con docentes y datos del piloto.
+
 **Fase C (`POST /api/phase-c/complete` con `tutor_observations`)** → indicadores → lectura del reto (NB) → actualización Beta por criterio y escalón → Thompson → ZDP → retroalimentación «Ya logras ___. Tu siguiente paso es ___» con los indicadores que pesaron. Todo queda en `tutor_decisions`.
 
 ## 5 bis. Registro de intervenciones (panel del administrador)

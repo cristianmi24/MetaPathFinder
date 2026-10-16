@@ -221,3 +221,22 @@
 .ta-pager button:disabled { opacity: .45; cursor: not-allowed; }
 .ta-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); background: var(--surface-2); white-space: nowrap; }
 .ta-live { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.2); display: inline-block; }
+
+/* Controles del tutor: objetivos táctiles cómodos y foco visible en móvil/teclado. */
+.tut-hint-btn,
+.tut-checkpoint button,
+.tut-rate button,
+.tut-btn,
+.tut-map-tab {
+  min-height: 48px;
+}
+.tut-checkpoint button { min-width: 48px; }
+.tut-rate button { min-width: 48px; }
+.tut-hint-btn:focus-visible,
+.tut-checkpoint button:focus-visible,
+.tut-rate button:focus-visible,
+.tut-btn:focus-visible,
+.tut-map-tab:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  outline-offset: 2px;
+}
